@@ -27,7 +27,9 @@ function getStoredTheme(): Theme {
     return storedTheme;
   }
 
-  return document.documentElement.dataset.theme === "light" ? "light" : DEFAULT_THEME;
+  return document.documentElement.dataset.theme === "light"
+    ? "light"
+    : DEFAULT_THEME;
 }
 
 function ThemeProvider({ children }: { children: ReactNode }) {
@@ -47,10 +49,13 @@ function ThemeProvider({ children }: { children: ReactNode }) {
   const value = {
     theme,
     setTheme,
-    toggleTheme: () => setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark")),
+    toggleTheme: () =>
+      setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark")),
   };
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {
