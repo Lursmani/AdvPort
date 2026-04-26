@@ -309,7 +309,7 @@ export function createLayerModels(
         color: shadowColor,
         offset: [0.14, -0.11, -0.22],
         opacity: 0.19,
-        opacity: 0.19,
+      },
     },
     {
       id: "lower-top-wave",
