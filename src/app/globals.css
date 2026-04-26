@@ -7,6 +7,12 @@
   --primary: #000000;
   --gradient-start: #2e1065;
   --gradient-end: #6d28d9;
+  --hero-blue: #b56500;
+  --hero-cool: #7a3300;
+  --hero-gold: #e9d689;
+  --hero-orange: #d78f00;
+  --hero-pink: #d9b131;
+  --hero-purple: #f0c24f;
 }
 
 @theme inline {
@@ -26,6 +32,12 @@ html[data-theme="light"] {
   --primary: #ffffff;
   --gradient-start: #ddd6fe;
   --gradient-end: #a78bfa;
+  --hero-blue: #e69500;
+  --hero-cool: #a34d00;
+  --hero-gold: #f9e79f;
+  --hero-orange: #ffc300;
+  --hero-pink: #f4d03f;
+  --hero-purple: #ffd96b;
 }
 
 html[data-theme="dark"] {
@@ -40,4 +52,60 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.hero-backdrop {
+  background:
+    radial-gradient(
+      circle at 18% 22%,
+      color-mix(in oklab, var(--hero-orange) 42%, transparent) 0%,
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 52% 32%,
+      color-mix(in oklab, var(--hero-pink) 34%, transparent) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 84% 24%,
+      color-mix(in oklab, var(--hero-gold) 36%, transparent) 0%,
+      transparent 34%
+    ),
+    linear-gradient(
+      115deg,
+      color-mix(in oklab, var(--hero-cool) 72%, var(--hero-blue)) 0%,
+      color-mix(in oklab, var(--hero-blue) 76%, var(--hero-orange)) 26%,
+      color-mix(in oklab, var(--hero-orange) 78%, var(--hero-pink)) 54%,
+      color-mix(in oklab, var(--hero-pink) 78%, var(--hero-gold)) 78%,
+      color-mix(in oklab, var(--hero-gold) 84%, white) 100%
+    );
+  filter: saturate(108%);
+}
+
+.hero-vignette {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--background) 12%, transparent) 0%,
+      transparent 22%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 54%,
+      color-mix(in oklab, var(--background) 68%, transparent) 100%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 42%,
+      color-mix(in oklab, var(--background) 54%, transparent) 100%
+    );
+}
+
+.hero-glass {
+  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  background: color-mix(in oklab, var(--background) 76%, transparent);
+  box-shadow: 0 24px 70px
+    color-mix(in oklab, var(--background) 72%, transparent);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
