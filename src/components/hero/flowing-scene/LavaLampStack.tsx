@@ -6,7 +6,7 @@ import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { BackdropPlane } from "./BackdropPlane";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
-import { DARK_PALETTE, LIGHT_PALETTE } from "./palette";
+import { DARK_PALETTE, LIGHT_PALETTE2 } from "./palette";
 
 const SCENE_GROUP_Y = -0.1;
 
@@ -17,7 +17,7 @@ type LavaLampStackProps = {
 export function LavaLampStack({ pointer }: LavaLampStackProps) {
   const { theme } = useTheme();
   const { viewport } = useThree();
-  const palette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const palette = theme === "light" ? LIGHT_PALETTE2 : DARK_PALETTE;
   const layers = useMemo(
     () => createLayerModels(viewport.width, viewport.height, palette),
     [palette, viewport.height, viewport.width],

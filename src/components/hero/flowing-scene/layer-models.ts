@@ -201,11 +201,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 0.92,
       seed: 41,
-      shadow: {
-        color: shadowColor,
-        offset: [0.16, -0.12, -0.14],
-        opacity: 0.18,
-      },
+      // shadow: {
+      //   color: shadowColor,
+      //   offset: [0.16, -0.12, -0.14],
+      //   opacity: 0.18,
+      // },
     },
     {
       id: "lower-bottom-wave",
@@ -227,11 +227,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 0.92,
       seed: 41,
-      shadow: {
-        color: shadowColor,
-        offset: [0.1, 0.12, -0.14],
-        opacity: 0.18,
-      },
+      // shadow: {
+      //   color: shadowColor,
+      //   offset: [0.1, 0.12, -0.14],
+      //   opacity: 0.18,
+      // },
     },
     {
       id: "upper-mid-wave",
@@ -253,11 +253,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 0.92,
       seed: 41,
-      shadow: {
-        color: shadowColor,
-        offset: [0.16, -0.12, -0.14],
-        opacity: 0.18,
-      },
+      // shadow: {
+      //   color: shadowColor,
+      //   offset: [0.16, -0.12, -0.14],
+      //   opacity: 0.18,
+      // },
     },
     {
       id: "lower-mid-wave",
@@ -279,11 +279,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 1,
       seed: 29,
-      shadow: {
-        color: shadowColor,
-        offset: [0.16, 0, -0.05],
-        opacity: 0.18,
-      },
+      // shadow: {
+      //   color: shadowColor,
+      //   offset: [0.16, 0, -0.05],
+      //   opacity: 0.18,
+      // },
     },
     {
       id: "upper-top-wave",
@@ -305,11 +305,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 1,
       seed: 53,
-      shadow: {
-        color: shadowColor,
-        offset: [0.14, -0.11, -0.22],
-        opacity: 0.19,
-      },
+      // shadow: {
+      //   color: shadowColor,
+      //   offset: [0.14, -0.11, -0.22],
+      //   opacity: 0.19,
+      // },
     },
     {
       id: "lower-top-wave",
@@ -331,11 +331,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 1,
       seed: 88,
-      shadow: {
-        color: shadowColor,
-        offset: [0.16, 0, -0.05],
-        opacity: 0.18,
-      },
+      // shadow: {
+      //   color: shadowColor,
+      //   offset: [0.16, 0, -0.05],
+      //   opacity: 0.18,
+      // },
     },
   ];
 
