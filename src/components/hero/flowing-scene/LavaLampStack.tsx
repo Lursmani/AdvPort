@@ -18,7 +18,7 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
   const { viewport } = useThree();
   const palette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
   const keyLightPosition = useMemo(
-    () => [viewport.width * 0.5, viewport.height * 0.5, 3.2] as const,
+    () => [viewport.width * -0.3, viewport.height * -0.4, 2.2] as const,
     [viewport.height, viewport.width],
   );
   const layers = useMemo(
@@ -57,7 +57,7 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
       <ambientLight intensity={0.3} />
       <directionalLight
         color="#f6f5ee"
-        intensity={4.85}
+        intensity={2.45}
         position={keyLightPosition}
       />
       <BackdropPlane color={palette.background} />

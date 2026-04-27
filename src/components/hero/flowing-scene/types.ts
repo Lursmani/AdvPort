@@ -31,16 +31,14 @@ export type NoiseField = {
 export type LayerPalette = {
   /** Background tone for the overall scene. */
   background: string;
-  /** Foreground tone for text and accents. */
-  foreground: string;
-  /** Ordered fill colors for the blob layers. */
-  layers: string[];
+  /** Light tone for highlights and accents. */
+  light: string;
   /** Mid-tone accent used in gradients. */
-  midA: string;
-  /** Secondary mid-tone accent used in gradients. */
-  midB: string;
-  /** Shadow color used by the blob silhouettes. */
-  shadow: string;
+  mid: string;
+  /** Dark tone for shadows and depth. */
+  dark: string;
+  /** Extra dark tone for deep shadows and accents. */
+  extraDark: string;
 };
 
 /** Static configuration for a single blob layer. */
