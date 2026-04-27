@@ -1,5 +1,6 @@
-import { Shape, ShapeGeometry, Vector2 } from "three";
+import { BufferAttribute, ExtrudeGeometry, Shape, Vector2 } from "three";
 import { SimplexNoise } from "./noise";
+import { DEFORMATION_SOURCE_ATTRIBUTE } from "./types";
 import type {
   LayerAnchorConstraint,
   LayerBlueprint,
@@ -9,9 +10,155 @@ import type {
 
 type BuiltLayerGeometry = {
   anchorConstraint?: LayerAnchorConstraint;
-  geometry: ShapeGeometry;
+  geometry: ExtrudeGeometry;
   motionOrigin: [number, number, number];
 };
+
+const BLOB_DEPTH = 0.02;
+const EXTRUDE_CURVE_SEGMENTS = 8;
+const ROUNDOVER_SEGMENTS = 12;
+const MAX_ROUNDOVER_SCALE = 0.3;
+
+function smoothstep(min: number, max: number, value: number) {
+  if (min === max) {
+    return value < min ? 0 : 1;
+  }
+
+  const normalized = Math.min(1, Math.max(0, (value - min) / (max - min)));
+
+  return normalized * normalized * (3 - 2 * normalized);
+}
+
+function getRoundoverInfluence(config: LayerBlueprint, y: number) {
+  if (config.anchorMode === "none") {
+    return 1;
+  }
+
+  const anchorY =
+    config.anchorMode === "top"
+      ? config.radiusY * config.flatEdgeStrength
+      : -config.radiusY * config.flatEdgeStrength;
+
+  return smoothstep(
+    config.radiusY * 0.02,
+    Math.max(config.radiusY * 0.22, 0.035),
+    Math.abs(y - anchorY),
+  );
+}
+
+function captureDeformationSource(geometry: ExtrudeGeometry) {
+  const positionAttribute = geometry.getAttribute("position");
+
+  if (!(positionAttribute instanceof BufferAttribute)) {
+    return;
+  }
+
+  const deformationSource = new Float32Array(positionAttribute.array.length);
+
+  deformationSource.set(positionAttribute.array as ArrayLike<number>);
+  geometry.setAttribute(
+    DEFORMATION_SOURCE_ATTRIBUTE,
+    new BufferAttribute(deformationSource, 3),
+  );
+}
+
+function translateDeformationSource(
+  geometry: ExtrudeGeometry,
+  offsetX: number,
+  offsetY: number,
+  offsetZ: number,
+) {
+  const deformationSourceAttribute = geometry.getAttribute(
+    DEFORMATION_SOURCE_ATTRIBUTE,
+  );
+
+  if (!(deformationSourceAttribute instanceof BufferAttribute)) {
+    return;
+  }
+
+  const deformationSource = deformationSourceAttribute.array;
+
+  for (let index = 0; index < deformationSource.length; index += 3) {
+    deformationSource[index] -= offsetX;
+    deformationSource[index + 1] -= offsetY;
+    deformationSource[index + 2] -= offsetZ;
+  }
+
+  deformationSourceAttribute.needsUpdate = true;
+}
+
+function centerGeometryWithDeformationSource(geometry: ExtrudeGeometry) {
+  geometry.computeBoundingBox();
+
+  const bounds = geometry.boundingBox;
+
+  if (!bounds) {
+    return null;
+  }
+
+  const centerX = (bounds.min.x + bounds.max.x) * 0.5;
+  const centerY = (bounds.min.y + bounds.max.y) * 0.5;
+  const centerZ = (bounds.min.z + bounds.max.z) * 0.5;
+
+  geometry.center();
+  translateDeformationSource(geometry, centerX, centerY, centerZ);
+
+  return {
+    bounds,
+    centerX,
+    centerY,
+  };
+}
+
+function applyContinuousRoundover(
+  geometry: ExtrudeGeometry,
+  config: LayerBlueprint,
+) {
+  const positionAttribute = geometry.getAttribute("position");
+
+  if (!(positionAttribute instanceof BufferAttribute)) {
+    return;
+  }
+
+  const positions = positionAttribute.array;
+  const roundoverScale = Math.min(MAX_ROUNDOVER_SCALE, BLOB_DEPTH * 0.72);
+
+  for (let index = 0; index < positions.length; index += 3) {
+    const z = positions[index + 2];
+    const sliceProgress = Math.min(1, Math.max(0, z / BLOB_DEPTH));
+    const curveWeight = Math.sin(Math.PI * sliceProgress);
+
+    if (curveWeight <= 0) {
+      continue;
+    }
+
+    const roundoverInfluence = getRoundoverInfluence(
+      config,
+      positions[index + 1],
+    );
+    const scale = 1 + roundoverScale * curveWeight * roundoverInfluence;
+
+    positions[index] *= scale;
+    positions[index + 1] *= scale;
+  }
+
+  positionAttribute.needsUpdate = true;
+}
+
+function createExtrudedGeometry(shape: Shape, config: LayerBlueprint) {
+  const geometry = new ExtrudeGeometry(shape, {
+    bevelEnabled: false,
+    curveSegments: EXTRUDE_CURVE_SEGMENTS,
+    depth: BLOB_DEPTH,
+    steps: ROUNDOVER_SEGMENTS,
+  });
+
+  captureDeformationSource(geometry);
+  applyContinuousRoundover(geometry, config);
+  geometry.computeVertexNormals();
+
+  return geometry;
+}
 
 function sampleBlobNoise(
   noise: SimplexNoise,
@@ -34,7 +181,7 @@ function sampleBlobNoise(
   };
 }
 
-function createShapeGeometry(points: Vector2[]) {
+function createBlobShape(points: Vector2[]) {
   const shape = new Shape();
   shape.moveTo(points[0].x, points[0].y);
 
@@ -44,7 +191,7 @@ function createShapeGeometry(points: Vector2[]) {
 
   shape.closePath();
 
-  return new ShapeGeometry(shape);
+  return shape;
 }
 
 function createFreeBlobGeometry(config: LayerBlueprint) {
@@ -72,8 +219,8 @@ function createFreeBlobGeometry(config: LayerBlueprint) {
     );
   }
 
-  const geometry = createShapeGeometry(points);
-  geometry.center();
+  const geometry = createExtrudedGeometry(createBlobShape(points), config);
+  centerGeometryWithDeformationSource(geometry);
 
   return {
     geometry,
@@ -129,27 +276,25 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
     points.push(new Vector2(x, y));
   }
 
-  const geometry = createShapeGeometry(points);
-  geometry.computeBoundingBox();
-  const bounds = geometry.boundingBox;
+  const geometry = createExtrudedGeometry(createBlobShape(points), config);
+  const centeredGeometry = centerGeometryWithDeformationSource(geometry);
+  const bounds = centeredGeometry?.bounds;
 
   if (!bounds) {
-    geometry.center();
-
     return {
       geometry,
       motionOrigin: [0, 0, 0],
     } satisfies BuiltLayerGeometry;
   }
 
-  const centerX = (bounds.min.x + bounds.max.x) * 0.5;
-  const centerY = (bounds.min.y + bounds.max.y) * 0.5;
-
-  geometry.center();
+  const { centerX, centerY } = centeredGeometry;
 
   // The geometry stays centered for rendering, while the anchored edge Y is
   // preserved explicitly so runtime motion can pin that flat edge to the scene.
-  const anchoredEdgeLocalY = flatY - centerY;
+  const anchoredEdgeLocalY =
+    config.anchorMode === "top"
+      ? bounds.max.y - centerY
+      : bounds.min.y - centerY;
 
   return {
     anchorConstraint: {
@@ -179,7 +324,6 @@ export function createLayerModels(
   const heightUnit = 5;
   const horizontalSpan = viewportWidth * 0.34;
   const verticalSpan = viewportHeight * 0.32;
-  const shadowColor = palette.shadow;
   const blueprints: LayerBlueprint[] = [
     {
       id: "upper-bottom-wave",
@@ -195,17 +339,12 @@ export function createLayerModels(
       index: 3,
       inwardPointDensity: 1,
       noiseScale: 1,
-      pointCount: 132,
+      pointCount: 96,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.25,
       rotation: 0,
       scale: 0.92,
       seed: 41,
-      // shadow: {
-      //   color: shadowColor,
-      //   offset: [0.16, -0.12, -0.14],
-      //   opacity: 0.18,
-      // },
     },
     {
       id: "lower-bottom-wave",
@@ -221,17 +360,12 @@ export function createLayerModels(
       index: 3,
       inwardPointDensity: 1,
       noiseScale: 1,
-      pointCount: 132,
+      pointCount: 96,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.25,
       rotation: 0,
       scale: 0.92,
       seed: 41,
-      // shadow: {
-      //   color: shadowColor,
-      //   offset: [0.1, 0.12, -0.14],
-      //   opacity: 0.18,
-      // },
     },
     {
       id: "upper-mid-wave",
@@ -247,17 +381,12 @@ export function createLayerModels(
       index: 3,
       inwardPointDensity: 1,
       noiseScale: 1,
-      pointCount: 132,
+      pointCount: 88,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.15,
       rotation: 0,
       scale: 0.92,
       seed: 41,
-      // shadow: {
-      //   color: shadowColor,
-      //   offset: [0.16, -0.12, -0.14],
-      //   opacity: 0.18,
-      // },
     },
     {
       id: "lower-mid-wave",
@@ -266,24 +395,19 @@ export function createLayerModels(
       blobAmplitude: 0.21,
       color: palette.layers[3],
       distortAmount: 1,
-      distortSpeed: 0.99,
+      distortSpeed: 1,
       drift: [0.16, 0.13],
       edgeInset: 1,
       flatEdgeStrength: 1,
       index: 2,
       inwardPointDensity: 0.5,
       noiseScale: 0.2,
-      pointCount: 136,
+      pointCount: 92,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.12,
       rotation: 0,
       scale: 1,
       seed: 29,
-      // shadow: {
-      //   color: shadowColor,
-      //   offset: [0.16, 0, -0.05],
-      //   opacity: 0.18,
-      // },
     },
     {
       id: "upper-top-wave",
@@ -305,16 +429,11 @@ export function createLayerModels(
       rotation: 0,
       scale: 1,
       seed: 53,
-      // shadow: {
-      //   color: shadowColor,
-      //   offset: [0.14, -0.11, -0.22],
-      //   opacity: 0.19,
-      // },
     },
     {
       id: "lower-top-wave",
       anchorMode: "bottom",
-      basePosition: [0, 0, 1],
+      basePosition: [0, 0, 2],
       blobAmplitude: 0.28,
       color: palette.layers[5],
       distortAmount: 0,
@@ -325,17 +444,12 @@ export function createLayerModels(
       index: 5,
       inwardPointDensity: 0.5,
       noiseScale: 1.96,
-      pointCount: 122,
+      pointCount: 84,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.1,
       rotation: 0,
       scale: 1,
       seed: 88,
-      // shadow: {
-      //   color: shadowColor,
-      //   offset: [0.16, 0, -0.05],
-      //   opacity: 0.18,
-      // },
     },
   ];
 
@@ -346,6 +460,7 @@ export function createLayerModels(
     return {
       ...blueprint,
       anchorConstraint,
+      deformationSourceAttribute: DEFORMATION_SOURCE_ATTRIBUTE,
       geometry,
       motionOrigin,
       motionNoise: new SimplexNoise(blueprint.seed + 101),

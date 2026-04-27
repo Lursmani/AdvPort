@@ -6,7 +6,7 @@ import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { BackdropPlane } from "./BackdropPlane";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
-import { DARK_PALETTE, LIGHT_PALETTE2 } from "./palette";
+import { DARK_PALETTE, LIGHT_PALETTE } from "./palette";
 
 const SCENE_GROUP_Y = -0.1;
 
@@ -16,8 +16,13 @@ type LavaLampStackProps = {
 
 export function LavaLampStack({ pointer }: LavaLampStackProps) {
   const { theme } = useTheme();
-  const { viewport } = useThree();
-  const palette = theme === "light" ? LIGHT_PALETTE2 : DARK_PALETTE;
+  const { size, viewport } = useThree();
+  const palette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const showContactShadows = size.width >= 768;
+  const keyLightPosition = useMemo(
+    () => [viewport.width * 0.5, viewport.height * 0.5, 3.2] as const,
+    [viewport.height, viewport.width],
+  );
   const layers = useMemo(
     () => createLayerModels(viewport.width, viewport.height, palette),
     [palette, viewport.height, viewport.width],
@@ -41,7 +46,12 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
 
   return (
     <>
-      <ambientLight intensity={1.7} />
+      <ambientLight intensity={0.3} />
+      <directionalLight
+        color="#f6f5ee"
+        intensity={4.85}
+        position={keyLightPosition}
+      />
       <BackdropPlane color={palette.background} />
       <group position={[0, SCENE_GROUP_Y, 0]}>
         <group rotation={[0.06, -0.12, 0]}>
@@ -65,16 +75,18 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
           ))}
         </group>
       </group>
-      <ContactShadows
-        blur={1.9}
-        color={palette.shadow}
-        far={3.6}
-        opacity={0.16}
-        position={[0, -viewport.height * 0.35, -1.1]}
-        resolution={256}
-        scale={[viewport.width * 1.35, viewport.height * 0.9]}
-        smooth
-      />
+      {showContactShadows ? (
+        <ContactShadows
+          blur={1.6}
+          color={palette.shadow}
+          far={3.6}
+          opacity={0.18}
+          position={[0, -viewport.height * 0.35, -1.1]}
+          resolution={128}
+          scale={[viewport.width * 1.35, viewport.height * 0.9]}
+          smooth
+        />
+      ) : null}
     </>
   );
 }

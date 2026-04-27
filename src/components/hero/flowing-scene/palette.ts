@@ -29,14 +29,6 @@ export const LIGHT_PALETTE = createPalette({
   shadow: "#8C4300",
 });
 
-export const LIGHT_PALETTE2 = createPalette({
-  background: "#310A69",
-  foreground: "#403963",
-  midA: "#E19B8B",
-  midB: "#D41414",
-  shadow: "#E8E2DB",
-});
-
 export const DARK_PALETTE = createPalette({
   background: "#B56500",
   foreground: "#E9D689",

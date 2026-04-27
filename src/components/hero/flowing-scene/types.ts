@@ -1,20 +1,14 @@
-import type { ShapeGeometry } from "three";
+import type { BufferGeometry } from "three";
+
+export const DEFORMATION_SOURCE_ATTRIBUTE = "deformationSource";
+
+export type LayerGeometryAttributeName = typeof DEFORMATION_SOURCE_ATTRIBUTE;
 
 /** Two-dimensional normalized coordinates. */
 export type Vec2 = [number, number];
 
 /** Three-dimensional coordinates used for positions and offsets. */
 export type Vec3 = [number, number, number];
-
-/** Optional shadow settings for a blob layer. */
-export type LayerShadow = {
-  /** Shadow color rendered beneath the blob. */
-  color: string;
-  /** Shadow offset relative to the main mesh. */
-  offset: Vec3;
-  /** Opacity of the shadow mesh. */
-  opacity: number;
-};
 
 /** Controls whether a blob is free-form or biased toward its top or bottom edge. */
 export type BlobAnchorMode = "none" | "top" | "bottom";
@@ -89,16 +83,16 @@ export type LayerBlueprint = {
   scale: number;
   /** Seed used to keep the shape and motion deterministic. */
   seed: number;
-  /** Optional shadow rendered beneath the blob. */
-  shadow?: LayerShadow;
 };
 
 /** Fully built layer model with geometry and motion noise attached. */
 export type LayerModel = LayerBlueprint & {
   /** Explicit boundary metadata for top- and bottom-anchored blobs. */
   anchorConstraint?: LayerAnchorConstraint;
+  /** Geometry attribute name containing the shared contour-space deformation basis. */
+  deformationSourceAttribute: LayerGeometryAttributeName;
   /** Precomputed shape geometry for the blob mesh. */
-  geometry: ShapeGeometry;
+  geometry: BufferGeometry;
   /** Local pivot used for anchored rotation and pulse scaling around the flat edge. */
   motionOrigin: Vec3;
   /** Noise source used to drive layer motion over time. */

@@ -1,7 +1,12 @@
-import { MeshDistortMaterial } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { BufferAttribute, DoubleSide, Group, MathUtils, Mesh } from "three";
+import {
+  BufferAttribute,
+  DynamicDrawUsage,
+  FrontSide,
+  Group,
+  MathUtils,
+} from "three";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import type { LayerModel } from "./types";
 
@@ -128,8 +133,9 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
   const { viewport } = useThree();
   const positionRef = useRef<Group>(null);
   const motionRef = useRef<Group>(null);
-  const shadowRef = useRef<Mesh>(null);
   const basePositionsRef = useRef<Float32Array | null>(null);
+  const deformationSourcesRef = useRef<Float32Array | null>(null);
+  const deformationActiveRef = useRef(false);
   const clickStateRef = useRef({
     startedAt: -100,
     token: 0,
@@ -137,36 +143,54 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
 
   useEffect(() => {
     const positionAttribute = config.geometry.getAttribute("position");
+    const deformationSourceAttribute = config.geometry.getAttribute(
+      config.deformationSourceAttribute,
+    );
 
     if (!(positionAttribute instanceof BufferAttribute)) {
       basePositionsRef.current = null;
+      deformationSourcesRef.current = null;
       return;
     }
 
+    positionAttribute.setUsage(DynamicDrawUsage);
+
     basePositionsRef.current = new Float32Array(positionAttribute.array);
+    deformationSourcesRef.current =
+      deformationSourceAttribute instanceof BufferAttribute
+        ? new Float32Array(deformationSourceAttribute.array)
+        : new Float32Array(positionAttribute.array);
 
     return () => {
       if (!basePositionsRef.current) {
         return;
       }
 
+      deformationSourcesRef.current = null;
+      deformationActiveRef.current = false;
       positionAttribute.array.set(basePositionsRef.current);
       positionAttribute.needsUpdate = true;
     };
-  }, [config.geometry]);
+  }, [config.deformationSourceAttribute, config.geometry]);
 
   useFrame(({ clock }, delta) => {
     const positionGroup = positionRef.current;
     const motionGroup = motionRef.current;
-    const shadow = shadowRef.current;
     const basePositions = basePositionsRef.current;
+    const deformationSources = deformationSourcesRef.current;
+    const geometry = config.geometry;
     const isAnchored = config.anchorMode !== "none";
 
-    if (!positionGroup || !motionGroup || !basePositions) {
+    if (
+      !positionGroup ||
+      !motionGroup ||
+      !basePositions ||
+      !deformationSources
+    ) {
       return;
     }
 
-    const positionAttribute = config.geometry.getAttribute("position");
+    const positionAttribute = geometry.getAttribute("position");
 
     if (!(positionAttribute instanceof BufferAttribute)) {
       return;
@@ -247,6 +271,15 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
     );
     motionGroup.scale.setScalar(nextScale);
 
+    const shouldUpdateDeformation =
+      pointer.current.active ||
+      clickBoost > 0.0005 ||
+      deformationActiveRef.current;
+
+    if (!shouldUpdateDeformation) {
+      return;
+    }
+
     const horizontalSpan = viewport.width * 0.34;
     const verticalSpan = viewport.height * 0.32;
     const pointerWorldX = pointer.current.x * horizontalSpan;
@@ -295,19 +328,25 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       0.042,
       0.05,
     );
+    const hasActiveField = hoverField !== null || clickField !== null;
     const positions = positionAttribute.array;
+    let normalsNeedUpdate = false;
+    let positionsDidChange = false;
+    let deformationStillActive = hasActiveField;
 
     for (let index = 0; index < positions.length; index += 3) {
       const baseX = basePositions[index];
       const baseY = basePositions[index + 1];
       const baseZ = basePositions[index + 2];
+      const deformationSourceX = deformationSources[index];
+      const deformationSourceY = deformationSources[index + 1];
       let offsetX = 0;
       let offsetY = 0;
 
       if (hoverField) {
         const hoverDistanceToFocus = Math.hypot(
-          baseX - hoverField.focusX,
-          baseY - hoverField.focusY,
+          deformationSourceX - hoverField.focusX,
+          deformationSourceY - hoverField.focusY,
         );
         const hoverFalloff = Math.exp(
           -(hoverDistanceToFocus * hoverDistanceToFocus) /
@@ -322,8 +361,8 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
 
       if (clickField) {
         const clickDistanceToFocus = Math.hypot(
-          baseX - clickField.focusX,
-          baseY - clickField.focusY,
+          deformationSourceX - clickField.focusX,
+          deformationSourceY - clickField.focusY,
         );
         const clickFalloff = Math.exp(
           -(clickDistanceToFocus * clickDistanceToFocus) /
@@ -342,46 +381,46 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
         baseY,
         baseY + offsetY,
       );
+      const nextX = MathUtils.damp(positions[index], targetX, 10, delta);
+      const nextY = MathUtils.damp(positions[index + 1], targetY, 10, delta);
+      const positionChanged =
+        Math.abs(nextX - positions[index]) > 0.0001 ||
+        Math.abs(nextY - positions[index + 1]) > 0.0001;
 
-      positions[index] = MathUtils.damp(positions[index], targetX, 10, delta);
-      positions[index + 1] = MathUtils.damp(
-        positions[index + 1],
-        targetY,
-        10,
-        delta,
-      );
+      if (positionChanged) {
+        positionsDidChange = true;
+        normalsNeedUpdate = true;
+      }
+
+      if (
+        !deformationStillActive &&
+        (Math.abs(nextX - baseX) > 0.00025 || Math.abs(nextY - baseY) > 0.00025)
+      ) {
+        deformationStillActive = true;
+      }
+
+      positions[index] = nextX;
+      positions[index + 1] = nextY;
       positions[index + 2] = baseZ;
+    }
+
+    deformationActiveRef.current = deformationStillActive;
+
+    if (!positionsDidChange) {
+      return;
     }
 
     positionAttribute.needsUpdate = true;
 
-    if (!shadow || !config.shadow) {
-      return;
+    if (normalsNeedUpdate) {
+      geometry.computeVertexNormals();
+
+      const normalAttribute = geometry.getAttribute("normal");
+
+      if (normalAttribute instanceof BufferAttribute) {
+        normalAttribute.needsUpdate = true;
+      }
     }
-
-    const shadowDriftScale = isAnchored ? 0.06 : 0.12;
-
-    shadow.position.x = MathUtils.damp(
-      shadow.position.x,
-      config.shadow.offset[0] - resolvedDriftX * shadowDriftScale,
-      4,
-      delta,
-    );
-    shadow.position.y = MathUtils.damp(
-      shadow.position.y,
-      config.shadow.offset[1] - resolvedDriftY * shadowDriftScale,
-      4,
-      delta,
-    );
-    shadow.position.z = MathUtils.damp(
-      shadow.position.z,
-      config.shadow.offset[2],
-      4,
-      delta,
-    );
-
-    const shadowScale = MathUtils.damp(shadow.scale.x, 1.04, 4, delta);
-    shadow.scale.setScalar(shadowScale);
   });
 
   const initialPosition = [
@@ -402,38 +441,8 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
             -config.motionOrigin[2],
           ]}
         >
-          {config.shadow ? (
-            <mesh
-              ref={shadowRef}
-              geometry={config.geometry}
-              position={config.shadow.offset}
-              renderOrder={config.index * 2}
-            >
-              <meshBasicMaterial
-                color={config.shadow.color}
-                depthWrite={false}
-                opacity={config.shadow.opacity}
-                toneMapped={false}
-                transparent
-              />
-            </mesh>
-          ) : null}
           <mesh geometry={config.geometry} renderOrder={config.index * 2 + 1}>
-            <MeshDistortMaterial
-              clearcoat={0}
-              color={config.color}
-              depthWrite
-              emissive={config.color}
-              emissiveIntensity={0.18}
-              factor={config.distortAmount}
-              metalness={0}
-              reflectivity={0}
-              roughness={1}
-              side={DoubleSide}
-              specularIntensity={0}
-              speed={config.distortSpeed}
-              toneMapped={false}
-            />
+            <meshLambertMaterial color={config.color} side={FrontSide} />
           </mesh>
         </group>
       </group>
