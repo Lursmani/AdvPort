@@ -89,6 +89,26 @@ function getConstrainedVertexTargetY(
   return proposedY;
 }
 
+function getAmbientAnchorAttenuation(config: LayerModel, sourceY: number) {
+  const anchorConstraint = config.anchorConstraint;
+
+  if (!anchorConstraint) {
+    return 1;
+  }
+
+  const distanceToEdge = Math.abs(sourceY - anchorConstraint.edgeLocalY);
+  const fadeBand = Math.max(
+    anchorConstraint.edgeTolerance * 10,
+    config.radiusY * 0.12,
+  );
+
+  return MathUtils.smoothstep(
+    distanceToEdge,
+    anchorConstraint.edgeTolerance,
+    anchorConstraint.edgeTolerance + fadeBand,
+  );
+}
+
 function createInteractionField(
   config: LayerModel,
   localPointerX: number,
@@ -329,6 +349,9 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       0.05,
     );
     const hasActiveField = hoverField !== null || clickField !== null;
+    const ambientAmplitude =
+      Math.min(config.radiusX, config.radiusY) * config.distortAmount * 0.3;
+    const ambientTime = elapsed * Math.max(0.12, config.distortSpeed);
     const positions = positionAttribute.array;
     let normalsNeedUpdate = false;
     let positionsDidChange = false;
@@ -342,6 +365,34 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       const deformationSourceY = deformationSources[index + 1];
       let offsetX = 0;
       let offsetY = 0;
+
+      if (ambientAmplitude > 0) {
+        const radialLength = Math.hypot(deformationSourceX, deformationSourceY);
+
+        if (radialLength > 0.0001) {
+          const normalizedSourceX =
+            deformationSourceX / Math.max(0.0001, config.radiusX);
+          const normalizedSourceY =
+            deformationSourceY / Math.max(0.0001, config.radiusY);
+          const primaryWave = config.deformationNoise.noise2D(
+            normalizedSourceX * 1.1 + ambientTime * 0.32 + config.seed * 0.17,
+            normalizedSourceY * 1.1 - ambientTime * 0.24 - config.seed * 0.13,
+          );
+          const rippleWave = config.deformationNoise.noise2D(
+            normalizedSourceX * 2.6 - ambientTime * 0.56 - config.seed * 0.09,
+            normalizedSourceY * 2.6 + ambientTime * 0.41 + config.seed * 0.23,
+          );
+          const ambientOffset =
+            (primaryWave + rippleWave * 0.34) *
+            ambientAmplitude *
+            getAmbientAnchorAttenuation(config, deformationSourceY);
+          const radialDirectionX = deformationSourceX / radialLength;
+          const radialDirectionY = deformationSourceY / radialLength;
+
+          offsetX += radialDirectionX * ambientOffset;
+          offsetY += radialDirectionY * ambientOffset;
+        }
+      }
 
       if (hoverField) {
         const hoverDistanceToFocus = Math.hypot(

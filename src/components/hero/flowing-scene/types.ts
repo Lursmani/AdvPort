@@ -67,8 +67,6 @@ export type LayerBlueprint = {
   flatEdgeStrength: number;
   /** Layer index used for ordering and render timing. */
   index: number;
-  /** Ratio of points reserved for the flattened anchored edge. */
-  inwardPointDensity: number;
   /** Frequency multiplier for the procedural noise field. */
   noiseScale: number;
   /** Number of points used to build the blob contour. */
@@ -91,6 +89,8 @@ export type LayerModel = LayerBlueprint & {
   anchorConstraint?: LayerAnchorConstraint;
   /** Geometry attribute name containing the shared contour-space deformation basis. */
   deformationSourceAttribute: LayerGeometryAttributeName;
+  /** Noise source used to drive ambient contour deformation over time. */
+  deformationNoise: NoiseField;
   /** Precomputed shape geometry for the blob mesh. */
   geometry: BufferGeometry;
   /** Local pivot used for anchored rotation and pulse scaling around the flat edge. */

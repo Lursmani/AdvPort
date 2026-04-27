@@ -14,10 +14,10 @@ type BuiltLayerGeometry = {
   motionOrigin: [number, number, number];
 };
 
-const BLOB_DEPTH = 0.02;
-const EXTRUDE_CURVE_SEGMENTS = 8;
-const ROUNDOVER_SEGMENTS = 12;
-const MAX_ROUNDOVER_SCALE = 0.3;
+const BLOB_DEPTH = 0.015;
+const EXTRUDE_CURVE_SEGMENTS = 0;
+const ROUNDOVER_SEGMENTS = 6;
+const ROUNDOVER_SCALE = 0.015;
 
 function smoothstep(min: number, max: number, value: number) {
   if (min === max) {
@@ -121,7 +121,6 @@ function applyContinuousRoundover(
   }
 
   const positions = positionAttribute.array;
-  const roundoverScale = Math.min(MAX_ROUNDOVER_SCALE, BLOB_DEPTH * 0.72);
 
   for (let index = 0; index < positions.length; index += 3) {
     const z = positions[index + 2];
@@ -136,7 +135,7 @@ function applyContinuousRoundover(
       config,
       positions[index + 1],
     );
-    const scale = 1 + roundoverScale * curveWeight * roundoverInfluence;
+    const scale = 1 + ROUNDOVER_SCALE * curveWeight * roundoverInfluence;
 
     positions[index] *= scale;
     positions[index + 1] *= scale;
@@ -237,7 +236,6 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
   const flatY = anchorSign * config.radiusY * config.flatEdgeStrength;
   const flatEdgePoints = 2;
   const contourPoints = Math.max(32, config.pointCount - flatEdgePoints + 2);
-  const curveBias = 0.35 + Math.min(0.35, config.inwardPointDensity * 0.35);
 
   for (let index = 0; index < flatEdgePoints; index += 1) {
     const progress = index / (flatEdgePoints - 1);
@@ -248,7 +246,7 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
   for (let index = 1; index < contourPoints - 1; index += 1) {
     const progress = index / (contourPoints - 1);
     const curvedProgress =
-      progress + (Math.sin(progress * Math.PI * 2) * curveBias) / (Math.PI * 2);
+      progress + Math.sin(progress * Math.PI * 2) / (Math.PI * 2);
     const angle = curvedProgress * Math.PI;
     const inwardBlend = Math.pow(Math.sin(angle), 1.08);
     const { primary, secondary } = sampleBlobNoise(
@@ -321,15 +319,14 @@ export function createLayerModels(
       id: "upper-bottom-wave",
       anchorMode: "top",
       basePosition: [horizontalSpan * 0, verticalSpan * 1, 0.4],
-      blobAmplitude: 0.26,
+      blobAmplitude: 0.46,
       color: palette.layers[2],
-      distortAmount: 0.9,
+      distortAmount: 0.2,
       distortSpeed: 0.22,
       drift: [0.14, 0.1],
       edgeInset: 1,
       flatEdgeStrength: 0,
       index: 3,
-      inwardPointDensity: 1,
       noiseScale: 1,
       pointCount: 96,
       radiusX: widthUnit,
@@ -342,19 +339,18 @@ export function createLayerModels(
       id: "lower-bottom-wave",
       anchorMode: "bottom",
       basePosition: [horizontalSpan * 0, verticalSpan * 1, 0.4],
-      blobAmplitude: 0.26,
+      blobAmplitude: 0.36,
       color: palette.layers[2],
       distortAmount: 0.48,
       distortSpeed: 0.22,
       drift: [0.14, 0.1],
       edgeInset: 0.72,
-      flatEdgeStrength: 0.86,
+      flatEdgeStrength: 0,
       index: 3,
-      inwardPointDensity: 1,
       noiseScale: 1,
       pointCount: 96,
       radiusX: widthUnit,
-      radiusY: heightUnit * 0.25,
+      radiusY: heightUnit * 0.35,
       rotation: 0,
       scale: 0.92,
       seed: 41,
@@ -369,13 +365,12 @@ export function createLayerModels(
       distortSpeed: 0.22,
       drift: [0.14, 0.1],
       edgeInset: 0.72,
-      flatEdgeStrength: 0.86,
+      flatEdgeStrength: 0,
       index: 3,
-      inwardPointDensity: 1,
-      noiseScale: 1,
+      noiseScale: 0.2,
       pointCount: 88,
       radiusX: widthUnit,
-      radiusY: heightUnit * 0.15,
+      radiusY: heightUnit * 0.18,
       rotation: 0,
       scale: 0.92,
       seed: 41,
@@ -386,17 +381,16 @@ export function createLayerModels(
       basePosition: [0, 0, 0.7],
       blobAmplitude: 0.21,
       color: palette.layers[3],
-      distortAmount: 1,
-      distortSpeed: 1,
+      distortAmount: 0.3,
+      distortSpeed: 0.3,
       drift: [0.16, 0.13],
       edgeInset: 1,
       flatEdgeStrength: 1,
       index: 2,
-      inwardPointDensity: 0.5,
       noiseScale: 0.2,
       pointCount: 92,
       radiusX: widthUnit,
-      radiusY: heightUnit * 0.12,
+      radiusY: heightUnit * 0.13,
       rotation: 0,
       scale: 1,
       seed: 29,
@@ -410,10 +404,9 @@ export function createLayerModels(
       distortAmount: 0.16,
       distortSpeed: 0.65,
       drift: [0, 0],
-      edgeInset: 0.76,
+      edgeInset: 1,
       flatEdgeStrength: 1,
       index: 4,
-      inwardPointDensity: 0,
       noiseScale: 0.54,
       pointCount: 2,
       radiusX: widthUnit,
@@ -425,17 +418,16 @@ export function createLayerModels(
     {
       id: "lower-top-wave",
       anchorMode: "bottom",
-      basePosition: [0, 0, 2],
-      blobAmplitude: 0.28,
+      basePosition: [0, 0, 1],
+      blobAmplitude: 0.4,
       color: palette.layers[5],
-      distortAmount: 0,
+      distortAmount: 0.52,
       distortSpeed: 0.29,
       drift: [0.1, 0.1],
       edgeInset: 1,
       flatEdgeStrength: 1,
       index: 5,
-      inwardPointDensity: 0.5,
-      noiseScale: 1.96,
+      noiseScale: 0.3,
       pointCount: 84,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.1,
@@ -455,6 +447,7 @@ export function createLayerModels(
       ...blueprint,
       anchorConstraint,
       deformationSourceAttribute: DEFORMATION_SOURCE_ATTRIBUTE,
+      deformationNoise: new SimplexNoise(blueprint.seed + 211),
       geometry,
       motionOrigin,
       motionNoise: new SimplexNoise(blueprint.seed + 101),
