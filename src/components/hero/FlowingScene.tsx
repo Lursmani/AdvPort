@@ -1,7 +1,6 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useEffect, useState } from "react";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { LavaLampStack } from "@/components/hero/flowing-scene/LavaLampStack";
 

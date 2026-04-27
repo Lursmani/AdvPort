@@ -1,4 +1,3 @@
-import { ContactShadows } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import { useTheme } from "@/providers/ThemeProvider";
@@ -16,9 +15,8 @@ type LavaLampStackProps = {
 
 export function LavaLampStack({ pointer }: LavaLampStackProps) {
   const { theme } = useTheme();
-  const { size, viewport } = useThree();
+  const { viewport } = useThree();
   const palette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
-  const showContactShadows = size.width >= 768;
   const keyLightPosition = useMemo(
     () => [viewport.width * 0.5, viewport.height * 0.5, 3.2] as const,
     [viewport.height, viewport.width],
@@ -27,14 +25,24 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
     () => createLayerModels(viewport.width, viewport.height, palette),
     [palette, viewport.height, viewport.width],
   );
-  const anchoredLayers = useMemo(
-    () => layers.filter((layer) => layer.anchorMode !== "none"),
-    [layers],
-  );
-  const freeLayers = useMemo(
-    () => layers.filter((layer) => layer.anchorMode === "none"),
-    [layers],
-  );
+  const { anchoredLayers, freeLayers } = useMemo(() => {
+    const anchoredLayers: typeof layers = [];
+    const freeLayers: typeof layers = [];
+
+    layers.forEach((layer) => {
+      if (layer.anchorMode === "none") {
+        freeLayers.push(layer);
+        return;
+      }
+
+      anchoredLayers.push(layer);
+    });
+
+    return {
+      anchoredLayers,
+      freeLayers,
+    };
+  }, [layers]);
 
   useEffect(() => {
     return () => {
@@ -75,18 +83,6 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
           ))}
         </group>
       </group>
-      {showContactShadows ? (
-        <ContactShadows
-          blur={1.6}
-          color={palette.shadow}
-          far={3.6}
-          opacity={0.18}
-          position={[0, -viewport.height * 0.35, -1.1]}
-          resolution={128}
-          scale={[viewport.width * 1.35, viewport.height * 0.9]}
-          smooth
-        />
-      ) : null}
     </>
   );
 }

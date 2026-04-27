@@ -306,14 +306,6 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
   } satisfies BuiltLayerGeometry;
 }
 
-function createBlobGeometry(config: LayerBlueprint) {
-  if (config.anchorMode === "none") {
-    return createFreeBlobGeometry(config);
-  }
-
-  return createAnchoredBlobGeometry(config);
-}
-
 export function createLayerModels(
   viewportWidth: number,
   viewportHeight: number,
@@ -331,11 +323,11 @@ export function createLayerModels(
       basePosition: [horizontalSpan * 0, verticalSpan * 1, 0.4],
       blobAmplitude: 0.26,
       color: palette.layers[2],
-      distortAmount: 0.48,
+      distortAmount: 0.9,
       distortSpeed: 0.22,
       drift: [0.14, 0.1],
-      edgeInset: 0.72,
-      flatEdgeStrength: 0.86,
+      edgeInset: 1,
+      flatEdgeStrength: 0,
       index: 3,
       inwardPointDensity: 1,
       noiseScale: 1,
@@ -455,7 +447,9 @@ export function createLayerModels(
 
   return blueprints.map((blueprint): LayerModel => {
     const { anchorConstraint, geometry, motionOrigin } =
-      createBlobGeometry(blueprint);
+      blueprint.anchorMode === "none"
+        ? createFreeBlobGeometry(blueprint)
+        : createAnchoredBlobGeometry(blueprint);
 
     return {
       ...blueprint,

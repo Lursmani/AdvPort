@@ -17,7 +17,7 @@ export type BlobAnchorMode = "none" | "top" | "bottom";
 export type LayerAnchorConstraint = {
   /** Local Y coordinate of the flattened anchored edge after geometry centering. */
   edgeLocalY: number;
-  /** Small tolerance used when pinning edge vertices during interaction. */
+  /** Small tolerance used when pinning edge vertices during runtime deformation. */
   edgeTolerance: number;
 };
 
@@ -55,9 +55,9 @@ export type LayerBlueprint = {
   blobAmplitude: number;
   /** Fill color used by the visible blob material. */
   color: string;
-  /** Distortion strength for the visible material. */
+  /** Ambient contour deformation strength applied at runtime. */
   distortAmount: number;
-  /** Distortion animation speed for the visible material. */
+  /** Ambient contour deformation speed applied at runtime. */
   distortSpeed: number;
   /** Per-axis drift multipliers used for ambient motion. */
   drift: Vec2;
@@ -85,7 +85,7 @@ export type LayerBlueprint = {
   seed: number;
 };
 
-/** Fully built layer model with geometry and motion noise attached. */
+/** Fully built layer model with geometry and runtime motion sources attached. */
 export type LayerModel = LayerBlueprint & {
   /** Explicit boundary metadata for top- and bottom-anchored blobs. */
   anchorConstraint?: LayerAnchorConstraint;
