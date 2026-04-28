@@ -164,12 +164,14 @@ function HeroBanner() {
       className="relative isolate min-h-svh overflow-hidden"
     >
       <div className="hero-backdrop absolute inset-0" />
-      <div className="hero-vignette absolute inset-0" />
+      {/* <div className="hero-vignette absolute inset-0" /> */}
       {!prefersReducedMotion ? (
         <FlowingScene active={isInView} pointer={pointer} />
       ) : null}
 
-      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pb-12 pt-5 sm:px-10 lg:px-12">
+      <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-40 z-10" />
+
+      <div className="relative z-20 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pb-12 pt-5 sm:px-10 lg:px-12">
         <Header />
         <div className="flex flex-1 items-end pb-8 pt-16 sm:pb-14 lg:pb-20">
           <div className="max-w-3xl">

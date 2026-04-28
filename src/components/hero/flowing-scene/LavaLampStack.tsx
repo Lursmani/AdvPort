@@ -2,7 +2,6 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import { useTheme } from "@/providers/ThemeProvider";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
-import { BackdropPlane } from "./BackdropPlane";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
 import { DARK_PALETTE, LIGHT_PALETTE } from "./palette";
@@ -60,7 +59,6 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
         intensity={6.45}
         position={keyLightPosition}
       />
-      <BackdropPlane color={palette.background} />
       <group position={[0, SCENE_GROUP_Y, 0]}>
         <group rotation={[0.06, -0.12, 0]}>
           {freeLayers.map((layer) => (

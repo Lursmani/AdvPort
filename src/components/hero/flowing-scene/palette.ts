@@ -2,16 +2,16 @@ import { LayerPalette } from "./types";
 
 export const LIGHT_PALETTE: LayerPalette = {
   background: "#faedcd",
-  light: "#F9E79F",
-  mid: "#FFC300",
-  dark: "#2a9d8f",
-  extraDark: "#669bbc",
+  heroOne: "#F9E79F",
+  heroTwo: "#FFC300",
+  heroThree: "#2a9d8f",
+  heroFour: "#669bbc",
 };
 
 export const DARK_PALETTE: LayerPalette = {
   background: "#001219",
-  light: "#003049",
-  mid: "#22333b",
-  dark: "#005f73",
-  extraDark: "#264653",
+  heroOne: "#003049",
+  heroTwo: "#22333b",
+  heroThree: "#005f73",
+  heroFour: "#264653",
 };

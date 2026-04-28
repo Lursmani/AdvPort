@@ -29,16 +29,11 @@ export type NoiseField = {
 
 /** Color tokens used to build the layered hero palette. */
 export type LayerPalette = {
-  /** Background tone for the overall scene. */
   background: string;
-  /** Light tone for highlights and accents. */
-  light: string;
-  /** Mid-tone accent used in gradients. */
-  mid: string;
-  /** Dark tone for shadows and depth. */
-  dark: string;
-  /** Extra dark tone for deep shadows and accents. */
-  extraDark: string;
+  heroOne: string;
+  heroTwo: string;
+  heroThree: string;
+  heroFour: string;
 };
 
 /** Static configuration for a single blob layer. */
