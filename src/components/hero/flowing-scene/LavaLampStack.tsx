@@ -56,8 +56,8 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
     <>
       <ambientLight intensity={0.3} />
       <directionalLight
-        color="#f6f5ee"
-        intensity={2.45}
+        color="#ffffff"
+        intensity={6.45}
         position={keyLightPosition}
       />
       <BackdropPlane color={palette.background} />
