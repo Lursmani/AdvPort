@@ -18,7 +18,7 @@ function Header() {
         href="#top"
         className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/88 transition duration-300 hover:text-foreground"
       >
-        AdvPort
+        DL
       </Link>
       <nav className="hero-glass hidden items-center gap-6 rounded-full px-5 py-3 md:flex">
         {navLinks.map((link) => (
