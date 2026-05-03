@@ -16,6 +16,7 @@ type BuiltLayerGeometry = {
 
 const BLOB_DEPTH = 0.015;
 const EXTRUDE_CURVE_SEGMENTS = 0;
+const MIN_LAYER_POINT_COUNT = 32;
 const ROUNDOVER_SEGMENTS = 6;
 const ROUNDOVER_SCALE = 0.015;
 
@@ -192,7 +193,10 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
   const flatWidth = config.radiusX * config.edgeInset;
   const flatY = config.radiusY * config.flatEdgeStrength;
   const flatEdgePoints = 2;
-  const contourPoints = Math.max(32, config.pointCount - flatEdgePoints + 2);
+  const contourPoints = Math.max(
+    MIN_LAYER_POINT_COUNT,
+    config.pointCount - flatEdgePoints + 2,
+  );
 
   for (let index = 0; index < flatEdgePoints; index += 1) {
     const progress = index / (flatEdgePoints - 1);
@@ -271,7 +275,7 @@ export function createLayerModels(
       flatEdgeStrength: 1,
       index: 0,
       noiseScale: 0.54,
-      pointCount: 2,
+      pointCount: MIN_LAYER_POINT_COUNT,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.1,
       scale: 1,

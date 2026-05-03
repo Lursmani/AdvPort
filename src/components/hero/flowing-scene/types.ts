@@ -56,7 +56,7 @@ export type LayerBlueprint = {
   index: number;
   /** Frequency multiplier for the procedural noise field. */
   noiseScale: number;
-  /** Number of points used to build the blob contour. */
+  /** Number of points used to build the blob contour, clamped to a minimum of 32. */
   pointCount: number;
   /** Horizontal radius of the blob geometry. */
   radiusX: number;
