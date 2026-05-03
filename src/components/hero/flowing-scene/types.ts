@@ -10,10 +10,7 @@ export type Vec2 = [number, number];
 /** Three-dimensional coordinates used for positions and offsets. */
 export type Vec3 = [number, number, number];
 
-/** Controls whether a blob is free-form or biased toward its top or bottom edge. */
-export type BlobAnchorMode = "none" | "top" | "bottom";
-
-/** Runtime anchor metadata used to keep an anchored blob edge pinned to the scene bounds. */
+/** Runtime anchor metadata used to keep a blob's top edge pinned to the scene bounds. */
 export type LayerAnchorConstraint = {
   /** Local Y coordinate of the flattened anchored edge after geometry centering. */
   edgeLocalY: number;
@@ -29,7 +26,6 @@ export type NoiseField = {
 
 /** Color tokens used to build the layered hero palette. */
 export type LayerPalette = {
-  background: string;
   heroOne: string;
   heroTwo: string;
   heroThree: string;
@@ -40,10 +36,8 @@ export type LayerPalette = {
 export type LayerBlueprint = {
   /** Human-readable id for quickly identifying the layer in code and debugging. */
   id: string;
-  /** Shape mode for the blob contour. */
-  anchorMode: BlobAnchorMode;
-  /** Default 3D position before motion offsets are applied. */
-  basePosition: Vec3;
+  /** Default Z position before motion offsets are applied. */
+  depth: number;
   /** Strength of the procedural bulge added to the blob contour. */
   blobAmplitude: number;
   /** Fill color used by the visible blob material. */
@@ -52,8 +46,8 @@ export type LayerBlueprint = {
   distortAmount: number;
   /** Ambient contour deformation speed applied at runtime. */
   distortSpeed: number;
-  /** Per-axis drift multipliers used for ambient motion. */
-  drift: Vec2;
+  /** Horizontal drift multiplier used for ambient motion. */
+  driftX: number;
   /** Horizontal inset for the flattened edge of anchored blobs. */
   edgeInset: number;
   /** How flat the anchored edge should be. */
@@ -68,8 +62,6 @@ export type LayerBlueprint = {
   radiusX: number;
   /** Vertical radius of the blob geometry. */
   radiusY: number;
-  /** Base rotation applied to free-form layers. */
-  rotation: number;
   /** Base scale applied to the layer group. */
   scale: number;
   /** Seed used to keep the shape and motion deterministic. */
@@ -78,15 +70,15 @@ export type LayerBlueprint = {
 
 /** Fully built layer model with geometry and runtime motion sources attached. */
 export type LayerModel = LayerBlueprint & {
-  /** Explicit boundary metadata for top- and bottom-anchored blobs. */
-  anchorConstraint?: LayerAnchorConstraint;
+  /** Explicit boundary metadata for the pinned top edge. */
+  anchorConstraint: LayerAnchorConstraint;
   /** Geometry attribute name containing the shared contour-space deformation basis. */
   deformationSourceAttribute: LayerGeometryAttributeName;
   /** Noise source used to drive ambient contour deformation over time. */
   deformationNoise: NoiseField;
   /** Precomputed shape geometry for the blob mesh. */
   geometry: BufferGeometry;
-  /** Local pivot used for anchored rotation and pulse scaling around the flat edge. */
+  /** Local pivot used for subtle motion around the pinned edge. */
   motionOrigin: Vec3;
   /** Noise source used to drive layer motion over time. */
   motionNoise: NoiseField;

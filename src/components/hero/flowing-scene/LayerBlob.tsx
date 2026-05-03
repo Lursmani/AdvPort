@@ -30,34 +30,13 @@ function getAnchoredPositionY(
   sceneOffsetY: number,
   config: LayerModel,
 ) {
-  const anchorConstraint = config.anchorConstraint;
+  const boundaryY = viewportHeight * 0.5 - sceneOffsetY;
 
-  if (!anchorConstraint || config.anchorMode === "none") {
-    return config.basePosition[1];
-  }
-
-  const boundaryY =
-    config.anchorMode === "top"
-      ? viewportHeight * 0.5 - sceneOffsetY
-      : -viewportHeight * 0.5 - sceneOffsetY;
-
-  return boundaryY - anchorConstraint.edgeLocalY;
+  return boundaryY - config.anchorConstraint.edgeLocalY;
 }
 
-function getConstrainedDirectionY(config: LayerModel, directionY: number) {
-  if (!config.anchorConstraint) {
-    return directionY;
-  }
-
-  if (config.anchorMode === "top") {
-    return Math.min(directionY, 0);
-  }
-
-  if (config.anchorMode === "bottom") {
-    return Math.max(directionY, 0);
-  }
-
-  return directionY;
+function getConstrainedDirectionY(directionY: number) {
+  return Math.min(directionY, 0);
 }
 
 function getConstrainedVertexTargetY(
@@ -65,11 +44,7 @@ function getConstrainedVertexTargetY(
   baseY: number,
   proposedY: number,
 ) {
-  const anchorConstraint = config.anchorConstraint;
-
-  if (!anchorConstraint) {
-    return proposedY;
-  }
+  const { anchorConstraint } = config;
 
   if (
     Math.abs(baseY - anchorConstraint.edgeLocalY) <=
@@ -78,23 +53,11 @@ function getConstrainedVertexTargetY(
     return baseY;
   }
 
-  if (config.anchorMode === "top") {
-    return Math.min(baseY, proposedY);
-  }
-
-  if (config.anchorMode === "bottom") {
-    return Math.max(baseY, proposedY);
-  }
-
-  return proposedY;
+  return Math.min(baseY, proposedY);
 }
 
 function getAmbientAnchorAttenuation(config: LayerModel, sourceY: number) {
-  const anchorConstraint = config.anchorConstraint;
-
-  if (!anchorConstraint) {
-    return 1;
-  }
+  const { anchorConstraint } = config;
 
   const distanceToEdge = Math.abs(sourceY - anchorConstraint.edgeLocalY);
   const fadeBand = Math.max(
@@ -114,11 +77,10 @@ function createInteractionField(
   localPointerX: number,
   localPointerY: number,
   intensity: number,
-  focusScale: number,
-  anchoredFocusScale: number,
+  focusXScale: number,
+  focusYScale: number,
   radiusScale: number,
-  anchoredStrengthScale: number,
-  freeStrengthScale: number,
+  strengthScale: number,
 ) {
   if (intensity <= 0) {
     return null;
@@ -130,21 +92,16 @@ function createInteractionField(
     return null;
   }
 
-  const isAnchored = config.anchorMode !== "none";
   const directionX = localPointerX / pointerDistance;
-  const rawDirectionY = localPointerY / pointerDistance;
-  const directionY = getConstrainedDirectionY(config, rawDirectionY);
-  const focusYScale = isAnchored ? anchoredFocusScale : focusScale;
+  const directionY = getConstrainedDirectionY(localPointerY / pointerDistance);
 
   return {
     bumpRadius: Math.max(config.radiusX, config.radiusY) * radiusScale,
     bumpStrength:
-      Math.min(config.radiusX, config.radiusY) *
-      (isAnchored ? anchoredStrengthScale : freeStrengthScale) *
-      intensity,
+      Math.min(config.radiusX, config.radiusY) * strengthScale * intensity,
     directionX,
     directionY,
-    focusX: directionX * config.radiusX * focusScale,
+    focusX: directionX * config.radiusX * focusXScale,
     focusY: directionY * config.radiusY * focusYScale,
   } satisfies InteractionField;
 }
@@ -199,7 +156,6 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
     const basePositions = basePositionsRef.current;
     const deformationSources = deformationSourcesRef.current;
     const geometry = config.geometry;
-    const isAnchored = config.anchorMode !== "none";
 
     if (
       !positionGroup ||
@@ -233,17 +189,13 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
     const driftTime = elapsed * 0.08;
     const driftX =
       config.motionNoise.noise2D(driftTime + config.seed * 0.11, config.seed) *
-      config.drift[0];
-    const driftY =
-      config.motionNoise.noise2D(config.seed * 0.19, driftTime + config.seed) *
-      config.drift[1];
-    const resolvedDriftX = isAnchored ? driftX * 0.72 : driftX;
-    const resolvedDriftY = isAnchored ? 0 : driftY;
+      config.driftX *
+      0.72;
     const floatZ =
       config.motionNoise.noise2D(
         config.seed * 0.07 + driftTime * 0.8,
         config.seed * 0.31,
-      ) * (isAnchored ? 0.08 : 0.12);
+      ) * 0.08;
     const rotationFloat =
       config.motionNoise.noise2D(
         config.seed * 0.13,
@@ -257,35 +209,31 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
 
     positionGroup.position.x = MathUtils.damp(
       positionGroup.position.x,
-      config.basePosition[0] + resolvedDriftX,
+      driftX,
       3.6,
       delta,
     );
-    const nextPositionY = MathUtils.damp(
-      positionGroup.position.y,
-      config.basePosition[1] + resolvedDriftY,
-      3.6,
-      delta,
+    positionGroup.position.y = getAnchoredPositionY(
+      viewport.height,
+      sceneOffsetY,
+      config,
     );
-    positionGroup.position.y = isAnchored
-      ? getAnchoredPositionY(viewport.height, sceneOffsetY, config)
-      : nextPositionY;
     positionGroup.position.z = MathUtils.damp(
       positionGroup.position.z,
-      config.basePosition[2] + floatZ,
+      config.depth + floatZ,
       3.8,
       delta,
     );
     motionGroup.rotation.z = MathUtils.damp(
       motionGroup.rotation.z,
-      isAnchored ? rotationFloat * 0.16 : config.rotation + rotationFloat,
+      rotationFloat * 0.16,
       3.4,
       delta,
     );
 
     const nextScale = MathUtils.damp(
       motionGroup.scale.x,
-      config.scale * (1 + scaleFloat * (isAnchored ? 0.3 : 1)),
+      config.scale * (1 + scaleFloat * 0.3),
       4.2,
       delta,
     );
@@ -335,7 +283,6 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       0.76,
       0.42,
       0.055,
-      0.07,
     );
     const clickField = createInteractionField(
       config,
@@ -346,7 +293,6 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       0.88,
       0.58,
       0.042,
-      0.05,
     );
     const hasActiveField = hoverField !== null || clickField !== null;
     const ambientAmplitude =
@@ -475,11 +421,9 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
   });
 
   const initialPosition = [
-    config.basePosition[0],
-    config.anchorConstraint
-      ? getAnchoredPositionY(viewport.height, sceneOffsetY, config)
-      : config.basePosition[1],
-    config.basePosition[2],
+    0,
+    getAnchoredPositionY(viewport.height, sceneOffsetY, config),
+    config.depth,
   ] as const;
 
   return (

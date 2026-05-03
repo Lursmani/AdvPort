@@ -21,27 +21,9 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
     [viewport.height, viewport.width],
   );
   const layers = useMemo(
-    () => createLayerModels(viewport.width, viewport.height, palette),
-    [palette, viewport.height, viewport.width],
+    () => createLayerModels(viewport.width, palette),
+    [palette, viewport.width],
   );
-  const { anchoredLayers, freeLayers } = useMemo(() => {
-    const anchoredLayers: typeof layers = [];
-    const freeLayers: typeof layers = [];
-
-    layers.forEach((layer) => {
-      if (layer.anchorMode === "none") {
-        freeLayers.push(layer);
-        return;
-      }
-
-      anchoredLayers.push(layer);
-    });
-
-    return {
-      anchoredLayers,
-      freeLayers,
-    };
-  }, [layers]);
 
   useEffect(() => {
     return () => {
@@ -60,26 +42,14 @@ export function LavaLampStack({ pointer }: LavaLampStackProps) {
         position={keyLightPosition}
       />
       <group position={[0, SCENE_GROUP_Y, 0]}>
-        <group rotation={[0.06, -0.12, 0]}>
-          {freeLayers.map((layer) => (
-            <LayerBlob
-              key={layer.id}
-              config={layer}
-              pointer={pointer}
-              sceneOffsetY={SCENE_GROUP_Y}
-            />
-          ))}
-        </group>
-        <group>
-          {anchoredLayers.map((layer) => (
-            <LayerBlob
-              key={layer.id}
-              config={layer}
-              pointer={pointer}
-              sceneOffsetY={SCENE_GROUP_Y}
-            />
-          ))}
-        </group>
+        {layers.map((layer) => (
+          <LayerBlob
+            key={layer.id}
+            config={layer}
+            pointer={pointer}
+            sceneOffsetY={SCENE_GROUP_Y}
+          />
+        ))}
       </group>
     </>
   );

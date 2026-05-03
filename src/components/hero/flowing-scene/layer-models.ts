@@ -9,7 +9,7 @@ import type {
 } from "./types";
 
 type BuiltLayerGeometry = {
-  anchorConstraint?: LayerAnchorConstraint;
+  anchorConstraint: LayerAnchorConstraint;
   geometry: ExtrudeGeometry;
   motionOrigin: [number, number, number];
 };
@@ -30,14 +30,7 @@ function smoothstep(min: number, max: number, value: number) {
 }
 
 function getRoundoverInfluence(config: LayerBlueprint, y: number) {
-  if (config.anchorMode === "none") {
-    return 1;
-  }
-
-  const anchorY =
-    config.anchorMode === "top"
-      ? config.radiusY * config.flatEdgeStrength
-      : -config.radiusY * config.flatEdgeStrength;
+  const anchorY = config.radiusY * config.flatEdgeStrength;
 
   return smoothstep(
     config.radiusY * 0.02,
@@ -193,47 +186,11 @@ function createBlobShape(points: Vector2[]) {
   return shape;
 }
 
-function createFreeBlobGeometry(config: LayerBlueprint) {
-  const noise = new SimplexNoise(config.seed);
-  const points: Vector2[] = [];
-
-  for (let index = 0; index < config.pointCount; index += 1) {
-    const progress = index / config.pointCount;
-    const angle = progress * Math.PI * 2;
-    const sampleX = Math.cos(angle);
-    const sampleY = Math.sin(angle);
-    const { primary, secondary } = sampleBlobNoise(
-      noise,
-      config,
-      sampleX,
-      sampleY,
-    );
-    const lobe = Math.sin(angle * 3 + config.seed * 0.37) * 0.05;
-    const radial = 1 + primary * config.blobAmplitude + secondary * 0.11 + lobe;
-    points.push(
-      new Vector2(
-        Math.cos(angle) * config.radiusX * radial,
-        Math.sin(angle) * config.radiusY * radial,
-      ),
-    );
-  }
-
-  const geometry = createExtrudedGeometry(createBlobShape(points), config);
-  centerGeometryWithDeformationSource(geometry);
-
-  return {
-    geometry,
-    motionOrigin: [0, 0, 0],
-    anchorConstraint: undefined,
-  } satisfies BuiltLayerGeometry;
-}
-
 function createAnchoredBlobGeometry(config: LayerBlueprint) {
   const noise = new SimplexNoise(config.seed);
   const points: Vector2[] = [];
-  const anchorSign = config.anchorMode === "top" ? 1 : -1;
   const flatWidth = config.radiusX * config.edgeInset;
-  const flatY = anchorSign * config.radiusY * config.flatEdgeStrength;
+  const flatY = config.radiusY * config.flatEdgeStrength;
   const flatEdgePoints = 2;
   const contourPoints = Math.max(32, config.pointCount - flatEdgePoints + 2);
 
@@ -253,7 +210,7 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
       noise,
       config,
       Math.cos(angle),
-      -anchorSign * Math.sin(angle),
+      -Math.sin(angle),
     );
     const width =
       flatWidth +
@@ -263,8 +220,7 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
     const depth = config.radiusY * (config.flatEdgeStrength + 0.98);
     const y =
       flatY -
-      anchorSign *
-        inwardBlend *
+      inwardBlend *
         depth *
         (1 +
           primary * config.blobAmplitude * 0.82 +
@@ -276,23 +232,14 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
 
   const geometry = createExtrudedGeometry(createBlobShape(points), config);
   const centeredGeometry = centerGeometryWithDeformationSource(geometry);
-  const bounds = centeredGeometry?.bounds;
-
-  if (!bounds) {
-    return {
-      geometry,
-      motionOrigin: [0, 0, 0],
-    } satisfies BuiltLayerGeometry;
-  }
-
-  const { centerX, centerY } = centeredGeometry;
+  const centerX = centeredGeometry?.centerX ?? 0;
+  const centerY = centeredGeometry?.centerY ?? 0;
 
   // The geometry stays centered for rendering, while the anchored edge Y is
   // preserved explicitly so runtime motion can pin that flat edge to the scene.
-  const anchoredEdgeLocalY =
-    config.anchorMode === "top"
-      ? bounds.max.y - centerY
-      : bounds.min.y - centerY;
+  const anchoredEdgeLocalY = centeredGeometry?.bounds
+    ? centeredGeometry.bounds.max.y - centerY
+    : config.radiusY;
 
   return {
     anchorConstraint: {
@@ -306,24 +253,20 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
 
 export function createLayerModels(
   viewportWidth: number,
-  viewportHeight: number,
   palette: LayerPalette,
 ) {
   const widthUnit = viewportWidth * 0.8;
 
   const heightUnit = 5;
-  const horizontalSpan = viewportWidth * 0.34;
-  const verticalSpan = viewportHeight * 0.32;
   const blueprints: LayerBlueprint[] = [
     {
       id: "wave-1",
-      anchorMode: "top",
-      basePosition: [0, 0, 1],
+      depth: 1,
       blobAmplitude: 0.1,
       color: palette.heroOne,
       distortAmount: 0.16,
       distortSpeed: 0.65,
-      drift: [0, 0],
+      driftX: 0,
       edgeInset: 1,
       flatEdgeStrength: 1,
       index: 0,
@@ -331,19 +274,17 @@ export function createLayerModels(
       pointCount: 2,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.1,
-      rotation: 0,
       scale: 1,
       seed: 53,
     },
     {
       id: "wave-2",
-      anchorMode: "top",
-      basePosition: [0, 0, 0.7],
+      depth: 0.7,
       blobAmplitude: 0.26,
       color: palette.heroTwo,
       distortAmount: 0.48,
       distortSpeed: 0.22,
-      drift: [0.14, 0.1],
+      driftX: 0.14,
       edgeInset: 0.72,
       flatEdgeStrength: 0,
       index: 1,
@@ -351,19 +292,17 @@ export function createLayerModels(
       pointCount: 88,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.18,
-      rotation: 0,
       scale: 0.92,
       seed: 41,
     },
     {
       id: "wave-3",
-      anchorMode: "top",
-      basePosition: [horizontalSpan * 0, verticalSpan * 1, 0.4],
+      depth: 0.4,
       blobAmplitude: 0.46,
       color: palette.heroThree,
       distortAmount: 0.2,
       distortSpeed: 0.22,
-      drift: [0.14, 0.1],
+      driftX: 0.14,
       edgeInset: 1,
       flatEdgeStrength: 0,
       index: 2,
@@ -371,20 +310,18 @@ export function createLayerModels(
       pointCount: 96,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.25,
-      rotation: 0,
       scale: 0.92,
       seed: 41,
     },
 
     {
       id: "wave-4",
-      anchorMode: "top",
-      basePosition: [0, 0, 0],
+      depth: 0,
       blobAmplitude: 0.26,
       color: palette.heroFour,
       distortAmount: 0.35,
       distortSpeed: 0.22,
-      drift: [0.14, 0.1],
+      driftX: 0.14,
       edgeInset: 0.85,
       flatEdgeStrength: 0,
       index: 3,
@@ -392,7 +329,6 @@ export function createLayerModels(
       pointCount: 88,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.38,
-      rotation: 0,
       scale: 0.92,
       seed: 41,
     },
@@ -400,9 +336,7 @@ export function createLayerModels(
 
   return blueprints.map((blueprint): LayerModel => {
     const { anchorConstraint, geometry, motionOrigin } =
-      blueprint.anchorMode === "none"
-        ? createFreeBlobGeometry(blueprint)
-        : createAnchoredBlobGeometry(blueprint);
+      createAnchoredBlobGeometry(blueprint);
 
     return {
       ...blueprint,

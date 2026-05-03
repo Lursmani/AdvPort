@@ -164,7 +164,6 @@ function HeroBanner() {
       className="relative isolate min-h-svh overflow-hidden"
     >
       <div className="hero-backdrop absolute inset-0" />
-      {/* <div className="hero-vignette absolute inset-0" /> */}
       {!prefersReducedMotion ? (
         <FlowingScene active={isInView} pointer={pointer} />
       ) : null}
