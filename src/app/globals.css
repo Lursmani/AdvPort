@@ -5,8 +5,13 @@
   --background: #000000;
   --foreground: #ffffff;
   --primary: #000000;
-  --gradient-start: #2e1065;
-  --gradient-end: #6d28d9;
+  --gradient-start: #005f73;
+  --gradient-end: #001219;
+  --hero-background: #001219;
+  --hero-one: #003049;
+  --hero-two: #22333b;
+  --hero-three: #005f73;
+  --hero-four: #264653;
 }
 
 @theme inline {
@@ -24,8 +29,13 @@ html[data-theme="light"] {
   --background: #ffffff;
   --foreground: #000000;
   --primary: #ffffff;
-  --gradient-start: #ddd6fe;
-  --gradient-end: #a78bfa;
+  --gradient-start: #f9e79f;
+  --gradient-end: #faedcd;
+  --hero-background: #faedcd;
+  --hero-one: #f9e79f;
+  --hero-two: #ffc300;
+  --hero-three: #2a9d8f;
+  --hero-four: #9e73b2;
 }
 
 html[data-theme="dark"] {
@@ -40,4 +50,45 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.hero-backdrop {
+  background: linear-gradient(
+    180deg,
+    var(--gradient-start) 0%,
+    var(--gradient-end) 100%
+  );
+}
+
+.hero-vignette {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--background) 12%, transparent) 0%,
+      transparent 22%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 54%,
+      color-mix(in oklab, var(--background) 68%, transparent) 100%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 42%,
+      color-mix(in oklab, var(--background) 54%, transparent) 100%
+    );
+}
+
+.hero-bottom-fade {
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, var(--background) 100%);
+}
+
+.hero-glass {
+  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  background: color-mix(in oklab, var(--background) 76%, transparent);
+  box-shadow: 0 24px 70px
+    color-mix(in oklab, var(--background) 72%, transparent);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 }
