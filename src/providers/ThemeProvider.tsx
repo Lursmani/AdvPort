@@ -31,6 +31,16 @@ function readStoredTheme(): Theme | undefined {
   }
 }
 
+function getPreferredTheme(): Theme {
+  return window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : DEFAULT_THEME;
+}
+
+function resolveStoredThemeFallback(): Theme {
+  return readStoredTheme() ?? getPreferredTheme();
+}
+
 function getClientTheme(): Theme {
   const documentTheme = parseTheme(document.documentElement.dataset.theme);
 
@@ -44,9 +54,7 @@ function getClientTheme(): Theme {
     return storedTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : DEFAULT_THEME;
+  return getPreferredTheme();
 }
 
 function persistTheme(theme: Theme) {
@@ -69,15 +77,12 @@ function subscribeToTheme(listener: () => void) {
   themeListeners.add(listener);
 
   const handleStorage = (event: StorageEvent) => {
-    if (event.key !== THEME_STORAGE_KEY) {
+    if (event.key !== null && event.key !== THEME_STORAGE_KEY) {
       return;
     }
 
-    const nextTheme = parseTheme(event.newValue);
-
-    if (!nextTheme) {
-      return;
-    }
+    const nextTheme =
+      parseTheme(event.newValue) ?? resolveStoredThemeFallback();
 
     document.documentElement.dataset.theme = nextTheme;
     listener();
