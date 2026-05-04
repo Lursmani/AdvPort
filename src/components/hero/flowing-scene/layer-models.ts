@@ -187,7 +187,9 @@ function createBlobShape(points: Vector2[]) {
   return shape;
 }
 
-function createAnchoredBlobGeometry(config: LayerBlueprint) {
+function createAnchoredBlobGeometry(
+  config: LayerBlueprint,
+): BuiltLayerGeometry {
   const noise = new SimplexNoise(config.seed);
   const points: Vector2[] = [];
   const flatWidth = config.radiusX * config.edgeInset;
@@ -252,7 +254,7 @@ function createAnchoredBlobGeometry(config: LayerBlueprint) {
     },
     geometry,
     motionOrigin: [-centerX, anchoredEdgeLocalY, 0],
-  } satisfies BuiltLayerGeometry;
+  };
 }
 
 export function createLayerModels(

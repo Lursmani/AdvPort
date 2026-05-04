@@ -31,9 +31,44 @@ function Header() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const currentIconRef = useRef<HTMLSpanElement>(null);
   const previousIconRef = useRef<HTMLSpanElement>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
   const [iconTransition, setIconTransition] = useState<ThemeTransition | null>(
     null,
   );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const updateMotionPreference = () => {
+      const reduceMotion = mediaQuery.matches;
+
+      setPrefersReducedMotion(reduceMotion);
+
+      if (reduceMotion) {
+        setIconTransition(null);
+      }
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", updateMotionPreference);
+
+      return () => {
+        mediaQuery.removeEventListener("change", updateMotionPreference);
+      };
+    }
+
+    mediaQuery.addListener(updateMotionPreference);
+
+    return () => {
+      mediaQuery.removeListener(updateMotionPreference);
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -42,6 +77,10 @@ function Header() {
       !currentIconRef.current ||
       !previousIconRef.current
     ) {
+      return;
+    }
+
+    if (prefersReducedMotion) {
       return;
     }
 
@@ -73,7 +112,7 @@ function Header() {
     return () => {
       timeline.kill();
     };
-  }, [iconTransition]);
+  }, [iconTransition, prefersReducedMotion]);
 
   const visibleTheme = iconTransition?.incoming ?? theme;
 
@@ -83,7 +122,10 @@ function Header() {
   const handleToggleTheme = () => {
     const nextTheme = visibleTheme === "dark" ? "light" : "dark";
 
-    setIconTransition({ outgoing: visibleTheme, incoming: nextTheme });
+    if (!prefersReducedMotion) {
+      setIconTransition({ outgoing: visibleTheme, incoming: nextTheme });
+    }
+
     toggleTheme();
   };
 

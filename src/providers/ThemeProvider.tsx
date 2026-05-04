@@ -10,7 +10,6 @@ import {
 import {
   DEFAULT_THEME,
   parseTheme,
-  THEME_COOKIE_MAX_AGE,
   THEME_STORAGE_KEY,
   type Theme,
 } from "@/theme";
@@ -24,6 +23,14 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const themeListeners = new Set<() => void>();
 
+function readStoredTheme(): Theme | undefined {
+  try {
+    return parseTheme(window.localStorage.getItem(THEME_STORAGE_KEY));
+  } catch {
+    return undefined;
+  }
+}
+
 function getClientTheme(): Theme {
   const documentTheme = parseTheme(document.documentElement.dataset.theme);
 
@@ -31,9 +38,7 @@ function getClientTheme(): Theme {
     return documentTheme;
   }
 
-  const storedTheme = parseTheme(
-    window.localStorage.getItem(THEME_STORAGE_KEY),
-  );
+  const storedTheme = readStoredTheme();
 
   if (storedTheme) {
     return storedTheme;
@@ -46,8 +51,12 @@ function getClientTheme(): Theme {
 
 function persistTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
-  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  document.cookie = `${THEME_STORAGE_KEY}=${theme}; path=/; max-age=${THEME_COOKIE_MAX_AGE}; SameSite=Lax`;
+
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Ignore storage failures and still apply the theme to the document.
+  }
 }
 
 function notifyThemeListeners() {
@@ -84,23 +93,18 @@ function subscribeToTheme(listener: () => void) {
 
 type ThemeProviderProps = {
   children: ReactNode;
-  initialTheme?: Theme;
 };
 
-function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
+function ThemeProvider({ children }: ThemeProviderProps) {
   const theme = useSyncExternalStore(
     subscribeToTheme,
     getClientTheme,
-    () => initialTheme ?? DEFAULT_THEME,
+    () => DEFAULT_THEME,
   );
 
   useEffect(() => {
-    if (!initialTheme && theme !== getClientTheme()) {
-      return;
-    }
-
-    persistTheme(theme);
-  }, [initialTheme, theme]);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   const setTheme = (nextTheme: Theme) => {
     persistTheme(nextTheme);
