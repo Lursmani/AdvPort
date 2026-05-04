@@ -1,71 +1,57 @@
 "use client";
 
+import { useSyncExternalStore, type ReactNode } from "react";
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+  ThemeProvider as NextThemesProvider,
+  useTheme as useNextTheme,
+} from "next-themes";
 
 export type Theme = "light" | "dark";
+
+type ThemeProviderProps = {
+  children: ReactNode;
+};
 
 type ThemeContextValue = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  mounted: boolean;
 };
 
-const DEFAULT_THEME: Theme = "dark";
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-
-function getStoredTheme(): Theme {
-  const storedTheme = window.localStorage.getItem("theme");
-
-  if (storedTheme === "light" || storedTheme === "dark") {
-    return storedTheme;
-  }
-
-  return document.documentElement.dataset.theme === "light"
-    ? "light"
-    : DEFAULT_THEME;
+function noopSubscribe() {
+  return () => {};
 }
 
-function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") {
-      return DEFAULT_THEME;
-    }
-
-    return getStoredTheme();
-  });
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  const value = {
-    theme,
-    setTheme,
-    toggleTheme: () =>
-      setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark")),
-  };
-
+function ThemeProvider({ children }: ThemeProviderProps) {
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <NextThemesProvider
+      attribute="data-theme"
+      defaultTheme="system"
+      enableSystem
+      themes={["light", "dark"]}
+    >
+      {children}
+    </NextThemesProvider>
   );
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext);
+export function useTheme(): ThemeContextValue {
+  const { resolvedTheme, setTheme } = useNextTheme();
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
+  const theme: Theme = resolvedTheme === "light" ? "light" : "dark";
 
-  return context;
+  return {
+    theme,
+    setTheme: (nextTheme) => setTheme(nextTheme),
+    toggleTheme: () => setTheme(theme === "dark" ? "light" : "dark"),
+    mounted,
+  };
 }
 
 export default ThemeProvider;

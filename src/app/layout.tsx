@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import ThemeProvider from "@/providers/ThemeProvider";
 import "./globals.css";
 
@@ -31,9 +30,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Script id="theme-bootstrap" strategy="beforeInteractive">
-          {`(function(){try{var stored=localStorage.getItem('theme');var theme=stored==='light'||stored==='dark'?stored:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.dataset.theme=theme;}catch(error){document.documentElement.dataset.theme='dark';}})();`}
-        </Script>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

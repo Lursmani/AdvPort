@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type MutableRefObject,
   type PointerEvent,
 } from "react";
@@ -13,6 +14,10 @@ import {
 const FlowingScene = dynamic(() => import("@/components/hero/FlowingScene"), {
   ssr: false,
 });
+
+function subscribeToBrowserCapability() {
+  return () => {};
+}
 
 export type PointerState = {
   active: boolean;
@@ -37,17 +42,12 @@ function HeroBanner() {
     x: 0,
     y: 0,
   });
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
-  const [isInView, setIsInView] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      typeof IntersectionObserver === "undefined",
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const supportsIntersectionObserver = useSyncExternalStore(
+    subscribeToBrowserCapability,
+    () => typeof IntersectionObserver !== "undefined",
+    () => false,
   );
 
   useEffect(() => {
@@ -55,6 +55,8 @@ function HeroBanner() {
     const updateMotionPreference = () => {
       setPrefersReducedMotion(mediaQuery.matches);
     };
+
+    updateMotionPreference();
 
     if (typeof mediaQuery.addEventListener === "function") {
       mediaQuery.addEventListener("change", updateMotionPreference);
@@ -72,7 +74,7 @@ function HeroBanner() {
   }, []);
 
   useEffect(() => {
-    if (!sectionRef.current || typeof IntersectionObserver === "undefined") {
+    if (!supportsIntersectionObserver || !sectionRef.current) {
       return;
     }
 
@@ -90,7 +92,9 @@ function HeroBanner() {
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [supportsIntersectionObserver]);
+
+  const sceneActive = supportsIntersectionObserver ? isInView : true;
 
   const getPointerPosition = (event: PointerEvent<HTMLElement>) => {
     if (!sectionRef.current) {
@@ -165,7 +169,7 @@ function HeroBanner() {
     >
       <div className="hero-backdrop absolute inset-0" />
       {!prefersReducedMotion ? (
-        <FlowingScene active={isInView} pointer={pointer} />
+        <FlowingScene active={sceneActive} pointer={pointer} />
       ) : null}
 
       <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-40 z-10" />
