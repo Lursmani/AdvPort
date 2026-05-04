@@ -111,6 +111,9 @@ function Header() {
 
     return () => {
       timeline.kill();
+      gsap.set([previousIcon, currentIcon], {
+        clearProps: "transform,opacity,visibility",
+      });
     };
   }, [iconTransition, prefersReducedMotion]);
 
