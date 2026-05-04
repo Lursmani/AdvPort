@@ -1,7 +1,7 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
-import { useTheme } from "@/providers/ThemeProvider";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
+import { useTheme } from "@/providers/ThemeProvider";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
 import { DARK_PALETTE, LIGHT_PALETTE } from "./palette";
@@ -13,16 +13,16 @@ type LavaLampStackProps = {
 };
 
 export function LavaLampStack({ pointer }: LavaLampStackProps) {
-  const { theme } = useTheme();
   const { viewport } = useThree();
-  const palette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const { theme } = useTheme();
   const keyLightPosition = useMemo(
     () => [viewport.width * -0.3, viewport.height * -0.4, 2.2] as const,
     [viewport.height, viewport.width],
   );
+  const scenePalette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
   const layers = useMemo(
-    () => createLayerModels(viewport.width, palette),
-    [palette, viewport.width],
+    () => createLayerModels(viewport.width, scenePalette),
+    [scenePalette, viewport.width],
   );
 
   useEffect(() => {

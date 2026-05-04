@@ -1,7 +1,6 @@
 "use client";
 
-import { useTheme } from "@/providers/ThemeProvider";
-import { Theme } from "@/theme";
+import { useTheme, type Theme } from "@/providers/ThemeProvider";
 import gsap from "gsap";
 import { Moon, Sun } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +26,7 @@ type ThemeTransition = {
 };
 
 function Header() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const currentIconRef = useRef<HTMLSpanElement>(null);
   const previousIconRef = useRef<HTMLSpanElement>(null);
@@ -136,7 +135,7 @@ function Header() {
     <header className="relative z-20 flex items-center justify-between gap-4 py-3 sm:py-4">
       <Link
         href="#top"
-        className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/88 transition duration-300 hover:text-foreground"
+        className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
       >
         DL
       </Link>
@@ -145,7 +144,7 @@ function Header() {
           <Link
             key={link.href}
             href={link.href}
-            className="text-xs font-medium uppercase tracking-[0.2em] text-foreground/64 transition duration-300 hover:text-foreground"
+            className="text-foreground-faint text-xs font-medium uppercase tracking-[0.2em] transition-colors duration-300 hover:text-foreground"
           >
             {link.label}
           </Link>
@@ -155,9 +154,10 @@ function Header() {
         ref={buttonRef}
         type="button"
         onClick={handleToggleTheme}
+        disabled={!mounted}
         aria-label={nextThemeLabel}
         title={nextThemeLabel}
-        className="hero-glass inline-flex size-11 items-center justify-center rounded-full text-foreground/72 transition duration-300 hover:-translate-y-0.5 hover:text-foreground"
+        className="hero-glass inline-flex size-11 items-center justify-center rounded-full text-foreground-muted transition duration-300 hover:-translate-y-0.5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70"
       >
         <span className="relative flex size-5 items-center justify-center overflow-hidden">
           {iconTransition ? (

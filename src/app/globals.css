@@ -4,6 +4,9 @@
   color-scheme: dark;
   --background: #000000;
   --foreground: #ffffff;
+  --foreground-soft: color-mix(in oklab, var(--foreground) 88%, transparent);
+  --foreground-muted: color-mix(in oklab, var(--foreground) 72%, transparent);
+  --foreground-faint: color-mix(in oklab, var(--foreground) 64%, transparent);
   --primary: #000000;
   --gradient-start: #005f73;
   --gradient-end: #001219;
@@ -17,6 +20,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-soft: var(--foreground-soft);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-faint: var(--foreground-faint);
   --color-primary: var(--primary);
   --color-gradient-start: var(--gradient-start);
   --color-gradient-end: var(--gradient-end);

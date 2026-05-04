@@ -1,140 +1,57 @@
 "use client";
 
+import { useSyncExternalStore, type ReactNode } from "react";
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
-import {
-  DEFAULT_THEME,
-  parseTheme,
-  THEME_STORAGE_KEY,
-  type Theme,
-} from "@/theme";
+  ThemeProvider as NextThemesProvider,
+  useTheme as useNextTheme,
+} from "next-themes";
 
-type ThemeContextValue = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-};
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-const themeListeners = new Set<() => void>();
-
-function readStoredTheme(): Theme | undefined {
-  try {
-    return parseTheme(window.localStorage.getItem(THEME_STORAGE_KEY));
-  } catch {
-    return undefined;
-  }
-}
-
-function getPreferredTheme(): Theme {
-  return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : DEFAULT_THEME;
-}
-
-function resolveStoredThemeFallback(): Theme {
-  return readStoredTheme() ?? getPreferredTheme();
-}
-
-function getClientTheme(): Theme {
-  const documentTheme = parseTheme(document.documentElement.dataset.theme);
-
-  if (documentTheme) {
-    return documentTheme;
-  }
-
-  const storedTheme = readStoredTheme();
-
-  if (storedTheme) {
-    return storedTheme;
-  }
-
-  return getPreferredTheme();
-}
-
-function persistTheme(theme: Theme) {
-  document.documentElement.dataset.theme = theme;
-
-  try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // Ignore storage failures and still apply the theme to the document.
-  }
-}
-
-function notifyThemeListeners() {
-  themeListeners.forEach((listener) => {
-    listener();
-  });
-}
-
-function subscribeToTheme(listener: () => void) {
-  themeListeners.add(listener);
-
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key !== null && event.key !== THEME_STORAGE_KEY) {
-      return;
-    }
-
-    const nextTheme =
-      parseTheme(event.newValue) ?? resolveStoredThemeFallback();
-
-    document.documentElement.dataset.theme = nextTheme;
-    listener();
-  };
-
-  window.addEventListener("storage", handleStorage);
-
-  return () => {
-    themeListeners.delete(listener);
-    window.removeEventListener("storage", handleStorage);
-  };
-}
+export type Theme = "light" | "dark";
 
 type ThemeProviderProps = {
   children: ReactNode;
 };
 
+type ThemeContextValue = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
+  mounted: boolean;
+};
+
+function noopSubscribe() {
+  return () => {};
+}
+
 function ThemeProvider({ children }: ThemeProviderProps) {
-  const theme = useSyncExternalStore(
-    subscribeToTheme,
-    getClientTheme,
-    () => DEFAULT_THEME,
-  );
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  const setTheme = (nextTheme: Theme) => {
-    persistTheme(nextTheme);
-    notifyThemeListeners();
-  };
-
-  const value = {
-    theme,
-    setTheme,
-    toggleTheme: () => setTheme(theme === "dark" ? "light" : "dark"),
-  };
-
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <NextThemesProvider
+      attribute="data-theme"
+      defaultTheme="system"
+      enableSystem
+      themes={["light", "dark"]}
+    >
+      {children}
+    </NextThemesProvider>
   );
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext);
+export function useTheme(): ThemeContextValue {
+  const { resolvedTheme, setTheme } = useNextTheme();
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
+  const theme: Theme = resolvedTheme === "light" ? "light" : "dark";
 
-  return context;
+  return {
+    theme,
+    setTheme: (nextTheme) => setTheme(nextTheme),
+    toggleTheme: () => setTheme(theme === "dark" ? "light" : "dark"),
+    mounted,
+  };
 }
 
 export default ThemeProvider;
