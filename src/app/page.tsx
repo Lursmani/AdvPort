@@ -1,9 +1,5 @@
-import HeroBanner from "@/components/hero/HeroBanner";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return (
-    <main className="w-full">
-      <HeroBanner />
-    </main>
-  );
+  redirect("/en");
 }
