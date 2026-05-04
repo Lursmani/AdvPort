@@ -1,41 +1,19 @@
 "use client";
 
 import GlyphButton from "@/components/GlyphButton";
-import {
-  defaultLocale,
-  isValidLocale,
-  locales,
-  type AppLocale,
-} from "@/i18n/config";
-import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTheme, type Theme } from "@/providers/ThemeProvider";
 import gsap from "gsap";
 import { Moon, Sun } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import Image from "next/image";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const navLinks = [
   { href: "#top", label: "Item 1" },
   { href: "#details", label: "Item 2" },
   { href: "#process", label: "Item 3" },
 ];
-
-const flagByLocale: Record<AppLocale, { alt: string; src: string }> = {
-  en: {
-    alt: "English flag",
-    src: "/flags/UKFlag.svg",
-  },
-  nl: {
-    alt: "Dutch flag",
-    src: "/flags/NLFlag.svg",
-  },
-  ka: {
-    alt: "Georgian flag",
-    src: "/flags/GEFlag.svg",
-  },
-};
 
 function ThemeGlyph({ theme }: { theme: Theme }) {
   if (theme === "light") {
@@ -53,13 +31,9 @@ type ThemeTransition = {
 function Header() {
   const t = useTranslations("Header");
   const { theme, toggleTheme, mounted } = useTheme();
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const currentIconRef = useRef<HTMLSpanElement>(null);
   const previousIconRef = useRef<HTMLSpanElement>(null);
-  const [isLocalePending, startLocaleTransition] = useTransition();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -150,18 +124,11 @@ function Header() {
   const visibleTheme = isThemeResolved
     ? (iconTransition?.incoming ?? theme)
     : null;
-  const currentLocale = isValidLocale(locale) ? locale : defaultLocale;
-  const nextLocale =
-    locales[(locales.indexOf(currentLocale) + 1) % locales.length];
-
   const nextThemeLabel = visibleTheme
     ? visibleTheme === "dark"
       ? t("actions.switchToTheme", { theme: t("themes.light") })
       : t("actions.switchToTheme", { theme: t("themes.dark") })
     : t("actions.toggleTheme");
-  const nextLanguageLabel = t("actions.switchToLanguage", {
-    language: t(`languages.${nextLocale}`),
-  });
 
   const handleToggleTheme = () => {
     if (!visibleTheme) {
@@ -175,16 +142,6 @@ function Header() {
     }
 
     toggleTheme();
-  };
-
-  const handleToggleLocale = () => {
-    startLocaleTransition(() => {
-      const hash = typeof window === "undefined" ? "" : window.location.hash;
-      router.replace(`${pathname}${hash}`, {
-        locale: nextLocale,
-        scroll: false,
-      });
-    });
   };
 
   return (
@@ -207,23 +164,7 @@ function Header() {
         ))}
       </nav>
       <div className="flex items-center gap-3">
-        <GlyphButton
-          type="button"
-          onClick={handleToggleLocale}
-          disabled={isLocalePending}
-          aria-label={nextLanguageLabel}
-          title={nextLanguageLabel}
-        >
-          <span className="relative flex size-5 items-center justify-center overflow-hidden">
-            <Image
-              src={flagByLocale[currentLocale].src}
-              alt={flagByLocale[currentLocale].alt}
-              width={20}
-              height={20}
-              className="size-5 "
-            />
-          </span>
-        </GlyphButton>
+        <LanguageSwitcher />
         <GlyphButton
           ref={buttonRef}
           type="button"

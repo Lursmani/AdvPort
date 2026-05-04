@@ -1,8 +1,8 @@
 "use client";
 
-import Header from "@/components/Header";
 import dynamic from "next/dynamic";
 import {
+  type ReactNode,
   useEffect,
   useRef,
   useState,
@@ -10,7 +10,6 @@ import {
   type MutableRefObject,
   type PointerEvent,
 } from "react";
-import HeroContent from "./HeroContent";
 
 const FlowingScene = dynamic(() => import("@/components/hero/FlowingScene"), {
   ssr: false,
@@ -31,7 +30,11 @@ export type PointerState = {
   y: number;
 };
 
-function HeroBanner() {
+type HeroBannerProps = {
+  children: ReactNode;
+};
+
+function HeroBanner({ children }: HeroBannerProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const pointer = useRef<PointerState>({
     active: false,
@@ -176,8 +179,7 @@ function HeroBanner() {
       <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-40 z-10" />
 
       <div className="relative z-20 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pb-12 pt-5 sm:px-10 lg:px-12">
-        <Header />
-        <HeroContent />
+        {children}
       </div>
     </section>
   );

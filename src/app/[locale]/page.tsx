@@ -1,9 +1,11 @@
-import HeroBanner from "@/components/hero/HeroBanner";
+import Header from "@/components/Header";
+import HeroContent from "@/components/hero/HeroContent";
 
 export default function Page() {
   return (
-    <main className="w-full">
-      <HeroBanner />
-    </main>
+    <>
+      <Header />
+      <HeroContent />
+    </>
   );
 }

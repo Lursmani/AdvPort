@@ -1,6 +1,8 @@
-import { defaultLocale, isValidLocale, type AppLocale } from "@/i18n/config";
+import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 import type { AbstractIntlMessages } from "use-intl";
+import { routing } from "@/i18n/routing";
+import type { AppLocale } from "@/i18n/config";
 
 const messageLoaders: Record<
   AppLocale,
@@ -13,10 +15,9 @@ const messageLoaders: Record<
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requestedLocale = await requestLocale;
-  const locale =
-    requestedLocale && isValidLocale(requestedLocale)
-      ? requestedLocale
-      : defaultLocale;
+  const locale = hasLocale(routing.locales, requestedLocale)
+    ? requestedLocale
+    : routing.defaultLocale;
 
   return {
     locale,
