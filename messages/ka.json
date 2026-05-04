@@ -1,0 +1,25 @@
+{
+  "HeroBanner": {
+    "intro1": "გამარჯობა, მე ვარ",
+    "name": "Davit Lursmanashvili",
+    "intro2": "ვნებიანი ფრონტენდ დეველოპერი, რომელიც სპეციალიზდება შთამბეჭდავი ვებგამოცდილებების შექმნაში."
+  },
+  "Header": {
+    "actions": {
+      "toggleTheme": "თემის შეცვლა",
+      "switchToTheme": "{theme} თემაზე გადართვა",
+      "switchToLanguage": "{language}-ზე გადართვა"
+    },
+    "themes": {
+      "light": "ღია",
+      "dark": "მუქ",
+      "lightNoun": "ღია თემა",
+      "darkNoun": "მუქი თემა"
+    },
+    "languages": {
+      "en": "ინგლისური",
+      "nl": "ნიდერლანდური",
+      "ka": "ქართული"
+    }
+  }
+}

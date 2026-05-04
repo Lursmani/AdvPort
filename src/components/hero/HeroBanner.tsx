@@ -1,7 +1,6 @@
 "use client";
 
 import Header from "@/components/Header";
-import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import {
   useEffect,

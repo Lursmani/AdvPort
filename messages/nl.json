@@ -1,0 +1,25 @@
+{
+  "HeroBanner": {
+    "intro1": "Hoi, ik ben",
+    "name": "Davit Lursmanashvili",
+    "intro2": "een gepassioneerde frontendontwikkelaar, gespecialiseerd in het maken van meeslepende webervaringen."
+  },
+  "Header": {
+    "actions": {
+      "toggleTheme": "Thema wisselen",
+      "switchToTheme": "Overschakelen naar het {theme}-thema",
+      "switchToLanguage": "Overschakelen naar {language}"
+    },
+    "themes": {
+      "light": "lichte",
+      "dark": "donkere",
+      "lightNoun": "licht thema",
+      "darkNoun": "donker thema"
+    },
+    "languages": {
+      "en": "Engels",
+      "nl": "Nederlands",
+      "ka": "Georgisch"
+    }
+  }
+}

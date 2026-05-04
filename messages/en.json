@@ -3,5 +3,23 @@
     "intro1": "Hi, I'm",
     "name": "Davit Lursmanashvili",
     "intro2": "a passionate frontend developer specializing in crafting immersive web experiences."
+  },
+  "Header": {
+    "actions": {
+      "toggleTheme": "Toggle theme",
+      "switchToTheme": "Switch to {theme} theme",
+      "switchToLanguage": "Switch to {language}"
+    },
+    "themes": {
+      "light": "light",
+      "dark": "dark",
+      "lightNoun": "light theme",
+      "darkNoun": "dark theme"
+    },
+    "languages": {
+      "en": "English",
+      "nl": "Dutch",
+      "ka": "Georgian"
+    }
   }
 }
