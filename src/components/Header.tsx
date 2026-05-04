@@ -1,6 +1,7 @@
 "use client";
 
-import { type Theme, useTheme } from "@/providers/ThemeProvider";
+import { useTheme } from "@/providers/ThemeProvider";
+import { Theme } from "@/theme";
 import gsap from "gsap";
 import { Moon, Sun } from "lucide-react";
 import Link from "next/link";

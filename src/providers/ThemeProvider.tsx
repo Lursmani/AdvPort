@@ -4,11 +4,16 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
-
-export type Theme = "light" | "dark";
+import {
+  DEFAULT_THEME,
+  parseTheme,
+  THEME_COOKIE_MAX_AGE,
+  THEME_STORAGE_KEY,
+  type Theme,
+} from "@/theme";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -16,41 +21,96 @@ type ThemeContextValue = {
   toggleTheme: () => void;
 };
 
-const DEFAULT_THEME: Theme = "dark";
-
 const ThemeContext = createContext<ThemeContextValue | null>(null);
+const themeListeners = new Set<() => void>();
 
-function getStoredTheme(): Theme {
-  const storedTheme = window.localStorage.getItem("theme");
+function getClientTheme(): Theme {
+  const documentTheme = parseTheme(document.documentElement.dataset.theme);
 
-  if (storedTheme === "light" || storedTheme === "dark") {
+  if (documentTheme) {
+    return documentTheme;
+  }
+
+  const storedTheme = parseTheme(
+    window.localStorage.getItem(THEME_STORAGE_KEY),
+  );
+
+  if (storedTheme) {
     return storedTheme;
   }
 
-  return document.documentElement.dataset.theme === "light"
+  return window.matchMedia("(prefers-color-scheme: light)").matches
     ? "light"
     : DEFAULT_THEME;
 }
 
-function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") {
-      return DEFAULT_THEME;
+function persistTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  document.cookie = `${THEME_STORAGE_KEY}=${theme}; path=/; max-age=${THEME_COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
+function notifyThemeListeners() {
+  themeListeners.forEach((listener) => {
+    listener();
+  });
+}
+
+function subscribeToTheme(listener: () => void) {
+  themeListeners.add(listener);
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key !== THEME_STORAGE_KEY) {
+      return;
     }
 
-    return getStoredTheme();
-  });
+    const nextTheme = parseTheme(event.newValue);
+
+    if (!nextTheme) {
+      return;
+    }
+
+    document.documentElement.dataset.theme = nextTheme;
+    listener();
+  };
+
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    themeListeners.delete(listener);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+type ThemeProviderProps = {
+  children: ReactNode;
+  initialTheme?: Theme;
+};
+
+function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getClientTheme,
+    () => initialTheme ?? DEFAULT_THEME,
+  );
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
+    if (!initialTheme && theme !== getClientTheme()) {
+      return;
+    }
+
+    persistTheme(theme);
+  }, [initialTheme, theme]);
+
+  const setTheme = (nextTheme: Theme) => {
+    persistTheme(nextTheme);
+    notifyThemeListeners();
+  };
 
   const value = {
     theme,
     setTheme,
-    toggleTheme: () =>
-      setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark")),
+    toggleTheme: () => setTheme(theme === "dark" ? "light" : "dark"),
   };
 
   return (
