@@ -116,12 +116,22 @@ function Header() {
     };
   }, [iconTransition, prefersReducedMotion]);
 
-  const visibleTheme = iconTransition?.incoming ?? theme;
+  const isThemeResolved = mounted;
+  const visibleTheme = isThemeResolved
+    ? (iconTransition?.incoming ?? theme)
+    : null;
 
-  const nextThemeLabel =
-    visibleTheme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  const nextThemeLabel = visibleTheme
+    ? visibleTheme === "dark"
+      ? "Switch to light theme"
+      : "Switch to dark theme"
+    : "Toggle theme";
 
   const handleToggleTheme = () => {
+    if (!visibleTheme) {
+      return;
+    }
+
     const nextTheme = visibleTheme === "dark" ? "light" : "dark";
 
     if (!prefersReducedMotion) {
@@ -155,7 +165,7 @@ function Header() {
         type="button"
         onClick={handleToggleTheme}
         disabled={!mounted}
-        aria-label={nextThemeLabel}
+        aria-label={"Toggle theme"}
         title={nextThemeLabel}
         className="hero-glass inline-flex size-11 items-center justify-center rounded-full text-foreground-muted transition duration-300 hover:-translate-y-0.5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70"
       >
@@ -179,7 +189,11 @@ function Header() {
             }
             className="absolute inset-0 flex items-center justify-center"
           >
-            <ThemeGlyph theme={visibleTheme} />
+            {visibleTheme ? (
+              <ThemeGlyph theme={visibleTheme} />
+            ) : (
+              <Sun className="size-[1.15rem]" strokeWidth={1.85} />
+            )}
           </span>
         </span>
       </button>
