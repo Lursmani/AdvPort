@@ -189,11 +189,9 @@ function Header() {
             }
             className="absolute inset-0 flex items-center justify-center"
           >
-            {visibleTheme ? (
+            {mounted && visibleTheme ? (
               <ThemeGlyph theme={visibleTheme} />
-            ) : (
-              <Sun className="size-[1.15rem]" strokeWidth={1.85} />
-            )}
+            ) : null}
           </span>
         </span>
       </button>
