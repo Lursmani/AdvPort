@@ -69,7 +69,7 @@ function Header() {
     }
 
     const timeline = gsap.timeline({
-      defaults: { duration: 0.52 },
+      defaults: { duration: 0.15 },
       onComplete: () => {
         setIconTransition(null);
       },
@@ -90,7 +90,7 @@ function Header() {
       x: 0,
       autoAlpha: 1,
       ease: "elastic.out(1, 0.68)",
-      duration: 0.7,
+      duration: 0.4,
     });
 
     return () => {
