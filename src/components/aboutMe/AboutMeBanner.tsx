@@ -9,7 +9,7 @@ function AboutMeBanner() {
   const t = useTranslations("HeroBanner");
 
   return (
-    <ViewportSection id="about" className="flex items-center">
+    <ViewportSection width="wide" id="about" className="flex items-center">
       <div className="grid w-full items-center gap-10 py-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:gap-14 lg:py-16">
         <div className="max-w-3xl">
           <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">

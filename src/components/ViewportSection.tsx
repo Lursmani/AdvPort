@@ -1,19 +1,30 @@
 "use client";
 
-import { forwardRef, type ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithRef } from "react";
+import cn from "@/utils/cn";
 
-type ViewportSectionProps = ComponentPropsWithoutRef<"section">;
+type ViewportSectionProps = ComponentPropsWithRef<"section"> & {
+  width: "full" | "wide" | "narrow";
+};
 
-const ViewportSection = forwardRef<HTMLElement, ViewportSectionProps>(
-  function ViewportSection({ className = "", ...props }, ref) {
-    return (
-      <section
-        ref={ref}
-        {...props}
-        className={`relative min-h-svh w-full ${className}`.trim()}
-      />
-    );
-  },
-);
+function ViewportSection({
+  className = "",
+  ref,
+  width = "full",
+  ...props
+}: ViewportSectionProps) {
+  return (
+    <section
+      ref={ref}
+      {...props}
+      className={cn(
+        "relative min-h-svh w-full flex flex-col items-center px-4 py-10 sm:px-6 lg:px-8 self-center",
+        width === "wide" && "max-w-5xl",
+        width === "narrow" && "max-w-3xl",
+        className,
+      )}
+    />
+  );
+}
 
 export default ViewportSection;
