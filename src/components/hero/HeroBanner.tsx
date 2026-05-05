@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import {
   type ReactNode,
   useEffect,
@@ -46,36 +47,13 @@ function HeroBanner({ children }: HeroBannerProps) {
     x: 0,
     y: 0,
   });
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [isInView, setIsInView] = useState(false);
   const supportsIntersectionObserver = useSyncExternalStore(
     subscribeToBrowserCapability,
     () => typeof IntersectionObserver !== "undefined",
     () => false,
   );
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
-
-    updateMotionPreference();
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateMotionPreference);
-
-      return () => {
-        mediaQuery.removeEventListener("change", updateMotionPreference);
-      };
-    }
-
-    mediaQuery.addListener(updateMotionPreference);
-
-    return () => {
-      mediaQuery.removeListener(updateMotionPreference);
-    };
-  }, []);
 
   useEffect(() => {
     if (!supportsIntersectionObserver || !sectionRef.current) {

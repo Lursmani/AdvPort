@@ -1,7 +1,11 @@
 "use client";
 
 import GlyphButton from "@/components/GlyphButton";
-import { useTheme, type Theme } from "@/providers/ThemeProvider";
+import {
+  usePrefersReducedMotion,
+  useTheme,
+  type Theme,
+} from "@/providers/ThemeProvider";
 import gsap from "gsap";
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -31,59 +35,36 @@ type ThemeTransition = {
 function Header() {
   const t = useTranslations("Header");
   const { theme, toggleTheme, mounted } = useTheme();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const currentIconRef = useRef<HTMLSpanElement>(null);
   const previousIconRef = useRef<HTMLSpanElement>(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
   const [iconTransition, setIconTransition] = useState<ThemeTransition | null>(
     null,
   );
+  const isAnimatingThemeTransition =
+    Boolean(iconTransition) && !prefersReducedMotion;
+  const activeThemeTransition = isAnimatingThemeTransition
+    ? iconTransition
+    : null;
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updateMotionPreference = () => {
-      const reduceMotion = mediaQuery.matches;
-
-      setPrefersReducedMotion(reduceMotion);
-
-      if (reduceMotion) {
-        setIconTransition(null);
-      }
-    };
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateMotionPreference);
-
-      return () => {
-        mediaQuery.removeEventListener("change", updateMotionPreference);
-      };
+    if (!prefersReducedMotion) {
+      return;
     }
 
-    mediaQuery.addListener(updateMotionPreference);
-
-    return () => {
-      mediaQuery.removeListener(updateMotionPreference);
-    };
-  }, []);
+    queueMicrotask(() => {
+      setIconTransition(null);
+    });
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     if (
-      !iconTransition ||
+      !isAnimatingThemeTransition ||
       !buttonRef.current ||
       !currentIconRef.current ||
       !previousIconRef.current
     ) {
-      return;
-    }
-
-    if (prefersReducedMotion) {
       return;
     }
 
@@ -118,11 +99,13 @@ function Header() {
         clearProps: "transform,opacity,visibility",
       });
     };
-  }, [iconTransition, prefersReducedMotion]);
+  }, [isAnimatingThemeTransition]);
 
   const isThemeResolved = mounted;
   const visibleTheme = isThemeResolved
-    ? (iconTransition?.incoming ?? theme)
+    ? isAnimatingThemeTransition
+      ? (iconTransition?.incoming ?? theme)
+      : theme
     : null;
   const nextThemeLabel = visibleTheme
     ? visibleTheme === "dark"
@@ -174,20 +157,20 @@ function Header() {
           title={nextThemeLabel}
         >
           <span className="relative flex size-5 items-center justify-center overflow-hidden">
-            {iconTransition ? (
+            {isAnimatingThemeTransition ? (
               <span
                 ref={previousIconRef}
                 aria-hidden="true"
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <ThemeGlyph theme={iconTransition.outgoing} />
+                <ThemeGlyph theme={activeThemeTransition!.outgoing} />
               </span>
             ) : null}
             <span
               ref={currentIconRef}
               aria-hidden="true"
               style={
-                iconTransition
+                isAnimatingThemeTransition
                   ? { opacity: 0, transform: "translateX(-18px)" }
                   : undefined
               }
