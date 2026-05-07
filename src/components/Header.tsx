@@ -1,10 +1,17 @@
 "use client";
 
-import { useTheme, type Theme } from "@/providers/ThemeProvider";
+import GlyphButton from "@/components/GlyphButton";
+import {
+  usePrefersReducedMotion,
+  useTheme,
+  type Theme,
+} from "@/providers/ThemeProvider";
 import gsap from "gsap";
 import { Moon, Sun } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const navLinks = [
   { href: "#top", label: "Item 1" },
@@ -26,52 +33,48 @@ type ThemeTransition = {
 };
 
 function Header() {
+  const t = useTranslations("Header");
   const { theme, toggleTheme, mounted } = useTheme();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [isScrolledPastThreshold, setIsScrolledPastThreshold] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const currentIconRef = useRef<HTMLSpanElement>(null);
   const previousIconRef = useRef<HTMLSpanElement>(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
   const [iconTransition, setIconTransition] = useState<ThemeTransition | null>(
     null,
   );
+  const isAnimatingThemeTransition =
+    Boolean(iconTransition) && !prefersReducedMotion;
+  const activeThemeTransition = isAnimatingThemeTransition
+    ? iconTransition
+    : null;
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updateMotionPreference = () => {
-      const reduceMotion = mediaQuery.matches;
-
-      setPrefersReducedMotion(reduceMotion);
-
-      if (reduceMotion) {
-        setIconTransition(null);
-      }
-    };
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateMotionPreference);
-
-      return () => {
-        mediaQuery.removeEventListener("change", updateMotionPreference);
-      };
+    if (!prefersReducedMotion) {
+      return;
     }
 
-    mediaQuery.addListener(updateMotionPreference);
+    queueMicrotask(() => {
+      setIconTransition(null);
+    });
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    const updateScrollState = () => {
+      setIsScrolledPastThreshold(window.scrollY > 200);
+    };
+
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
 
     return () => {
-      mediaQuery.removeListener(updateMotionPreference);
+      window.removeEventListener("scroll", updateScrollState);
     };
   }, []);
 
   useEffect(() => {
     if (
-      !iconTransition ||
+      !isAnimatingThemeTransition ||
       !buttonRef.current ||
       !currentIconRef.current ||
       !previousIconRef.current
@@ -79,12 +82,8 @@ function Header() {
       return;
     }
 
-    if (prefersReducedMotion) {
-      return;
-    }
-
     const timeline = gsap.timeline({
-      defaults: { duration: 0.52 },
+      defaults: { duration: 0.15 },
       onComplete: () => {
         setIconTransition(null);
       },
@@ -105,7 +104,7 @@ function Header() {
       x: 0,
       autoAlpha: 1,
       ease: "elastic.out(1, 0.68)",
-      duration: 0.7,
+      duration: 0.4,
     });
 
     return () => {
@@ -114,18 +113,19 @@ function Header() {
         clearProps: "transform,opacity,visibility",
       });
     };
-  }, [iconTransition, prefersReducedMotion]);
+  }, [isAnimatingThemeTransition]);
 
   const isThemeResolved = mounted;
   const visibleTheme = isThemeResolved
-    ? (iconTransition?.incoming ?? theme)
+    ? isAnimatingThemeTransition
+      ? (iconTransition?.incoming ?? theme)
+      : theme
     : null;
-
   const nextThemeLabel = visibleTheme
     ? visibleTheme === "dark"
-      ? "Switch to light theme"
-      : "Switch to dark theme"
-    : "Toggle theme";
+      ? t("actions.switchToTheme", { theme: t("themes.light") })
+      : t("actions.switchToTheme", { theme: t("themes.dark") })
+    : t("actions.toggleTheme");
 
   const handleToggleTheme = () => {
     if (!visibleTheme) {
@@ -142,59 +142,67 @@ function Header() {
   };
 
   return (
-    <header className="relative z-20 flex items-center justify-between gap-4 py-3 sm:py-4">
-      <Link
-        href="#top"
-        className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
+      <div
+        className={`header-shell my-2 pointer-events-auto mx-auto flex w-[calc(100%-1rem)] max-w-7xl items-center justify-between gap-4 rounded-full px-4 py-2 sm:w-[calc(100%-1.5rem)] sm:px-6 sm:py-2 lg:px-8 ${
+          isScrolledPastThreshold ? "header-shell--active" : ""
+        }`}
       >
-        DL
-      </Link>
-      <nav className="hero-glass hidden items-center gap-6 rounded-full px-5 py-3 md:flex">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="text-foreground-faint text-xs font-medium uppercase tracking-[0.2em] transition-colors duration-300 hover:text-foreground"
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={handleToggleTheme}
-        disabled={!mounted}
-        aria-label={"Toggle theme"}
-        title={nextThemeLabel}
-        className="hero-glass inline-flex size-11 items-center justify-center rounded-full text-foreground-muted transition duration-300 hover:-translate-y-0.5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <span className="relative flex size-5 items-center justify-center overflow-hidden">
-          {iconTransition ? (
-            <span
-              ref={previousIconRef}
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center"
+        <Link
+          href="#top"
+          className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
+        >
+          DL
+        </Link>
+        <nav className="hero-glass hidden items-center gap-6 rounded-full px-5 py-3 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-foreground-muted text-xs font-medium uppercase tracking-[0.2em] transition-colors duration-300 hover:text-foreground"
             >
-              <ThemeGlyph theme={iconTransition.outgoing} />
-            </span>
-          ) : null}
-          <span
-            ref={currentIconRef}
-            aria-hidden="true"
-            style={
-              iconTransition
-                ? { opacity: 0, transform: "translateX(-18px)" }
-                : undefined
-            }
-            className="absolute inset-0 flex items-center justify-center"
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <GlyphButton
+            ref={buttonRef}
+            type="button"
+            onClick={handleToggleTheme}
+            disabled={!mounted}
+            aria-label={nextThemeLabel}
+            title={nextThemeLabel}
           >
-            {mounted && visibleTheme ? (
-              <ThemeGlyph theme={visibleTheme} />
-            ) : null}
-          </span>
-        </span>
-      </button>
+            <span className="relative flex size-5 items-center justify-center overflow-hidden">
+              {isAnimatingThemeTransition ? (
+                <span
+                  ref={previousIconRef}
+                  aria-hidden="true"
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <ThemeGlyph theme={activeThemeTransition!.outgoing} />
+                </span>
+              ) : null}
+              <span
+                ref={currentIconRef}
+                aria-hidden="true"
+                style={
+                  isAnimatingThemeTransition
+                    ? { opacity: 0, transform: "translateX(-18px)" }
+                    : undefined
+                }
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                {mounted && visibleTheme ? (
+                  <ThemeGlyph theme={visibleTheme} />
+                ) : null}
+              </span>
+            </span>
+          </GlyphButton>
+        </div>
+      </div>
     </header>
   );
 }
