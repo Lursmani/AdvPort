@@ -8,14 +8,14 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }>) {
-  const { locale: requestedLocale } = await params;
+  const { locale: requestedLocale } = params;
 
   if (!isValidLocale(requestedLocale)) {
     notFound();
@@ -24,7 +24,7 @@ export default async function RootLayout({
   const locale = requestedLocale ?? defaultLocale;
 
   setRequestLocale(locale);
-  const messages = await getMessages({ locale });
+  const messages = getMessages({ locale });
 
   return (
     <>
