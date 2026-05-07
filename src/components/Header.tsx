@@ -1,16 +1,16 @@
 "use client";
 
 import GlyphButton from "@/components/GlyphButton";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   usePrefersReducedMotion,
   useTheme,
   type Theme,
 } from "@/providers/ThemeProvider";
-import gsap from "gsap";
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const navLinks = [
@@ -27,37 +27,23 @@ function ThemeGlyph({ theme }: { theme: Theme }) {
   return <Moon className="size-[1.15rem]" strokeWidth={1.85} />;
 }
 
-type ThemeTransition = {
-  outgoing: Theme;
-  incoming: Theme;
-};
+const THEME_ICON_ENTER_TRANSITION = {
+  type: "spring",
+  stiffness: 520,
+  damping: 28,
+  mass: 0.85,
+} as const;
+
+const THEME_ICON_EXIT_TRANSITION = {
+  duration: 0.15,
+  ease: [0.55, 0.055, 0.675, 0.19],
+} as const;
 
 function Header() {
   const t = useTranslations("Header");
   const { theme, toggleTheme, mounted } = useTheme();
   const prefersReducedMotion = usePrefersReducedMotion();
   const [isScrolledPastThreshold, setIsScrolledPastThreshold] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const currentIconRef = useRef<HTMLSpanElement>(null);
-  const previousIconRef = useRef<HTMLSpanElement>(null);
-  const [iconTransition, setIconTransition] = useState<ThemeTransition | null>(
-    null,
-  );
-  const isAnimatingThemeTransition =
-    Boolean(iconTransition) && !prefersReducedMotion;
-  const activeThemeTransition = isAnimatingThemeTransition
-    ? iconTransition
-    : null;
-
-  useEffect(() => {
-    if (!prefersReducedMotion) {
-      return;
-    }
-
-    queueMicrotask(() => {
-      setIconTransition(null);
-    });
-  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -72,55 +58,8 @@ function Header() {
     };
   }, []);
 
-  useEffect(() => {
-    if (
-      !isAnimatingThemeTransition ||
-      !buttonRef.current ||
-      !currentIconRef.current ||
-      !previousIconRef.current
-    ) {
-      return;
-    }
-
-    const timeline = gsap.timeline({
-      defaults: { duration: 0.15 },
-      onComplete: () => {
-        setIconTransition(null);
-      },
-    });
-
-    const previousIcon = previousIconRef.current;
-    const currentIcon = currentIconRef.current;
-
-    if (!previousIcon || !currentIcon) {
-      return;
-    }
-
-    gsap.set(previousIcon, { x: 0, autoAlpha: 1 });
-    gsap.set(currentIcon, { x: -18, autoAlpha: 0 });
-
-    timeline.to(previousIcon, { x: 18, autoAlpha: 0, ease: "back.in(1.25)" });
-    timeline.to(currentIcon, {
-      x: 0,
-      autoAlpha: 1,
-      ease: "elastic.out(1, 0.68)",
-      duration: 0.4,
-    });
-
-    return () => {
-      timeline.kill();
-      gsap.set([previousIcon, currentIcon], {
-        clearProps: "transform,opacity,visibility",
-      });
-    };
-  }, [isAnimatingThemeTransition]);
-
   const isThemeResolved = mounted;
-  const visibleTheme = isThemeResolved
-    ? isAnimatingThemeTransition
-      ? (iconTransition?.incoming ?? theme)
-      : theme
-    : null;
+  const visibleTheme = isThemeResolved ? theme : null;
   const nextThemeLabel = visibleTheme
     ? visibleTheme === "dark"
       ? t("actions.switchToTheme", { theme: t("themes.light") })
@@ -130,12 +69,6 @@ function Header() {
   const handleToggleTheme = () => {
     if (!visibleTheme) {
       return;
-    }
-
-    const nextTheme = visibleTheme === "dark" ? "light" : "dark";
-
-    if (!prefersReducedMotion) {
-      setIconTransition({ outgoing: visibleTheme, incoming: nextTheme });
     }
 
     toggleTheme();
@@ -168,7 +101,6 @@ function Header() {
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
           <GlyphButton
-            ref={buttonRef}
             type="button"
             onClick={handleToggleTheme}
             disabled={!mounted}
@@ -176,29 +108,36 @@ function Header() {
             title={nextThemeLabel}
           >
             <span className="relative flex size-5 items-center justify-center overflow-hidden">
-              {isAnimatingThemeTransition ? (
-                <span
-                  ref={previousIconRef}
-                  aria-hidden="true"
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <ThemeGlyph theme={activeThemeTransition!.outgoing} />
-                </span>
-              ) : null}
-              <span
-                ref={currentIconRef}
-                aria-hidden="true"
-                style={
-                  isAnimatingThemeTransition
-                    ? { opacity: 0, transform: "translateX(-18px)" }
-                    : undefined
-                }
-                className="absolute inset-0 flex items-center justify-center"
-              >
+              <AnimatePresence initial={false} mode="sync">
                 {mounted && visibleTheme ? (
-                  <ThemeGlyph theme={visibleTheme} />
+                  <motion.span
+                    key={visibleTheme}
+                    aria-hidden="true"
+                    initial={
+                      prefersReducedMotion
+                        ? { x: 0, opacity: 1 }
+                        : { x: -18, opacity: 0 }
+                    }
+                    animate={{
+                      x: 0,
+                      opacity: 1,
+                      transition: prefersReducedMotion
+                        ? { duration: 0 }
+                        : THEME_ICON_ENTER_TRANSITION,
+                    }}
+                    exit={{
+                      x: prefersReducedMotion ? 0 : 18,
+                      opacity: 0,
+                      transition: prefersReducedMotion
+                        ? { duration: 0 }
+                        : THEME_ICON_EXIT_TRANSITION,
+                    }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <ThemeGlyph theme={visibleTheme} />
+                  </motion.span>
                 ) : null}
-              </span>
+              </AnimatePresence>
             </span>
           </GlyphButton>
         </div>
