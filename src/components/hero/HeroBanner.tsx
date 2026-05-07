@@ -1,8 +1,9 @@
 "use client";
 
-import Header from "@/components/Header";
 import dynamic from "next/dynamic";
+import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import {
+  type ReactNode,
   useEffect,
   useRef,
   useState,
@@ -30,7 +31,11 @@ export type PointerState = {
   y: number;
 };
 
-function HeroBanner() {
+type HeroBannerProps = {
+  children: ReactNode;
+};
+
+function HeroBanner({ children }: HeroBannerProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const pointer = useRef<PointerState>({
     active: false,
@@ -42,36 +47,13 @@ function HeroBanner() {
     x: 0,
     y: 0,
   });
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [isInView, setIsInView] = useState(false);
   const supportsIntersectionObserver = useSyncExternalStore(
     subscribeToBrowserCapability,
     () => typeof IntersectionObserver !== "undefined",
     () => false,
   );
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
-
-    updateMotionPreference();
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateMotionPreference);
-
-      return () => {
-        mediaQuery.removeEventListener("change", updateMotionPreference);
-      };
-    }
-
-    mediaQuery.addListener(updateMotionPreference);
-
-    return () => {
-      mediaQuery.removeListener(updateMotionPreference);
-    };
-  }, []);
 
   useEffect(() => {
     if (!supportsIntersectionObserver || !sectionRef.current) {
@@ -175,14 +157,7 @@ function HeroBanner() {
       <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-40 z-10" />
 
       <div className="relative z-20 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pb-12 pt-5 sm:px-10 lg:px-12">
-        <Header />
-        <div className="flex flex-1 items-end pb-8 pt-16 sm:pb-14 lg:pb-20">
-          <div className="max-w-3xl">
-            <h1 className="mt-7 text-5xl font-semibold leading-none tracking-[-0.06em] text-foreground sm:text-6xl lg:text-8xl">
-              Davit Lursmanashvili
-            </h1>
-          </div>
-        </div>
+        {children}
       </div>
     </section>
   );

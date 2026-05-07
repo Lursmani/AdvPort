@@ -3,6 +3,11 @@
 import { Canvas } from "@react-three/fiber";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { LavaLampStack } from "@/components/hero/flowing-scene/LavaLampStack";
+import {
+  DARK_PALETTE,
+  LIGHT_PALETTE,
+} from "@/components/hero/flowing-scene/palette";
+import { useTheme } from "@/providers/ThemeProvider";
 
 type FlowingSceneProps = {
   active: boolean;
@@ -10,6 +15,9 @@ type FlowingSceneProps = {
 };
 
 export default function FlowingScene({ active, pointer }: FlowingSceneProps) {
+  const { theme } = useTheme();
+  const scenePalette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <Canvas
@@ -27,7 +35,7 @@ export default function FlowingScene({ active, pointer }: FlowingSceneProps) {
         }}
         performance={{ min: 0.65 }}
       >
-        <LavaLampStack pointer={pointer} />
+        <LavaLampStack pointer={pointer} palette={scenePalette} />
       </Canvas>
     </div>
   );

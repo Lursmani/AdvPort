@@ -1,37 +1,53 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
-import { useTheme } from "@/providers/ThemeProvider";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
-import { DARK_PALETTE, LIGHT_PALETTE } from "./palette";
+import { LIGHT_PALETTE } from "./palette";
+import type { LayerPalette } from "./types";
 
 const SCENE_GROUP_Y = -0.1;
 
 type LavaLampStackProps = {
+  palette: LayerPalette;
   pointer: FlowingScenePointer;
 };
 
-export function LavaLampStack({ pointer }: LavaLampStackProps) {
+export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
   const { viewport } = useThree();
-  const { theme } = useTheme();
   const keyLightPosition = useMemo(
     () => [viewport.width * -0.3, viewport.height * -0.4, 2.2] as const,
     [viewport.height, viewport.width],
   );
-  const scenePalette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const baseLayers = useMemo(
+    () => createLayerModels(viewport.width, LIGHT_PALETTE),
+    [viewport.width],
+  );
+  const layerColors = useMemo(
+    () => [
+      palette.heroOne,
+      palette.heroTwo,
+      palette.heroThree,
+      palette.heroFour,
+    ],
+    [palette],
+  );
   const layers = useMemo(
-    () => createLayerModels(viewport.width, scenePalette),
-    [scenePalette, viewport.width],
+    () =>
+      baseLayers.map((layer, index) => ({
+        ...layer,
+        color: layerColors[index] ?? layer.color,
+      })),
+    [baseLayers, layerColors],
   );
 
   useEffect(() => {
     return () => {
-      layers.forEach((layer) => {
+      baseLayers.forEach((layer) => {
         layer.geometry.dispose();
       });
     };
-  }, [layers]);
+  }, [baseLayers]);
 
   return (
     <>
