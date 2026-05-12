@@ -22,5 +22,31 @@
       "nl": "Nederlands",
       "ka": "Georgisch"
     }
+  },
+  "SkillsSection": {
+    "eyebrow": "Vaardigheden",
+    "title": "Drie werksporen, één productgerichte aanpak.",
+    "description": "Ik werk over interface-implementatie, data-verbonden architectuur en de tooling die releases snel en betrouwbaar houdt.",
+    "cards": {
+      "frontend": {
+        "title": "Interfaces Bouwen",
+        "description": "Product-UI, responsieve implementatie en front-end delivery met oog voor design."
+      },
+      "data": {
+        "title": "State En Services Verbinden",
+        "description": "State management, data fetching en back-endfundamenten die producten samenhangend houden."
+      },
+      "delivery": {
+        "title": "Leveren Met Betrouwbare Tooling",
+        "description": "Platformen, workflows en taalbereik die levering en samenwerking ondersteunen."
+      }
+    },
+    "groups": {
+      "frontend": "Front-end",
+      "stateData": "State & data",
+      "backend": "Back-end",
+      "toolsPlatforms": "Tools & platforms",
+      "languages": "Talen"
+    }
   }
 }
