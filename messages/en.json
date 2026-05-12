@@ -22,5 +22,31 @@
       "nl": "Dutch",
       "ka": "Georgian"
     }
+  },
+  "SkillsSection": {
+    "eyebrow": "Skills",
+    "title": "Three working lanes, one product mindset.",
+    "description": "I work across interface implementation, data-connected architecture, and the tooling that keeps releases fast and dependable.",
+    "cards": {
+      "frontend": {
+        "title": "Build Interfaces",
+        "description": "Product UI, responsive implementation, and design-aware front-end delivery."
+      },
+      "data": {
+        "title": "Connect State & Services",
+        "description": "State management, data fetching, and back-end foundations that keep products cohesive."
+      },
+      "delivery": {
+        "title": "Ship With Reliable Tooling",
+        "description": "Platforms, workflows, and language coverage that support delivery and collaboration."
+      }
+    },
+    "groups": {
+      "frontend": "Front-end",
+      "stateData": "State & Data",
+      "backend": "Back-end",
+      "toolsPlatforms": "Tools & Platforms",
+      "languages": "Languages"
+    }
   }
 }

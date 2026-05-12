@@ -111,6 +111,89 @@ body {
   backdrop-filter: blur(24px);
 }
 
+.skills-card {
+  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--background) 76%, transparent) 0%,
+    color-mix(in oklab, var(--background) 92%, transparent) 100%
+  );
+  box-shadow: 0 28px 80px
+    color-mix(in oklab, var(--background) 76%, transparent);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
+.skills-card::before {
+  content: "";
+  position: absolute;
+  top: -5rem;
+  right: -2.5rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 9999px;
+  background: var(--skills-card-accent);
+  filter: blur(42px);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.skills-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--foreground) 8%, transparent) 0%,
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 58%,
+      color-mix(in oklab, var(--foreground) 5%, transparent) 100%
+    );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.skills-card--amber {
+  --skills-card-accent: color-mix(in oklab, var(--hero-two) 66%, transparent);
+}
+
+.skills-card--teal {
+  --skills-card-accent: color-mix(in oklab, var(--hero-three) 68%, transparent);
+}
+
+.skills-card--slate {
+  --skills-card-accent: color-mix(in oklab, var(--hero-four) 66%, transparent);
+}
+
+.skills-card-grid {
+  opacity: 0.35;
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 18px 18px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 72%);
+}
+
+.skills-chip {
+  border: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+  background: color-mix(in oklab, var(--background) 78%, transparent);
+  box-shadow: inset 0 1px 0
+    color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
 .header-shell {
   border: 1px solid transparent;
   background-color: transparent;
