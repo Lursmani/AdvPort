@@ -48,5 +48,37 @@
       "toolsPlatforms": "Tools & Platforms",
       "languages": "Languages"
     }
+  },
+  "ExperienceSection": {
+    "eyebrow": "Experience",
+    "title": "Selected product work, arranged as stories you can open.",
+    "description": "A continuously moving strip of recent project directions. Hover a card to pause the flow, then open it for the fuller context.",
+    "actions": {
+      "openProject": "Open project details for {title}",
+      "openProjectImage": "Open project gallery for {title}",
+      "externalProject": "Open external link for {title}",
+      "visitProject": "Visit {title}",
+      "closeModal": "Close project details",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "galleryProgress": "Gallery position"
+    },
+    "projects": {
+      "commerceReplatform": {
+        "title": "Commerce Replatform",
+        "subtitle": "A front-end overhaul for a multi-market storefront, focused on conversion lift, reusable sections, and calmer editorial publishing flows.",
+        "description": "I reworked the browsing and checkout surfaces around reusable UI primitives, clearer content slots, and steadier state transitions. The goal was to make launches easier to coordinate, keep localization predictable, and reduce the friction that appears when merchandising changes move faster than the codebase."
+      },
+      "operationsWorkbench": {
+        "title": "Operations Workbench",
+        "subtitle": "A task-heavy internal suite for operational teams that needed faster triage, mobile continuity, and more confidence around live state.",
+        "description": "This project centered on dense workflows: assignment queues, status updates, field-ready views, and data feedback loops that had to stay understandable under pressure. I focused on giving the interface a clearer rhythm, reducing context loss between surfaces, and making the system feel dependable even when several people were acting on the same records."
+      },
+      "servicePortal": {
+        "title": "Service Portal",
+        "subtitle": "A customer-facing portal refresh that balanced self-service clarity, modular content, and a cleaner route into support moments.",
+        "description": "The work here was about turning fragmented flows into one coherent product surface. I helped shape reusable building blocks, tightened the information hierarchy, and made the portal easier to extend without introducing visual drift across new sections and account-management paths."
+      }
+    }
   }
 }

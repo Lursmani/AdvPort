@@ -48,5 +48,37 @@
       "toolsPlatforms": "Tools & platforms",
       "languages": "Talen"
     }
+  },
+  "ExperienceSection": {
+    "eyebrow": "Ervaring",
+    "title": "Geselecteerd productwerk, opgezet als verhalen die je kunt openen.",
+    "description": "Een langzaam bewegende strook met recente projectrichtingen. Beweeg over een kaart om de stroom te pauzeren en open daarna de volledige context.",
+    "actions": {
+      "openProject": "Projectdetails openen voor {title}",
+      "openProjectImage": "Projectgalerij openen voor {title}",
+      "externalProject": "Externe link openen voor {title}",
+      "visitProject": "Bezoek {title}",
+      "closeModal": "Projectdetails sluiten",
+      "previousImage": "Vorige afbeelding",
+      "nextImage": "Volgende afbeelding",
+      "galleryProgress": "Galerijpositie"
+    },
+    "projects": {
+      "commerceReplatform": {
+        "title": "Commerce Replatform",
+        "subtitle": "Een front-endvernieuwing voor een storefront met meerdere markten, gericht op hogere conversie, herbruikbare secties en rustigere publicatieflows.",
+        "description": "Ik heb de browse- en checkout-oppervlakken opnieuw opgebouwd rond herbruikbare UI-primitieven, duidelijkere content-slots en stabielere state-overgangen. Het doel was om lanceringen makkelijker te coördineren, lokalisatie voorspelbaar te houden en de frictie te verlagen wanneer merchandising sneller verandert dan de codebasis."
+      },
+      "operationsWorkbench": {
+        "title": "Operations Workbench",
+        "subtitle": "Een interne suite met veel taken voor operationele teams die snellere triage, mobiele continuïteit en meer vertrouwen in live state nodig hadden.",
+        "description": "Dit project draaide om dichte workflows: toewijzingswachtrijen, statusupdates, veldklare weergaven en datafeedbacklussen die ook onder druk begrijpelijk moesten blijven. Ik heb gewerkt aan een duidelijker ritme in de interface, minder contextverlies tussen schermen en een systeem dat betrouwbaar aanvoelt wanneer meerdere mensen tegelijk op dezelfde records werken."
+      },
+      "servicePortal": {
+        "title": "Service Portal",
+        "subtitle": "Een vernieuwing van een klantportaal die selfservice-duidelijkheid, modulaire content en een schonere route naar supportmomenten combineerde.",
+        "description": "Hier ging het werk over het omzetten van gefragmenteerde flows naar één samenhangend productoppervlak. Ik hielp herbruikbare bouwblokken vormgeven, de informatiehiërarchie aanscherpen en het portaal makkelijker uitbreidbaar maken zonder visuele drift tussen nieuwe secties en accountbeheerpaden."
+      }
+    }
   }
 }
