@@ -30,9 +30,6 @@ type SkillCardBounds = {
   top: number;
 };
 
-const DEFAULT_GLOW_X = "calc(100% + 2rem)";
-const DEFAULT_GLOW_Y = "2rem";
-const DEFAULT_GLOW_OPACITY = "0.95";
 const ACTIVE_GLOW_OPACITY = "1";
 
 const cardClasses =
@@ -76,9 +73,9 @@ function readCardBounds(element: HTMLElement): SkillCardBounds {
 }
 
 function resetGlowPosition(element: HTMLElement) {
-  element.style.setProperty("--skills-card-glow-x", DEFAULT_GLOW_X);
-  element.style.setProperty("--skills-card-glow-y", DEFAULT_GLOW_Y);
-  element.style.setProperty("--skills-card-glow-opacity", DEFAULT_GLOW_OPACITY);
+  element.style.removeProperty("--skills-card-glow-x");
+  element.style.removeProperty("--skills-card-glow-y");
+  element.style.removeProperty("--skills-card-glow-opacity");
 }
 
 function SkillCard({
