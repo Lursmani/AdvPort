@@ -1,12 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ExternalLink, X } from "lucide-react";
-import Link from "next/link";
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
-import cn from "@/utils/cn";
-import ExperienceArtwork from "./ExperienceArtwork";
+import ExperienceModalDetails from "./ExperienceModalDetails";
+import ExperienceModalGallery from "./ExperienceModalGallery";
 import {
   getExperienceToneStyle,
   type ExperienceModalLabels,
@@ -73,7 +72,6 @@ function ExperienceModal({
   onClose,
 }: ExperienceModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [viewportSize, setViewportSize] = useState<ViewportSize>(() => ({
     width: typeof window === "undefined" ? 1280 : window.innerWidth,
     height: typeof window === "undefined" ? 720 : window.innerHeight,
@@ -115,8 +113,12 @@ function ExperienceModal({
   }, []);
 
   useEffect(() => {
+    const root = document.documentElement;
     const previousOverflow = document.body.style.overflow;
+    const previousModalState = root.dataset.experienceModalOpen;
+
     document.body.style.overflow = "hidden";
+    root.dataset.experienceModalOpen = "true";
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -155,34 +157,21 @@ function ExperienceModal({
 
     return () => {
       document.body.style.overflow = previousOverflow;
+
+      if (previousModalState) {
+        root.dataset.experienceModalOpen = previousModalState;
+      } else {
+        delete root.dataset.experienceModalOpen;
+      }
+
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
-
-  const activeSlide = project.slides[activeSlideIndex];
   const toneStyle = getExperienceToneStyle(project.tone);
 
-  const showPreviousSlide = () => {
-    setActiveSlideIndex((currentIndex) => {
-      if (currentIndex === 0) {
-        return project.slides.length - 1;
-      }
-
-      return currentIndex - 1;
-    });
-  };
-
-  const showNextSlide = () => {
-    setActiveSlideIndex((currentIndex) =>
-      currentIndex === project.slides.length - 1 ? 0 : currentIndex + 1,
-    );
-  };
-
   return (
-    <>
-      <motion.button
-        type="button"
-        tabIndex={-1}
+    <div className={styles.modalRoot}>
+      <motion.div
         aria-hidden="true"
         className={styles.modalBackdrop}
         onClick={onClose}
@@ -218,7 +207,7 @@ function ExperienceModal({
           }}
           exit={{ opacity: 0, transition: { duration: 0.08 } }}
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className={styles.modalHeader}>
             <span className={styles.timelineChip}>{project.timeline}</span>
 
             <button
@@ -233,125 +222,12 @@ function ExperienceModal({
           </div>
 
           <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:gap-5">
-            <div className="flex min-h-0 flex-col gap-3">
-              <div className={styles.galleryFrame}>
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.div
-                    key={activeSlide.id}
-                    className={styles.gallerySlide}
-                    initial={
-                      prefersReducedMotion
-                        ? { opacity: 1 }
-                        : { opacity: 0, x: 18 }
-                    }
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={
-                      prefersReducedMotion
-                        ? { opacity: 1 }
-                        : { opacity: 0, x: -18 }
-                    }
-                    transition={
-                      prefersReducedMotion ? { duration: 0 } : FADE_TRANSITION
-                    }
-                  >
-                    <ExperienceArtwork
-                      title={project.title}
-                      timeline={project.timeline}
-                      tone={project.tone}
-                      pattern={activeSlide.pattern}
-                      slideIndex={activeSlideIndex + 1}
-                      className={styles.galleryArtwork}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-
-                {project.slides.length > 1 ? (
-                  <div className={styles.galleryControls}>
-                    <button
-                      type="button"
-                      className={styles.galleryControl}
-                      onClick={showPreviousSlide}
-                      aria-label={labels.previousImage}
-                    >
-                      <ArrowLeft className="size-4" strokeWidth={1.8} />
-                    </button>
-
-                    <button
-                      type="button"
-                      className={styles.galleryControl}
-                      onClick={showNextSlide}
-                      aria-label={labels.nextImage}
-                    >
-                      <ArrowRight className="size-4" strokeWidth={1.8} />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.2em]">
-                  {labels.galleryProgress}: {activeSlideIndex + 1}/
-                  {project.slides.length}
-                </p>
-
-                <div className={styles.indicatorRail}>
-                  {project.slides.map((slide, index) => (
-                    <button
-                      key={slide.id}
-                      type="button"
-                      className={cn(
-                        styles.indicatorButton,
-                        index === activeSlideIndex &&
-                          styles.indicatorButtonActive,
-                      )}
-                      onClick={() => {
-                        setActiveSlideIndex(index);
-                      }}
-                      aria-label={`${labels.galleryProgress}: ${index + 1}`}
-                      aria-pressed={index === activeSlideIndex}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex min-h-0 flex-col">
-              <div className="flex flex-wrap items-center gap-3">
-                {project.href ? (
-                  <Link
-                    href={project.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={styles.modalLink}
-                    aria-label={project.externalProjectLabel}
-                  >
-                    <span>{project.visitProjectLabel}</span>
-                    <ExternalLink className="size-3.5" strokeWidth={1.8} />
-                  </Link>
-                ) : null}
-              </div>
-
-              <h3
-                id={`experience-modal-title-${project.id}`}
-                className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-              >
-                {project.title}
-              </h3>
-
-              <p className="text-foreground-soft mt-4 text-base leading-7 sm:text-lg sm:leading-8">
-                {project.subtitle}
-              </p>
-
-              <div className={cn(styles.modalDescription, "mt-6")}>
-                <p className="text-foreground-muted text-sm leading-7 sm:text-base sm:leading-8">
-                  {project.description}
-                </p>
-              </div>
-            </div>
+            <ExperienceModalGallery project={project} labels={labels} />
+            <ExperienceModalDetails project={project} />
           </div>
         </motion.div>
       </motion.div>
-    </>
+    </div>
   );
 }
 

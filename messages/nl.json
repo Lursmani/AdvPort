@@ -9,7 +9,15 @@
     "actions": {
       "toggleTheme": "Thema wisselen",
       "switchToTheme": "Overschakelen naar het {theme}-thema",
-      "switchToLanguage": "Overschakelen naar {language}"
+      "switchToLanguage": "Overschakelen naar {language}",
+      "openMenu": "Navigatiemenu openen",
+      "closeMenu": "Navigatiemenu sluiten"
+    },
+    "nav": {
+      "top": "Bovenaan",
+      "skills": "Vaardigheden",
+      "experience": "Ervaring",
+      "about": "Over"
     },
     "themes": {
       "light": "lichte",
@@ -52,13 +60,15 @@
   "ExperienceSection": {
     "eyebrow": "Ervaring",
     "title": "Geselecteerd productwerk, opgezet als verhalen die je kunt openen.",
-    "description": "Een langzaam bewegende strook met recente projectrichtingen. Beweeg over een kaart om de stroom te pauzeren en open daarna de volledige context.",
+    "description": "Een selectie recente projectrichtingen die je in je eigen tempo kunt bekijken. Sleep de rij of gebruik de bediening en open daarna een kaart voor de volledige context.",
     "actions": {
       "openProject": "Projectdetails openen voor {title}",
       "openProjectImage": "Projectgalerij openen voor {title}",
       "externalProject": "Externe link openen voor {title}",
       "visitProject": "Bezoek {title}",
       "closeModal": "Projectdetails sluiten",
+      "previousProject": "Vorig project tonen",
+      "nextProject": "Volgend project tonen",
       "previousImage": "Vorige afbeelding",
       "nextImage": "Volgende afbeelding",
       "galleryProgress": "Galerijpositie"
@@ -78,6 +88,11 @@
         "title": "Service Portal",
         "subtitle": "Een vernieuwing van een klantportaal die selfservice-duidelijkheid, modulaire content en een schonere route naar supportmomenten combineerde.",
         "description": "Hier ging het werk over het omzetten van gefragmenteerde flows naar één samenhangend productoppervlak. Ik hielp herbruikbare bouwblokken vormgeven, de informatiehiërarchie aanscherpen en het portaal makkelijker uitbreidbaar maken zonder visuele drift tussen nieuwe secties en accountbeheerpaden."
+      },
+      "servicePortal2": {
+        "title": "Service Portal 2",
+        "subtitle": "Een vervolg op het klantportaal met verbeterde selfservice, modulaire content en een gestroomlijnde route naar supportmomenten.",
+        "description": "Dit project bouwde voort op het eerdere portaal, met focus op verbeterde gebruikerservaring, uitbreidbare componenten en consistente visuele stijl tussen nieuwe en bestaande secties."
       }
     }
   }

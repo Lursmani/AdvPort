@@ -133,3 +133,19 @@ body {
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
 }
+
+.site-header {
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+html[data-experience-modal-open="true"] .site-header {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(-100% - 1.25rem));
+}
+
+html[data-experience-modal-open="true"] .site-header * {
+  pointer-events: none;
+}

@@ -40,6 +40,11 @@ export type ExperienceModalLabels = {
   galleryProgress: string;
 };
 
+export type ExperienceCarouselLabels = ExperienceModalLabels & {
+  previousProject: string;
+  nextProject: string;
+};
+
 export type ExperienceRect = {
   top: number;
   left: number;

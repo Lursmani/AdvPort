@@ -1,7 +1,11 @@
 import { useTranslations } from "next-intl";
 import ViewportSection from "@/components/ViewportSection";
 import ExperienceCarousel from "./ExperienceCarousel";
-import { EXPERIENCE_PROJECTS, type ExperienceProject } from "./experience-data";
+import {
+  EXPERIENCE_PROJECTS,
+  type ExperienceCarouselLabels,
+  type ExperienceProject,
+} from "./experience-data";
 
 function ExperienceSection() {
   const t = useTranslations("ExperienceSection");
@@ -21,11 +25,13 @@ function ExperienceSection() {
     };
   });
 
-  const modalLabels = {
+  const labels: ExperienceCarouselLabels = {
     closeModal: t("actions.closeModal"),
     previousImage: t("actions.previousImage"),
     nextImage: t("actions.nextImage"),
     galleryProgress: t("actions.galleryProgress"),
+    previousProject: t("actions.previousProject"),
+    nextProject: t("actions.nextProject"),
   };
 
   return (
@@ -56,7 +62,7 @@ function ExperienceSection() {
           </p>
         </div>
 
-        <ExperienceCarousel projects={projects} labels={modalLabels} />
+        <ExperienceCarousel projects={projects} labels={labels} />
       </div>
     </ViewportSection>
   );

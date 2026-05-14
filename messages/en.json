@@ -9,7 +9,15 @@
     "actions": {
       "toggleTheme": "Toggle theme",
       "switchToTheme": "Switch to {theme} theme",
-      "switchToLanguage": "Switch to {language}"
+      "switchToLanguage": "Switch to {language}",
+      "openMenu": "Open navigation menu",
+      "closeMenu": "Close navigation menu"
+    },
+    "nav": {
+      "top": "Top",
+      "skills": "Skills",
+      "experience": "Experience",
+      "about": "About"
     },
     "themes": {
       "light": "light",
@@ -52,13 +60,15 @@
   "ExperienceSection": {
     "eyebrow": "Experience",
     "title": "Selected product work, arranged as stories you can open.",
-    "description": "A continuously moving strip of recent project directions. Hover a card to pause the flow, then open it for the fuller context.",
+    "description": "A selected run of recent project directions you can browse at your own pace. Drag the rail or use the controls, then open any card for the fuller context.",
     "actions": {
       "openProject": "Open project details for {title}",
       "openProjectImage": "Open project gallery for {title}",
       "externalProject": "Open external link for {title}",
       "visitProject": "Visit {title}",
       "closeModal": "Close project details",
+      "previousProject": "Show previous project",
+      "nextProject": "Show next project",
       "previousImage": "Previous image",
       "nextImage": "Next image",
       "galleryProgress": "Gallery position"
