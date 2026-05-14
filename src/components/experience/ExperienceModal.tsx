@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Transition } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
@@ -38,6 +38,12 @@ const FADE_TRANSITION = {
   ease: [0.22, 1, 0.36, 1],
 } as const;
 
+const PANEL_FADE_OUT_TRANSITION = {
+  duration: 0.16,
+  ease: [0.4, 0, 1, 1],
+  delay: 0.08,
+} as const;
+
 function computeTargetRect(viewportSize: ViewportSize): ExperienceRect {
   const horizontalMargin = viewportSize.width < 640 ? 12 : 24;
   const verticalMargin = viewportSize.width < 640 ? 12 : 20;
@@ -65,6 +71,10 @@ function getTabbableElements(container: HTMLElement) {
   );
 }
 
+function getScrollbarWidth() {
+  return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+}
+
 function ExperienceModal({
   project,
   sourceRect,
@@ -84,6 +94,13 @@ function ExperienceModal({
     [viewportSize],
   );
 
+  const panelTransition: Transition = prefersReducedMotion
+    ? { duration: 0 }
+    : {
+        ...PANEL_TRANSITION,
+        opacity: PANEL_FADE_OUT_TRANSITION,
+      };
+
   const panelMotion = prefersReducedMotion
     ? {
         initial: { ...targetRect, borderRadius: 36, opacity: 1 },
@@ -93,7 +110,7 @@ function ExperienceModal({
     : {
         initial: { ...sourceRect, borderRadius: 28, opacity: 1 },
         animate: { ...targetRect, borderRadius: 36, opacity: 1 },
-        exit: { ...sourceRect, borderRadius: 28, opacity: 1 },
+        exit: { ...sourceRect, borderRadius: 28, opacity: 0 },
       };
 
   useEffect(() => {
@@ -114,10 +131,22 @@ function ExperienceModal({
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
+    const computedBodyStyle = window.getComputedStyle(body);
     const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = body.style.paddingRight;
     const previousModalState = root.dataset.experienceModalOpen;
+    const scrollbarWidth = getScrollbarWidth();
+    const currentPaddingRight = Number.parseFloat(
+      computedBodyStyle.paddingRight,
+    );
 
-    document.body.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
+    }
+
     root.dataset.experienceModalOpen = "true";
     closeButtonRef.current?.focus();
 
@@ -156,7 +185,8 @@ function ExperienceModal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
 
       if (previousModalState) {
         root.dataset.experienceModalOpen = previousModalState;
@@ -191,7 +221,7 @@ function ExperienceModal({
         initial={panelMotion.initial}
         animate={panelMotion.animate}
         exit={panelMotion.exit}
-        transition={prefersReducedMotion ? { duration: 0 } : PANEL_TRANSITION}
+        transition={panelTransition}
         onClick={(event) => {
           event.stopPropagation();
         }}
