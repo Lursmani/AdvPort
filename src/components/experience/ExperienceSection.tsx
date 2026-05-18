@@ -1,35 +1,46 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import ViewportSection from "@/components/ViewportSection";
 import ExperienceCarousel from "./ExperienceCarousel";
 import {
   EXPERIENCE_PROJECTS,
+  getExperienceTimeline,
   type ExperienceCarouselLabels,
   type ExperienceProject,
 } from "./experience-data";
 
+type ExperienceProjectMessages = {
+  title: string;
+  subtitle: string;
+  description: string;
+  externalLink?: string;
+};
+
 function ExperienceSection() {
   const t = useTranslations("ExperienceSection");
+  const locale = useLocale();
 
   const projects: ExperienceProject[] = EXPERIENCE_PROJECTS.map((project) => {
-    const title = t(`projects.${project.id}.title` as const);
+    const projectMessages = t.raw(
+      `projects.${project.id}` as const,
+    ) as ExperienceProjectMessages;
+    const title = projectMessages.title;
 
     return {
       ...project,
+      timeline: getExperienceTimeline(project.timeline, locale),
       title,
-      subtitle: t(`projects.${project.id}.subtitle` as const),
-      description: t(`projects.${project.id}.description` as const),
+      subtitle: projectMessages.subtitle,
+      description: projectMessages.description,
+      tags: project.tagIds.map((tagId) => t(`tags.${tagId}` as const)),
+      href: projectMessages.externalLink,
       openProjectLabel: t("actions.openProject", { title }),
       openImageLabel: t("actions.openProjectImage", { title }),
       externalProjectLabel: t("actions.externalProject", { title }),
-      visitProjectLabel: t("actions.visitProject", { title }),
     };
   });
 
   const labels: ExperienceCarouselLabels = {
     closeModal: t("actions.closeModal"),
-    previousImage: t("actions.previousImage"),
-    nextImage: t("actions.nextImage"),
-    galleryProgress: t("actions.galleryProgress"),
     previousProject: t("actions.previousProject"),
     nextProject: t("actions.nextProject"),
   };

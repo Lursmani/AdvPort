@@ -252,7 +252,7 @@ function ExperienceModal({
           </div>
 
           <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:gap-5">
-            <ExperienceModalGallery project={project} labels={labels} />
+            <ExperienceModalGallery project={project} />
             <ExperienceModalDetails project={project} />
           </div>
         </motion.div>

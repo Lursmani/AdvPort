@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import Image from "next/image";
 import cn from "@/utils/cn";
-import ExperienceArtwork from "./ExperienceArtwork";
 import {
   getExperienceToneStyle,
   type ExperienceProject,
@@ -81,17 +79,20 @@ function ExperienceCarouselCard({
             onOpenProject(project, event.currentTarget);
           }}
         >
-          <ExperienceArtwork
-            title={project.title}
-            timeline={project.timeline}
-            tone={project.tone}
-            pattern={project.slides[0].pattern}
-            slideIndex={1}
-            className={styles.pictureArtwork}
+          <Image
+            src={project.imageSrc}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 21rem, (min-width: 768px) 33vw, 78vw"
+            className={styles.pictureImage}
           />
         </button>
 
         <div className={styles.cardBody}>
+          <div className={styles.cardMeta}>
+            <span className={styles.timelineChip}>{project.timeline}</span>
+          </div>
+
           <div className={styles.titleRow}>
             <button
               type="button"
@@ -103,21 +104,19 @@ function ExperienceCarouselCard({
             >
               <span className={styles.titleText}>{project.title}</span>
             </button>
-
-            {project.href ? (
-              <Link
-                href={project.href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={project.externalProjectLabel}
-                className={styles.externalLink}
-              >
-                <ExternalLink className="size-4" strokeWidth={1.8} />
-              </Link>
-            ) : null}
           </div>
 
           {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+
+          {project.tags.length > 0 ? (
+            <ul className={cn(styles.tagList, styles.cardTagList)}>
+              {project.tags.map((tag) => (
+                <li key={`${project.id}-${tag}`} className={styles.tagChip}>
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </article>
     </li>

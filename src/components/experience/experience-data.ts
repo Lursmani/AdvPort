@@ -1,43 +1,56 @@
 import type { CSSProperties } from "react";
+import { defaultLocale, isValidLocale, type AppLocale } from "@/i18n/config";
 
 export type ExperienceTone = "amber" | "teal" | "slate";
 
-export type ExperiencePattern =
-  | "dashboard"
-  | "workflow"
-  | "mobile"
-  | "metrics"
-  | "library"
-  | "network";
+export type ExperienceTimeline = Record<AppLocale, string>;
 
-export type ExperienceSlideConfig = {
-  id: string;
-  pattern: ExperiencePattern;
-};
+const EXPERIENCE_PROJECT_IMAGE_SRC = "/images/projects/energygrip-1.jpg";
+
+export const EXPERIENCE_TAG_IDS = [
+  "nextjs",
+  "react",
+  "typescript",
+  "swr",
+  "iotIntegration",
+  "dataVisualization",
+  "ciCd",
+  "reactNative",
+  "figma",
+  "appStoreDeployment",
+  "gatsby",
+  "graphQl",
+  "contentful",
+  "performanceOptimization",
+  "apiIntegration",
+  "realTimeData",
+  "materialUi",
+] as const;
+
+export type ExperienceTagId = (typeof EXPERIENCE_TAG_IDS)[number];
 
 export type ExperienceProjectConfig = {
   id: string;
-  timeline: string;
+  timeline: ExperienceTimeline;
   tone: ExperienceTone;
-  href?: string;
-  slides: readonly ExperienceSlideConfig[];
+  tagIds: readonly ExperienceTagId[];
+  imageSrc: string;
 };
 
-export type ExperienceProject = ExperienceProjectConfig & {
+export type ExperienceProject = Omit<ExperienceProjectConfig, "timeline"> & {
+  timeline: string;
   title: string;
   subtitle: string;
   description: string;
+  tags: readonly string[];
+  href?: string;
   openProjectLabel: string;
   openImageLabel: string;
   externalProjectLabel: string;
-  visitProjectLabel: string;
 };
 
 export type ExperienceModalLabels = {
   closeModal: string;
-  previousImage: string;
-  nextImage: string;
-  galleryProgress: string;
 };
 
 export type ExperienceCarouselLabels = ExperienceModalLabels & {
@@ -77,36 +90,86 @@ export function getExperienceToneStyle(tone: ExperienceTone) {
   return TONE_STYLES[tone];
 }
 
+export function getExperienceTimeline(
+  timelineByLocale: ExperienceTimeline,
+  locale: string,
+) {
+  const currentLocale = isValidLocale(locale) ? locale : defaultLocale;
+
+  return timelineByLocale[currentLocale];
+}
+
 export const EXPERIENCE_PROJECTS = [
   {
-    id: "commerceReplatform",
-    timeline: "2024-2025",
+    id: "energyGrip",
+    timeline: {
+      en: "2023-Present",
+      nl: "2023-Heden",
+      ka: "2023-დღემდე",
+    },
     tone: "amber",
-    slides: [
-      { id: "commerce-overview", pattern: "dashboard" },
-      { id: "commerce-metrics", pattern: "metrics" },
-      { id: "commerce-library", pattern: "library" },
+    tagIds: [
+      "nextjs",
+      "react",
+      "typescript",
+      "swr",
+      "iotIntegration",
+      "dataVisualization",
+      "ciCd",
     ],
+    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
   },
   {
-    id: "operationsWorkbench",
-    timeline: "2023-2025",
+    id: "energyFlip",
+    timeline: {
+      en: "2023-Present",
+      nl: "2023-Heden",
+      ka: "2023-დღემდე",
+    },
     tone: "teal",
-    slides: [
-      { id: "operations-flow", pattern: "workflow" },
-      { id: "operations-mobile", pattern: "mobile" },
-      { id: "operations-network", pattern: "network" },
+    tagIds: [
+      "reactNative",
+      "typescript",
+      "dataVisualization",
+      "figma",
+      "appStoreDeployment",
+      "ciCd",
     ],
+    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
   },
   {
-    id: "servicePortal",
-    timeline: "2022-2024",
+    id: "consultancyWork",
+    timeline: {
+      en: "2022-2023",
+      nl: "2022-2023",
+      ka: "2022-2023",
+    },
     tone: "slate",
-    slides: [
-      { id: "service-library", pattern: "library" },
-      { id: "service-dashboard", pattern: "dashboard" },
-      { id: "service-metrics", pattern: "metrics" },
+    tagIds: [
+      "nextjs",
+      "gatsby",
+      "graphQl",
+      "contentful",
+      "performanceOptimization",
     ],
+    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
+  },
+  {
+    id: "universalTransit",
+    timeline: {
+      en: "2021-2022",
+      nl: "2021-2022",
+      ka: "2021-2022",
+    },
+    tone: "amber",
+    tagIds: [
+      "react",
+      "typescript",
+      "apiIntegration",
+      "realTimeData",
+      "materialUi",
+    ],
+    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
   },
 ] as const satisfies readonly ExperienceProjectConfig[];
 

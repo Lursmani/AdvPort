@@ -1,7 +1,7 @@
 .carouselShell {
   position: relative;
   margin-top: 3.5rem;
-  --experience-gap: 1.5rem;
+  --experience-gap: 1.25rem;
   --experience-control-size: 2.75rem;
   --experience-control-edge-offset: 0.5rem;
   --experience-control-clearance: calc(
@@ -12,8 +12,8 @@
     var(--experience-control-clearance)
   );
   --experience-card-bleed: 1rem;
-  --experience-subtitle-height: 4.9rem;
-  --experience-subtitle-gap: 1rem;
+  --experience-subtitle-height: 4.5rem;
+  --experience-subtitle-gap: 0.8rem;
   container-type: inline-size;
 }
 
@@ -56,9 +56,9 @@
 
 .cardItem {
   list-style: none;
-  width: min(calc(100cqi - (var(--experience-inline-padding) * 2)), 21rem);
+  width: min(calc(100cqi - (var(--experience-inline-padding) * 2)), 19.5rem);
   min-width: 0;
-  flex: 0 0 min(calc(100cqi - (var(--experience-inline-padding) * 2)), 21rem);
+  flex: 0 0 min(calc(100cqi - (var(--experience-inline-padding) * 2)), 19.5rem);
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -73,7 +73,7 @@
           ) /
           2
       ),
-      22rem
+      20rem
     );
     flex-basis: min(
       calc(
@@ -83,7 +83,7 @@
           ) /
           2
       ),
-      22rem
+      20rem
     );
   }
 }
@@ -98,7 +98,7 @@
           ) /
           3
       ),
-      22rem
+      20.25rem
     );
     flex-basis: min(
       calc(
@@ -108,7 +108,7 @@
           ) /
           3
       ),
-      22rem
+      20.25rem
     );
   }
 }
@@ -118,7 +118,7 @@
   display: flex;
   height: auto;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1rem;
   overflow: hidden;
   border-radius: 2rem;
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
@@ -127,11 +127,11 @@
     color-mix(in oklab, var(--background) 78%, transparent) 0%,
     color-mix(in oklab, var(--background) 92%, transparent) 100%
   );
-  padding: 1rem;
   box-shadow: 0 28px 80px
     color-mix(in oklab, var(--background) 76%, transparent);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
+  padding: 0.9rem;
   transition:
     transform 280ms ease,
     box-shadow 280ms ease,
@@ -184,7 +184,7 @@
 .pictureButton {
   position: relative;
   display: block;
-  aspect-ratio: 5 / 4;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   border-radius: 1.5rem;
   border: 1px solid color-mix(in oklab, var(--foreground) 14%, transparent);
@@ -198,18 +198,16 @@
 .titleButton:focus-visible,
 .carouselButton:focus-visible,
 .externalLink:focus-visible,
-.galleryControl:focus-visible,
-.indicatorButton:focus-visible,
-.modalClose:focus-visible,
-.modalLink:focus-visible {
+.modalClose:focus-visible {
   outline: 2px solid
     color-mix(in oklab, var(--experience-accent-strong) 84%, white);
   outline-offset: 4px;
 }
 
-.pictureArtwork {
+.pictureImage {
   height: 100%;
   width: 100%;
+  object-fit: cover;
 }
 
 .titleRow {
@@ -237,19 +235,26 @@
   flex-direction: column;
 }
 
+.cardMeta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
 .titleText {
   display: block;
-  font-size: clamp(1.4rem, 1.5vw + 1rem, 1.8rem);
+  font-size: clamp(1.25rem, 1vw + 1rem, 1.55rem);
   font-weight: 600;
-  line-height: 1.08;
+  line-height: 1.12;
   letter-spacing: -0.03em;
 }
 
 .externalLink,
 .carouselButton,
-.galleryControl,
-.modalClose,
-.modalLink {
+.modalClose {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -271,9 +276,7 @@
 
 .externalLink:hover,
 .carouselButton:hover,
-.galleryControl:hover,
 .modalClose:hover,
-.modalLink:hover,
 .titleButton:hover {
   color: var(--foreground);
 }
@@ -290,7 +293,6 @@
 
 .externalLink,
 .carouselButton,
-.galleryControl,
 .modalClose {
   width: 2.75rem;
   height: 2.75rem;
@@ -301,13 +303,6 @@
   position: relative;
   z-index: 4;
   touch-action: manipulation;
-}
-
-.modalLink {
-  padding: 0.7rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
 }
 
 .subtitle {
@@ -384,33 +379,38 @@
   color: var(--foreground-soft);
 }
 
-.artwork {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--background) 28%, transparent) 0%,
-    color-mix(in oklab, var(--background) 76%, transparent) 100%
-  );
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.artworkBackdrop {
-  pointer-events: none;
-  position: absolute;
-  inset: auto -18% -28% auto;
-  width: 70%;
-  aspect-ratio: 1;
+.cardTagList {
+  margin-top: 0.8rem;
+}
+
+.modalTagList {
+  margin-top: 1.25rem;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    color-mix(in oklab, var(--experience-accent-strong) 76%, transparent) 0%,
-    transparent 72%
+  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  background: color-mix(
+    in oklab,
+    var(--experience-accent) 10%,
+    var(--background) 84%
   );
-  opacity: 0.98;
-  filter: blur(28px);
+  padding: 0.36rem 0.62rem;
+  color: var(--foreground-soft);
+  font-size: 0.71rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .modalRoot {
@@ -466,19 +466,27 @@
   gap: 0.75rem;
 }
 
-.modalDescription {
+.modalDetails {
   min-height: 0;
   overflow: auto;
   padding-right: 0.35rem;
+  overscroll-behavior: contain;
 }
 
-.modalDescription::-webkit-scrollbar {
+.modalDetails::-webkit-scrollbar {
   width: 0.45rem;
 }
 
-.modalDescription::-webkit-scrollbar-thumb {
+.modalDetails::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background: color-mix(in oklab, var(--foreground) 18%, transparent);
+}
+
+.modalTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .galleryFrame {
@@ -491,54 +499,10 @@
   background: color-mix(in oklab, var(--background) 72%, transparent);
 }
 
-.gallerySlide {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.galleryArtwork {
+.galleryImage {
   height: 100%;
   width: 100%;
-}
-
-.galleryControls {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  z-index: 2;
-  display: flex;
-  gap: 0.75rem;
-}
-
-.indicatorRail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.indicatorButton {
-  width: 0.75rem;
-  height: 0.75rem;
-  padding: 0;
-  border: 0;
-  border-radius: 9999px;
-  background: color-mix(in oklab, var(--foreground) 18%, transparent);
-  transition:
-    transform 220ms ease,
-    background 220ms ease,
-    opacity 220ms ease;
-  opacity: 0.72;
-}
-
-.indicatorButtonActive {
-  transform: scale(1.15);
-  background: color-mix(
-    in oklab,
-    var(--experience-accent-strong) 84%,
-    white 16%
-  );
-  opacity: 1;
+  object-fit: cover;
 }
 
 @media (max-width: 767px) {
@@ -562,8 +526,8 @@
   }
 
   .cardItem {
-    width: min(calc(80cqi - (var(--experience-gap) * 2)), 21rem);
-    flex-basis: min(calc(80cqi - (var(--experience-gap) * 2)), 21rem);
+    width: min(calc(80cqi - (var(--experience-gap) * 2)), 19.5rem);
+    flex-basis: min(calc(80cqi - (var(--experience-gap) * 2)), 19.5rem);
     scroll-snap-align: center;
   }
 
@@ -595,10 +559,7 @@
   .card,
   .carouselViewport,
   .externalLink,
-  .galleryControl,
-  .indicatorButton,
   .modalClose,
-  .modalLink,
   .subtitle {
     transition: none;
   }
