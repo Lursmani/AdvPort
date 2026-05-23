@@ -60,7 +60,6 @@
   "ExperienceSection": {
     "eyebrow": "Ervaring",
     "title": "Geselecteerd productwerk, opgezet als verhalen die je kunt openen.",
-    "description": "Een selectie recente projectrichtingen die je in je eigen tempo kunt bekijken. Sleep de rij of gebruik de bediening en open daarna een kaart voor de volledige context.",
     "actions": {
       "openProject": "Projectdetails openen voor {title}",
       "openProjectImage": "Projectgalerij openen voor {title}",

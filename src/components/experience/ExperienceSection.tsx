@@ -69,9 +69,6 @@ function ExperienceSection() {
           <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground sm:text-5xl lg:text-6xl">
             {t("title")}
           </h2>
-          <p className="text-foreground-soft mt-6 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8">
-            {t("description")}
-          </p>
         </div>
 
         <ExperienceCarousel projects={projects} labels={labels} />

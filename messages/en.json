@@ -60,7 +60,6 @@
   "ExperienceSection": {
     "eyebrow": "Experience",
     "title": "Selected product work, arranged as stories you can open.",
-    "description": "A selected run of recent project directions you can browse at your own pace. Drag the rail or use the controls, then open any card for the fuller context.",
     "actions": {
       "openProject": "Open project details for {title}",
       "openProjectImage": "Open project gallery for {title}",
