@@ -12,8 +12,6 @@
     var(--experience-control-clearance)
   );
   --experience-card-bleed: 1rem;
-  --experience-subtitle-height: 4.5rem;
-  --experience-subtitle-gap: 0.8rem;
   container-type: inline-size;
 }
 
@@ -159,7 +157,7 @@
   opacity: 0.82;
 }
 
-.cardActive {
+.card:focus-within {
   box-shadow: 0 34px 96px
     color-mix(in oklab, var(--background) 72%, transparent);
   z-index: 10;
@@ -308,7 +306,7 @@
 .subtitle {
   position: relative;
   z-index: 1;
-  margin-top: 0;
+  margin-top: 0.8rem;
   overflow: hidden;
   color: var(--foreground-soft);
   font-size: 0.95rem;
@@ -317,22 +315,6 @@
   -webkit-box-orient: vertical;
   line-clamp: 3;
   -webkit-line-clamp: 3;
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(10px);
-  transition:
-    margin-top 220ms ease,
-    max-height 280ms ease,
-    opacity 220ms ease,
-    transform 220ms ease;
-}
-
-.cardActive .subtitle,
-.card:focus-within .subtitle {
-  margin-top: var(--experience-subtitle-gap);
-  max-height: var(--experience-subtitle-height);
-  opacity: 1;
-  transform: translateY(0);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -344,22 +326,11 @@
     height: 100%;
   }
 
-  .cardActive {
+  .card:is(:hover, :focus-within) {
+    box-shadow: 0 34px 96px
+      color-mix(in oklab, var(--background) 72%, transparent);
+    z-index: 10;
     transform: translateY(-10px);
-  }
-
-  .subtitle {
-    margin-top: var(--experience-subtitle-gap);
-    max-height: var(--experience-subtitle-height);
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .cardFocusSuppressed:focus-within .subtitle {
-    margin-top: 0;
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(10px);
   }
 }
 
@@ -546,21 +517,11 @@
   }
 }
 
-@media (hover: none) {
-  .subtitle {
-    margin-top: var(--experience-subtitle-gap);
-    max-height: var(--experience-subtitle-height);
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .card,
   .carouselViewport,
   .externalLink,
-  .modalClose,
-  .subtitle {
+  .modalClose {
     transition: none;
   }
 }

@@ -24,12 +24,13 @@ function ExperienceSection() {
       `projects.${project.id}` as const,
     ) as ExperienceProjectMessages;
     const title = projectMessages.title;
+    const subtitle = projectMessages.subtitle.trim();
 
     return {
       ...project,
       timeline: getExperienceTimeline(project.timeline, locale),
       title,
-      subtitle: projectMessages.subtitle,
+      subtitle,
       description: projectMessages.description,
       tags: project.tagIds.map((tagId) => t(`tags.${tagId}` as const)),
       href: projectMessages.externalLink,

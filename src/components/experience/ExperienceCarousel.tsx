@@ -23,11 +23,7 @@ type OpenProjectState = {
 };
 
 function ExperienceCarousel({ projects, labels }: ExperienceCarouselProps) {
-  const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [openProject, setOpenProject] = useState<OpenProjectState | null>(null);
-  const [suppressedFocusCardId, setSuppressedFocusCardId] = useState<
-    string | null
-  >(null);
   const lastTriggerRef = useRef<HTMLElement | null>(null);
 
   const handleOpenProject = ({
@@ -36,8 +32,6 @@ function ExperienceCarousel({ projects, labels }: ExperienceCarouselProps) {
     triggerElement,
   }: ExperienceCarouselOpenProject) => {
     lastTriggerRef.current = triggerElement;
-    setSuppressedFocusCardId(null);
-    setActiveCardId(project.id);
     setOpenProject({
       project,
       sourceRect,
@@ -45,11 +39,7 @@ function ExperienceCarousel({ projects, labels }: ExperienceCarouselProps) {
   };
 
   const closeProject = () => {
-    const closingProjectId = openProject?.project.id ?? null;
-
     setOpenProject(null);
-    setActiveCardId(null);
-    setSuppressedFocusCardId(closingProjectId);
 
     const lastTrigger = lastTriggerRef.current;
 
@@ -71,19 +61,6 @@ function ExperienceCarousel({ projects, labels }: ExperienceCarouselProps) {
       <ExperienceCarouselViewport
         projects={projects}
         labels={labels}
-        activeCardId={activeCardId}
-        suppressedFocusCardId={suppressedFocusCardId}
-        onActivateCard={setActiveCardId}
-        onDeactivateCard={(projectId) => {
-          setActiveCardId((currentKey) =>
-            currentKey === projectId ? null : currentKey,
-          );
-        }}
-        onClearSuppressedFocus={(projectId) => {
-          setSuppressedFocusCardId((currentProjectId) =>
-            currentProjectId === projectId ? null : currentProjectId,
-          );
-        }}
         onOpenProject={handleOpenProject}
       />
 

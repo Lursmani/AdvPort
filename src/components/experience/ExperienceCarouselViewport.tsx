@@ -20,11 +20,6 @@ export type ExperienceCarouselOpenProject = {
 type ExperienceCarouselViewportProps = {
   projects: readonly ExperienceProject[];
   labels: ExperienceCarouselLabels;
-  activeCardId: string | null;
-  suppressedFocusCardId: string | null;
-  onActivateCard: (projectId: string) => void;
-  onDeactivateCard: (projectId: string) => void;
-  onClearSuppressedFocus: (projectId: string) => void;
   onOpenProject: (payload: ExperienceCarouselOpenProject) => void;
 };
 
@@ -58,11 +53,6 @@ function getCardScrollLeft(viewport: HTMLDivElement, card: HTMLLIElement) {
 function ExperienceCarouselViewport({
   projects,
   labels,
-  activeCardId,
-  suppressedFocusCardId,
-  onActivateCard,
-  onDeactivateCard,
-  onClearSuppressedFocus,
   onOpenProject,
 }: ExperienceCarouselViewportProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -205,19 +195,8 @@ function ExperienceCarouselViewport({
             <ExperienceCarouselCard
               key={project.id}
               project={project}
-              isActive={activeCardId === project.id}
-              isFocusSuppressed={suppressedFocusCardId === project.id}
               cardRef={(element) => {
                 cardRefs.current[project.id] = element;
-              }}
-              onActivate={() => {
-                onActivateCard(project.id);
-              }}
-              onDeactivate={() => {
-                onDeactivateCard(project.id);
-              }}
-              onClearFocusSuppression={() => {
-                onClearSuppressedFocus(project.id);
               }}
               onOpenProject={handleOpenProject}
             />

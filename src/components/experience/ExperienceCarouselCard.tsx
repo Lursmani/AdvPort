@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { MouseEvent } from "react";
 import cn from "@/utils/cn";
 import {
   getExperienceToneStyle,
@@ -10,12 +11,7 @@ import styles from "./ExperienceSection.module.css";
 
 type ExperienceCarouselCardProps = {
   project: ExperienceProject;
-  isActive: boolean;
-  isFocusSuppressed: boolean;
   cardRef: (element: HTMLLIElement | null) => void;
-  onActivate: () => void;
-  onDeactivate: () => void;
-  onClearFocusSuppression: () => void;
   onOpenProject: (
     project: ExperienceProject,
     triggerElement: HTMLElement,
@@ -24,50 +20,19 @@ type ExperienceCarouselCardProps = {
 
 function ExperienceCarouselCard({
   project,
-  isActive,
-  isFocusSuppressed,
   cardRef,
-  onActivate,
-  onDeactivate,
-  onClearFocusSuppression,
   onOpenProject,
 }: ExperienceCarouselCardProps) {
-  const subtitle = project.subtitle.trim();
+  const handleOpenProject = (event: MouseEvent<HTMLButtonElement>) => {
+    onOpenProject(project, event.currentTarget);
+  };
 
   return (
     <li ref={cardRef} className={styles.cardItem}>
       <article
         data-experience-card
-        className={cn(
-          styles.card,
-          isActive && styles.cardActive,
-          isFocusSuppressed && styles.cardFocusSuppressed,
-        )}
+        className={styles.card}
         style={getExperienceToneStyle(project.tone)}
-        onPointerEnter={() => {
-          if (isFocusSuppressed) {
-            onClearFocusSuppression();
-          }
-
-          onActivate();
-        }}
-        onPointerLeave={onDeactivate}
-        onFocusCapture={() => {
-          if (!isFocusSuppressed) {
-            onActivate();
-          }
-        }}
-        onBlurCapture={(event) => {
-          if (
-            !event.currentTarget.contains(event.relatedTarget as Node | null)
-          ) {
-            if (isFocusSuppressed) {
-              onClearFocusSuppression();
-            }
-
-            onDeactivate();
-          }
-        }}
       >
         <div className={styles.cardGlow} />
 
@@ -75,9 +40,7 @@ function ExperienceCarouselCard({
           type="button"
           className={styles.pictureButton}
           aria-label={project.openImageLabel}
-          onClick={(event) => {
-            onOpenProject(project, event.currentTarget);
-          }}
+          onClick={handleOpenProject}
         >
           <Image
             src={project.imageSrc}
@@ -98,15 +61,13 @@ function ExperienceCarouselCard({
               type="button"
               className={styles.titleButton}
               aria-label={project.openProjectLabel}
-              onClick={(event) => {
-                onOpenProject(project, event.currentTarget);
-              }}
+              onClick={handleOpenProject}
             >
               <span className={styles.titleText}>{project.title}</span>
             </button>
           </div>
 
-          {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+          <p className={styles.subtitle}>{project.subtitle}</p>
 
           {project.tags.length > 0 ? (
             <ul className={cn(styles.tagList, styles.cardTagList)}>
