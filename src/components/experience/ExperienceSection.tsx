@@ -66,7 +66,7 @@ function ExperienceSection() {
           <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
             {t("eyebrow")}
           </p>
-          <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
             {t("title")}
           </h2>
         </div>
