@@ -567,11 +567,22 @@
 }
 
 @media (min-width: 1024px) {
+  .modalGallery {
+    height: 100%;
+  }
+
+  .modalGalleryCarousel {
+    display: flex;
+    flex: 1;
+  }
+
   .galleryFrame {
     min-height: 18rem;
   }
 
   .modalGalleryViewport {
+    flex: 1;
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     padding-bottom: 0;
