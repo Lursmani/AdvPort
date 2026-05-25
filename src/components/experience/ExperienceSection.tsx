@@ -44,6 +44,9 @@ function ExperienceSection() {
     closeModal: t("actions.closeModal"),
     previousProject: t("actions.previousProject"),
     nextProject: t("actions.nextProject"),
+    previousImage: t("actions.previousImage"),
+    nextImage: t("actions.nextImage"),
+    galleryProgress: t("actions.galleryProgress"),
   };
 
   return (

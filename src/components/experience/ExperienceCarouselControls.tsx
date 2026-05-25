@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import GlyphButton from "@/components/GlyphButton";
 import styles from "./ExperienceSection.module.css";
 
 type ExperienceCarouselControlsProps = {
@@ -22,25 +23,27 @@ function ExperienceCarouselControls({
 }: ExperienceCarouselControlsProps) {
   return (
     <div className={styles.carouselControls}>
-      <button
+      <GlyphButton
         type="button"
-        className={styles.carouselButton}
+        variant="surface"
+        className={styles.carouselControlButton}
         onClick={onPrevious}
         aria-label={previousLabel}
         disabled={!canScrollPrev}
       >
         <ChevronLeft className="size-4" strokeWidth={1.8} />
-      </button>
+      </GlyphButton>
 
-      <button
+      <GlyphButton
         type="button"
-        className={styles.carouselButton}
+        variant="surface"
+        className={styles.carouselControlButton}
         onClick={onNext}
         aria-label={nextLabel}
         disabled={!canScrollNext}
       >
         <ChevronRight className="size-4" strokeWidth={1.8} />
-      </button>
+      </GlyphButton>
     </div>
   );
 }

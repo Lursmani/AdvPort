@@ -3,6 +3,7 @@
 import { motion, type Transition } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import GlyphButton from "@/components/GlyphButton";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import ExperienceModalDetails from "./ExperienceModalDetails";
 import ExperienceModalGallery from "./ExperienceModalGallery";
@@ -46,9 +47,9 @@ const PANEL_FADE_OUT_TRANSITION = {
 
 function computeTargetRect(viewportSize: ViewportSize): ExperienceRect {
   const horizontalMargin = viewportSize.width < 640 ? 12 : 24;
-  const verticalMargin = viewportSize.width < 640 ? 12 : 20;
+  const verticalMargin = viewportSize.width < 640 ? 12 : viewportSize.width < 1024 ? 16 : 20;
   const width = Math.min(viewportSize.width - horizontalMargin * 2, 1040);
-  const maxHeight = viewportSize.width < 768 ? 760 : 720;
+  const maxHeight = viewportSize.width < 768 ? 760 : viewportSize.width < 1024 ? 820 : 720;
   const height = Math.min(viewportSize.height - verticalMargin * 2, maxHeight);
 
   return {
@@ -240,19 +241,20 @@ function ExperienceModal({
           <div className={styles.modalHeader}>
             <span className={styles.timelineChip}>{project.timeline}</span>
 
-            <button
+            <GlyphButton
               ref={closeButtonRef}
               type="button"
-              className={styles.modalClose}
+              variant="surface"
+              className={styles.modalCloseButton}
               onClick={onClose}
               aria-label={labels.closeModal}
             >
               <X className="size-4" strokeWidth={1.8} />
-            </button>
+            </GlyphButton>
           </div>
 
           <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:gap-5">
-            <ExperienceModalGallery project={project} />
+            <ExperienceModalGallery project={project} labels={labels} />
             <ExperienceModalDetails project={project} />
           </div>
         </motion.div>

@@ -5,7 +5,11 @@ export type ExperienceTone = "amber" | "teal" | "slate";
 
 export type ExperienceTimeline = Record<AppLocale, string>;
 
-const EXPERIENCE_PROJECT_IMAGE_SRC = "/images/projects/energygrip-1.jpg";
+const EXPERIENCE_PROJECT_IMAGE_SOURCES = [
+  "/images/projects/energygrip-1.jpg",
+  "/images/projects/energygrip-1.jpg",
+  "/images/projects/energygrip-1.jpg",
+] as const;
 
 export const EXPERIENCE_TAG_IDS = [
   "nextjs",
@@ -34,7 +38,7 @@ export type ExperienceProjectConfig = {
   timeline: ExperienceTimeline;
   tone: ExperienceTone;
   tagIds: readonly ExperienceTagId[];
-  imageSrc: string;
+  imageSources: readonly [string, ...string[]];
 };
 
 export type ExperienceProject = Omit<ExperienceProjectConfig, "timeline"> & {
@@ -51,6 +55,9 @@ export type ExperienceProject = Omit<ExperienceProjectConfig, "timeline"> & {
 
 export type ExperienceModalLabels = {
   closeModal: string;
+  previousImage: string;
+  nextImage: string;
+  galleryProgress: string;
 };
 
 export type ExperienceCarouselLabels = ExperienceModalLabels & {
@@ -117,7 +124,7 @@ export const EXPERIENCE_PROJECTS = [
       "dataVisualization",
       "ciCd",
     ],
-    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
   },
   {
     id: "energyFlip",
@@ -135,7 +142,7 @@ export const EXPERIENCE_PROJECTS = [
       "appStoreDeployment",
       "ciCd",
     ],
-    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
   },
   {
     id: "consultancyWork",
@@ -152,7 +159,7 @@ export const EXPERIENCE_PROJECTS = [
       "contentful",
       "performanceOptimization",
     ],
-    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
   },
   {
     id: "universalTransit",
@@ -169,7 +176,7 @@ export const EXPERIENCE_PROJECTS = [
       "realTimeData",
       "materialUi",
     ],
-    imageSrc: EXPERIENCE_PROJECT_IMAGE_SRC,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
   },
 ] as const satisfies readonly ExperienceProjectConfig[];
 

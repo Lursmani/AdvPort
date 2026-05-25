@@ -43,7 +43,7 @@ function ExperienceCarouselCard({
           onClick={handleOpenProject}
         >
           <Image
-            src={project.imageSrc}
+            src={project.imageSources[0]}
             alt=""
             fill
             sizes="(min-width: 1024px) 21rem, (min-width: 768px) 33vw, 78vw"
