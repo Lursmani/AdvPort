@@ -10,8 +10,9 @@ import {
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { handleHeaderFocus } from "./header/util";
 
 const navLinks = [
   { href: "#top", key: "top" },
@@ -58,6 +59,12 @@ function Header() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [isScrolledPastThreshold, setIsScrolledPastThreshold] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const headerShellRef = useRef<HTMLDivElement | null>(null);
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const openDrawerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const closeDrawerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const shouldRestoreFocusRef = useRef(true);
+  const drawerTitleId = useId();
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -73,29 +80,15 @@ function Header() {
   }, []);
 
   useEffect(() => {
-    if (!isDrawerOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsDrawerOpen(false);
-      }
-    };
-
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsDrawerOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("resize", handleResize);
-    };
+    return handleHeaderFocus({
+      isDrawerOpen,
+      headerShellRef,
+      openDrawerButtonRef,
+      closeDrawerButtonRef,
+      drawerRef,
+      shouldRestoreFocusRef,
+      setIsDrawerOpen,
+    });
   }, [isDrawerOpen]);
 
   const isThemeResolved = mounted;
@@ -114,13 +107,20 @@ function Header() {
     toggleTheme();
   };
 
-  const closeDrawer = () => {
+  const openDrawer = () => {
+    shouldRestoreFocusRef.current = true;
+    setIsDrawerOpen(true);
+  };
+
+  const closeDrawer = (restoreFocus = true) => {
+    shouldRestoreFocusRef.current = restoreFocus;
     setIsDrawerOpen(false);
   };
 
   return (
     <header className="site-header pointer-events-none fixed inset-x-0 top-0 z-50 transition-[opacity,transform] duration-300">
       <div
+        ref={headerShellRef}
         className={`header-shell my-2 pointer-events-auto mx-auto flex w-[calc(100%-1rem)] max-w-7xl items-center justify-between gap-4 rounded-full px-4 py-2 sm:w-[calc(100%-1.5rem)] sm:px-6 sm:py-2 lg:px-8 ${
           isScrolledPastThreshold ? "header-shell--active" : ""
         }`}
@@ -128,7 +128,9 @@ function Header() {
         <Link
           href="#top"
           className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
-          onClick={closeDrawer}
+          onClick={() => {
+            closeDrawer(false);
+          }}
         >
           DL
         </Link>
@@ -188,13 +190,13 @@ function Header() {
 
           <GlyphButton
             type="button"
-            className="md:hidden"
-            onClick={() => {
-              setIsDrawerOpen(true);
-            }}
+            ref={openDrawerButtonRef}
+            className="md:hidden!"
+            onClick={openDrawer}
             aria-label={t("actions.openMenu")}
             aria-controls="mobile-site-nav"
             aria-expanded={isDrawerOpen}
+            aria-haspopup="dialog"
           >
             <Menu className="size-[1.15rem]" strokeWidth={1.85} />
           </GlyphButton>
@@ -215,12 +217,19 @@ function Header() {
               transition={
                 prefersReducedMotion ? { duration: 0 } : { duration: 0.18 }
               }
-              onClick={closeDrawer}
+              onClick={() => {
+                closeDrawer();
+              }}
             />
 
             <motion.aside
               id="mobile-site-nav"
-              className="hero-glass pointer-events-auto fixed inset-y-0 left-0 z-50 flex w-[min(22rem,84vw)] flex-col gap-8 rounded-r-[2rem] px-5 py-5 md:hidden"
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={drawerTitleId}
+              tabIndex={-1}
+              className="hero-glass pointer-events-auto fixed inset-y-0 left-0 z-50 flex w-[min(22rem,84vw)] flex-col gap-8 rounded-r-4xl px-5 py-5 md:hidden"
               initial={
                 prefersReducedMotion ? { x: 0, opacity: 1 } : { x: "-100%" }
               }
@@ -237,18 +246,27 @@ function Header() {
                   : DRAWER_EXIT_TRANSITION,
               }}
             >
+              <h2 id={drawerTitleId} className="sr-only">
+                {t("labels.mobileNavigation")}
+              </h2>
+
               <div className="flex items-center justify-between gap-3">
                 <Link
                   href="#top"
                   className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
-                  onClick={closeDrawer}
+                  onClick={() => {
+                    closeDrawer(false);
+                  }}
                 >
                   DL
                 </Link>
 
                 <GlyphButton
+                  ref={closeDrawerButtonRef}
                   type="button"
-                  onClick={closeDrawer}
+                  onClick={() => {
+                    closeDrawer();
+                  }}
                   aria-label={t("actions.closeMenu")}
                 >
                   <X className="size-[1.15rem]" strokeWidth={1.85} />
@@ -261,7 +279,9 @@ function Header() {
                     key={link.href}
                     href={link.href}
                     className="hero-glass rounded-[1.4rem] px-4 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-foreground-soft transition-colors duration-300 hover:text-foreground"
-                    onClick={closeDrawer}
+                    onClick={() => {
+                      closeDrawer(false);
+                    }}
                   >
                     {t(`nav.${link.key}`)}
                   </Link>

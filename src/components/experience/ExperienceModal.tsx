@@ -5,6 +5,10 @@ import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import GlyphButton from "@/components/GlyphButton";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
+import {
+  getScrollbarWidth,
+  getTabbableElements,
+} from "@/utils/domAccessibility";
 import ExperienceModalDetails from "./ExperienceModalDetails";
 import ExperienceModalGallery from "./ExperienceModalGallery";
 import {
@@ -47,9 +51,11 @@ const PANEL_FADE_OUT_TRANSITION = {
 
 function computeTargetRect(viewportSize: ViewportSize): ExperienceRect {
   const horizontalMargin = viewportSize.width < 640 ? 12 : 24;
-  const verticalMargin = viewportSize.width < 640 ? 12 : viewportSize.width < 1024 ? 16 : 20;
+  const verticalMargin =
+    viewportSize.width < 640 ? 12 : viewportSize.width < 1024 ? 16 : 20;
   const width = Math.min(viewportSize.width - horizontalMargin * 2, 1040);
-  const maxHeight = viewportSize.width < 768 ? 760 : viewportSize.width < 1024 ? 820 : 720;
+  const maxHeight =
+    viewportSize.width < 768 ? 760 : viewportSize.width < 1024 ? 820 : 720;
   const height = Math.min(viewportSize.height - verticalMargin * 2, maxHeight);
 
   return {
@@ -58,22 +64,6 @@ function computeTargetRect(viewportSize: ViewportSize): ExperienceRect {
     width,
     height,
   };
-}
-
-function getTabbableElements(container: HTMLElement) {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter(
-    (element) =>
-      !element.hasAttribute("disabled") &&
-      element.getAttribute("aria-hidden") !== "true",
-  );
-}
-
-function getScrollbarWidth() {
-  return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
 }
 
 function ExperienceModal({
@@ -138,9 +128,11 @@ function ExperienceModal({
     const previousPaddingRight = body.style.paddingRight;
     const previousModalState = root.dataset.experienceModalOpen;
     const scrollbarWidth = getScrollbarWidth();
-    const currentPaddingRight = Number.parseFloat(
-      computedBodyStyle.paddingRight,
-    );
+    const currentPaddingRight = Number.isNaN(
+      Number.parseFloat(computedBodyStyle.paddingRight),
+    )
+      ? 0
+      : Number.parseFloat(computedBodyStyle.paddingRight);
 
     body.style.overflow = "hidden";
 

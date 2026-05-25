@@ -9,12 +9,14 @@ export default function Page() {
   return (
     <>
       <Header />
-      <HeroBanner>
-        <HeroContent />
-      </HeroBanner>
-      <SkillsSection />
-      <ExperienceSection />
-      <AboutMeBanner />
+      <main id="page-content" className="flex flex-col">
+        <HeroBanner>
+          <HeroContent />
+        </HeroBanner>
+        <SkillsSection />
+        <ExperienceSection />
+        <AboutMeBanner />
+      </main>
     </>
   );
 }

@@ -13,6 +13,9 @@
       "openMenu": "Navigatiemenu openen",
       "closeMenu": "Navigatiemenu sluiten"
     },
+    "labels": {
+      "mobileNavigation": "Navigatiemenu"
+    },
     "nav": {
       "top": "Bovenaan",
       "skills": "Vaardigheden",

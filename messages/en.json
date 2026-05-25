@@ -13,6 +13,9 @@
       "openMenu": "Open navigation menu",
       "closeMenu": "Close navigation menu"
     },
+    "labels": {
+      "mobileNavigation": "Navigation menu"
+    },
     "nav": {
       "top": "Top",
       "skills": "Skills",
