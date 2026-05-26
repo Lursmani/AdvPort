@@ -14,9 +14,7 @@ export default function Page() {
           <HeroContent />
         </HeroBanner>
         <SkillsSection />
-        <ExperienceSection />
-        <AboutMeBanner />
-      </main>
+        <ExperienceSection /></main>
     </>
   );
 }
