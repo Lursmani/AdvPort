@@ -5,11 +5,15 @@ export type ExperienceTone = "amber" | "teal" | "slate";
 
 export type ExperienceTimeline = Record<AppLocale, string>;
 
-const EXPERIENCE_PROJECT_IMAGE_SOURCES = [
-  "/images/projects/energygrip-1.jpg",
-  "/images/projects/energygrip-1.jpg",
-  "/images/projects/energygrip-1.jpg",
-] as const;
+const EXPERIENCE_PROJECT_IMAGE_SOURCES = {
+  energyGrip: [
+    "/images/experience/energygrip-1.webp",
+    "/images/experience/energygrip-2.webp",
+  ],
+  energyFlip: ["/images/experience/energyflip-1.webp"],
+  consultancyWork: ["/images/experience/labela.png"],
+  universalTransit: ["/images/experience/universal-transit.webp"],
+};
 
 export const EXPERIENCE_TAG_IDS = [
   "nextjs",
@@ -38,7 +42,7 @@ export type ExperienceProjectConfig = {
   timeline: ExperienceTimeline;
   tone: ExperienceTone;
   tagIds: readonly ExperienceTagId[];
-  imageSources: readonly [string, ...string[]];
+  imageSources: string[];
   externalLink?: string;
 };
 
@@ -125,7 +129,7 @@ export const EXPERIENCE_PROJECTS: readonly ExperienceProjectConfig[] = [
       "dataVisualization",
       "ciCd",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.energyGrip,
     externalLink: "https://www.energygrip.com/",
   },
   {
@@ -144,7 +148,7 @@ export const EXPERIENCE_PROJECTS: readonly ExperienceProjectConfig[] = [
       "appStoreDeployment",
       "ciCd",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.energyFlip,
     externalLink: "https://www.energyflip.com/",
   },
   {
@@ -162,7 +166,7 @@ export const EXPERIENCE_PROJECTS: readonly ExperienceProjectConfig[] = [
       "contentful",
       "performanceOptimization",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.consultancyWork,
   },
   {
     id: "universalTransit",
@@ -179,7 +183,7 @@ export const EXPERIENCE_PROJECTS: readonly ExperienceProjectConfig[] = [
       "realTimeData",
       "materialUi",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.universalTransit,
     externalLink: "https://www.universaltransit.com/",
   },
 ];
