@@ -39,6 +39,7 @@ export type ExperienceProjectConfig = {
   tone: ExperienceTone;
   tagIds: readonly ExperienceTagId[];
   imageSources: readonly [string, ...string[]];
+  externalLink?: string;
 };
 
 export type ExperienceProject = Omit<ExperienceProjectConfig, "timeline"> & {
@@ -106,7 +107,7 @@ export function getExperienceTimeline(
   return timelineByLocale[currentLocale];
 }
 
-export const EXPERIENCE_PROJECTS = [
+export const EXPERIENCE_PROJECTS: readonly ExperienceProjectConfig[] = [
   {
     id: "energyGrip",
     timeline: {
@@ -125,6 +126,7 @@ export const EXPERIENCE_PROJECTS = [
       "ciCd",
     ],
     imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    externalLink: "https://www.energygrip.com/",
   },
   {
     id: "energyFlip",
@@ -143,6 +145,7 @@ export const EXPERIENCE_PROJECTS = [
       "ciCd",
     ],
     imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    externalLink: "https://www.energyflip.com/",
   },
   {
     id: "consultancyWork",
@@ -177,7 +180,8 @@ export const EXPERIENCE_PROJECTS = [
       "materialUi",
     ],
     imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    externalLink: "https://www.universaltransit.com/",
   },
-] as const satisfies readonly ExperienceProjectConfig[];
+];
 
 export type ExperienceProjectId = (typeof EXPERIENCE_PROJECTS)[number]["id"];

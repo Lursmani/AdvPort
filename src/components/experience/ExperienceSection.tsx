@@ -33,7 +33,7 @@ function ExperienceSection() {
       subtitle,
       description: projectMessages.description,
       tags: project.tagIds.map((tagId) => t(`tags.${tagId}` as const)),
-      href: projectMessages.externalLink,
+      href: project.externalLink ?? undefined,
       openProjectLabel: t("actions.openProject", { title }),
       openImageLabel: t("actions.openProjectImage", { title }),
       externalProjectLabel: t("actions.externalProject", { title }),

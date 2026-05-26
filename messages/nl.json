@@ -98,14 +98,12 @@
       "energyGrip": {
         "title": "EnergyGrip - Energiemanagementsysteem",
         "subtitle": "B2B energiemanagement-dashboard met zware IoT-integratie en realtime analyses.",
-        "description": "Geleid de migratie van de legacy Next.js-codebase naar de moderne App Router, wat de prestaties en ontwikkelsnelheid aanzienlijk heeft verbeterd. Complexe front-end logica ontworpen om 100% databeschikbaarheid te garanderen voor realtime telemetrie tijdens netwerkuitval, terwijl ik geavanceerde datavisualisaties en bidirectionele besturingen bouwde voor IoT-hardware zoals thermostaten en warmteafgiftesets.",
-        "externalLink": "https://www.energygrip.com/"
+        "description": "Geleid de migratie van de legacy Next.js-codebase naar de moderne App Router, wat de prestaties en ontwikkelsnelheid aanzienlijk heeft verbeterd. Complexe front-end logica ontworpen om 100% databeschikbaarheid te garanderen voor realtime telemetrie tijdens netwerkuitval, terwijl ik geavanceerde datavisualisaties en bidirectionele besturingen bouwde voor IoT-hardware zoals thermostaten en warmteafgiftesets."
       },
       "energyFlip": {
         "title": "EnergyFlip - Multi-platform Energie-app",
         "subtitle": "Cross-platform B2C/B2B2C energiebeheer-app.",
-        "description": "Verantwoordelijk voor de end-to-end herontwerpfase van het platform, waarbij meer dan 25.000 regels code zijn gerefactord en binnen een intensieve sprint van drie weken zijn opgeleverd, ondanks veranderende clientspecificaties. Beheerde de volledige front-end architectuur, ontwerpt de UI in Figma en onderhield de CI/CD-pipelines om gelijktijdig te distribueren naar iOS, Android en web.",
-        "externalLink": "https://www.energyflip.com/"
+        "description": "Verantwoordelijk voor de end-to-end herontwerpfase van het platform, waarbij meer dan 25.000 regels code zijn gerefactord en binnen een intensieve sprint van drie weken zijn opgeleverd, ondanks veranderende clientspecificaties. Beheerde de volledige front-end architectuur, ontwerpt de UI in Figma en onderhield de CI/CD-pipelines om gelijktijdig te distribueren naar iOS, Android en web."
       },
       "consultancyWork": {
         "title": "Agency Consultancy - High-Profile Klanten",
@@ -115,8 +113,7 @@
       "universalTransit": {
         "title": "Universal Transit - Logistieke Dispatch",
         "subtitle": "Realtime tracking- en routeplanningsplatform voor vrachtwagendispensers.",
-        "description": "Gewerkt als de enige front-end engineer die het volledige logistieke dispatch-platform vanaf nul heeft opgebouwd. Verantwoordelijk voor alles van het in kaart brengen van de initiële technische specificaties voor de back-end API-integraties tot het ontwerpen van de Material UI front-end voor realtime voertuigtracking.",
-        "externalLink": "https://www.universaltransit.com/"
+        "description": "Gewerkt als de enige front-end engineer die het volledige logistieke dispatch-platform vanaf nul heeft opgebouwd. Verantwoordelijk voor alles van het in kaart brengen van de initiële technische specificaties voor de back-end API-integraties tot het ontwerpen van de Material UI front-end voor realtime voertuigtracking."
       }
     }
   }
