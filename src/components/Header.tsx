@@ -206,8 +206,7 @@ function Header() {
       <AnimatePresence>
         {isDrawerOpen ? (
           <>
-            <motion.button
-              type="button"
+            <motion.div
               tabIndex={-1}
               aria-hidden="true"
               className="pointer-events-auto fixed inset-0 z-40 border-0 bg-[color-mix(in_oklab,var(--background)_58%,transparent)] md:hidden"

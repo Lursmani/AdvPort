@@ -1,6 +1,5 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
 import {
-  getScrollbarWidth,
   getTabbableElements,
   isElementVisible,
 } from "@/utils/domAccessibility";
@@ -35,15 +34,6 @@ export const handleHeaderFocus = ({
     hadInert: element.hasAttribute("inert"),
     previousAriaHidden: element.getAttribute("aria-hidden"),
   }));
-  const body = document.body;
-  const computedBodyStyle = window.getComputedStyle(body);
-  const previousOverflow = body.style.overflow;
-  const previousPaddingRight = body.style.paddingRight;
-  const scrollbarWidth = getScrollbarWidth();
-  const parsedPaddingRight = Number.parseFloat(computedBodyStyle.paddingRight);
-  const currentPaddingRight = Number.isNaN(parsedPaddingRight)
-    ? 0
-    : parsedPaddingRight;
   const openDrawerButtonElement = openDrawerButtonRef.current;
   const drawerElement = drawerRef.current;
 
@@ -52,11 +42,9 @@ export const handleHeaderFocus = ({
     element.setAttribute("aria-hidden", "true");
   }
 
-  body.style.overflow = "hidden";
-
-  if (scrollbarWidth > 0) {
-    body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
-  }
+  const handleScrollEvent = (event: Event) => {
+    event.preventDefault();
+  };
 
   (
     closeDrawerButtonRef.current ??
@@ -118,14 +106,17 @@ export const handleHeaderFocus = ({
   };
 
   document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("wheel", handleScrollEvent, { passive: false });
+  document.addEventListener("touchmove", handleScrollEvent, {
+    passive: false,
+  });
   window.addEventListener("resize", handleResize);
 
   return () => {
     document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("wheel", handleScrollEvent);
+    document.removeEventListener("touchmove", handleScrollEvent);
     window.removeEventListener("resize", handleResize);
-
-    body.style.overflow = previousOverflow;
-    body.style.paddingRight = previousPaddingRight;
 
     for (const {
       element,
