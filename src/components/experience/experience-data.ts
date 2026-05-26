@@ -5,11 +5,15 @@ export type ExperienceTone = "amber" | "teal" | "slate";
 
 export type ExperienceTimeline = Record<AppLocale, string>;
 
-const EXPERIENCE_PROJECT_IMAGE_SOURCES = [
-  "/images/projects/energygrip-1.jpg",
-  "/images/projects/energygrip-1.jpg",
-  "/images/projects/energygrip-1.jpg",
-] as const;
+const EXPERIENCE_PROJECT_IMAGE_SOURCES = {
+  energyGrip: [
+    "/images/experience/energygrip-1.webp",
+    "/images/experience/energygrip-2.webp",
+  ],
+  energyFlip: ["/images/experience/energyflip-1.webp"],
+  consultancyWork: ["/images/experience/labela.png"],
+  universalTransit: ["/images/experience/universal-transit.webp"],
+};
 
 export const EXPERIENCE_TAG_IDS = [
   "nextjs",
@@ -38,7 +42,8 @@ export type ExperienceProjectConfig = {
   timeline: ExperienceTimeline;
   tone: ExperienceTone;
   tagIds: readonly ExperienceTagId[];
-  imageSources: readonly [string, ...string[]];
+  imageSources: string[];
+  externalLink?: string;
 };
 
 export type ExperienceProject = Omit<ExperienceProjectConfig, "timeline"> & {
@@ -106,7 +111,7 @@ export function getExperienceTimeline(
   return timelineByLocale[currentLocale];
 }
 
-export const EXPERIENCE_PROJECTS = [
+export const EXPERIENCE_PROJECTS: readonly ExperienceProjectConfig[] = [
   {
     id: "energyGrip",
     timeline: {
@@ -124,7 +129,8 @@ export const EXPERIENCE_PROJECTS = [
       "dataVisualization",
       "ciCd",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.energyGrip,
+    externalLink: "https://www.energygrip.com/",
   },
   {
     id: "energyFlip",
@@ -142,7 +148,8 @@ export const EXPERIENCE_PROJECTS = [
       "appStoreDeployment",
       "ciCd",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.energyFlip,
+    externalLink: "https://www.energyflip.com/",
   },
   {
     id: "consultancyWork",
@@ -159,7 +166,7 @@ export const EXPERIENCE_PROJECTS = [
       "contentful",
       "performanceOptimization",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.consultancyWork,
   },
   {
     id: "universalTransit",
@@ -176,8 +183,9 @@ export const EXPERIENCE_PROJECTS = [
       "realTimeData",
       "materialUi",
     ],
-    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES,
+    imageSources: EXPERIENCE_PROJECT_IMAGE_SOURCES.universalTransit,
+    externalLink: "https://www.universaltransit.com/",
   },
-] as const satisfies readonly ExperienceProjectConfig[];
+];
 
 export type ExperienceProjectId = (typeof EXPERIENCE_PROJECTS)[number]["id"];
