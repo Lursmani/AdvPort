@@ -59,6 +59,13 @@ function Header() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [isScrolledPastThreshold, setIsScrolledPastThreshold] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(() => {
+    if (typeof document === "undefined") {
+      return false;
+    }
+
+    return document.documentElement.dataset.experienceModalOpen === "true";
+  });
   const headerShellRef = useRef<HTMLDivElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
   const openDrawerButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -76,6 +83,31 @@ function Header() {
 
     return () => {
       window.removeEventListener("scroll", updateScrollState);
+    };
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const syncModalState = () => {
+      const isModalOpen = root.dataset.experienceModalOpen === "true";
+
+      setIsExperienceModalOpen(isModalOpen);
+
+      if (isModalOpen) {
+        shouldRestoreFocusRef.current = false;
+        setIsDrawerOpen(false);
+      }
+    };
+
+    const observer = new MutationObserver(syncModalState);
+
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["data-experience-modal-open"],
+    });
+
+    return () => {
+      observer.disconnect();
     };
   }, []);
 
@@ -108,6 +140,10 @@ function Header() {
   };
 
   const openDrawer = () => {
+    if (isExperienceModalOpen) {
+      return;
+    }
+
     shouldRestoreFocusRef.current = true;
     setIsDrawerOpen(true);
   };
@@ -118,7 +154,15 @@ function Header() {
   };
 
   return (
-    <header className="site-header pointer-events-none fixed inset-x-0 top-0 z-50 transition-[opacity,transform] duration-300">
+    <header
+      className={`site-header fixed inset-x-0 top-0 z-50 pointer-events-none transition-transform duration-300 ${
+        isExperienceModalOpen
+          ? "-translate-y-[calc(100%+1.25rem)]"
+          : "translate-y-0"
+      }`}
+      aria-hidden={isExperienceModalOpen ? true : undefined}
+      inert={isExperienceModalOpen ? true : undefined}
+    >
       <div
         ref={headerShellRef}
         className={`header-shell my-2 pointer-events-auto mx-auto flex w-[calc(100%-1rem)] max-w-7xl items-center justify-between gap-4 rounded-full px-4 py-2 sm:w-[calc(100%-1.5rem)] sm:px-6 sm:py-2 lg:px-8 ${
@@ -228,7 +272,7 @@ function Header() {
               aria-modal="true"
               aria-labelledby={drawerTitleId}
               tabIndex={-1}
-              className="hero-glass pointer-events-auto fixed inset-y-0 left-0 z-50 flex w-[min(22rem,84vw)] flex-col gap-8 rounded-r-4xl px-5 py-5 md:hidden"
+              className="hero-glass header-drawer pointer-events-auto fixed inset-y-0 left-0 z-50 flex w-[min(22rem,84vw)] flex-col gap-8 rounded-r-4xl px-5 py-5 md:hidden"
               initial={
                 prefersReducedMotion ? { x: 0, opacity: 1 } : { x: "-100%" }
               }
