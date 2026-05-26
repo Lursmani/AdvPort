@@ -1,0 +1,78 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  padding: 0;
+  color: var(--foreground-muted);
+  transition:
+    transform 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease,
+    box-shadow 220ms ease,
+    opacity 220ms ease;
+  touch-action: manipulation;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  transform: none;
+}
+
+.hero {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.hero:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--foreground) 28%, white);
+  outline-offset: 4px;
+}
+
+.hero:disabled {
+  opacity: 0.7;
+}
+
+.surface {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-color: color-mix(in oklab, var(--foreground) 12%, transparent);
+  background: color-mix(in oklab, var(--background) 78%, transparent);
+  box-shadow: 0 16px 40px
+    color-mix(in oklab, var(--background) 78%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.surface:focus-visible {
+  outline: 2px solid
+    color-mix(
+      in oklab,
+      var(--experience-accent-strong, var(--foreground)) 84%,
+      white
+    );
+  outline-offset: 4px;
+}
+
+.surface:disabled {
+  opacity: 0.42;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover:not(:disabled) {
+    color: var(--foreground);
+    transform: translateY(-2px);
+  }
+
+  .surface:hover:not(:disabled) {
+    border-color: color-mix(
+      in oklab,
+      var(--experience-accent-strong, var(--foreground)) 20%,
+      var(--foreground) 16%
+    );
+    background: color-mix(in oklab, var(--background) 72%, transparent);
+  }
+}

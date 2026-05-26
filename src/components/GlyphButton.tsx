@@ -1,22 +1,26 @@
 import type { ComponentPropsWithRef, ReactNode } from "react";
+import cn from "@/utils/cn";
+import styles from "./GlyphButton.module.css";
 
 type GlyphButtonProps = Omit<ComponentPropsWithRef<"button">, "children"> & {
   children: ReactNode;
+  variant?: "hero" | "surface";
 };
-
-const baseClassName =
-  "hero-glass inline-flex size-11 items-center justify-center rounded-full text-foreground-muted transition duration-300 hover:-translate-y-0.5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-70";
 
 function GlyphButton({
   children,
   className,
   type = "button",
+  variant = "hero",
   ref,
   ...props
 }: GlyphButtonProps) {
-  const resolvedClassName = className
-    ? `${baseClassName} ${className}`
-    : baseClassName;
+  const resolvedClassName = cn(
+    styles.button,
+    variant === "hero" ? "hero-glass" : null,
+    styles[variant],
+    className,
+  );
 
   return (
     <button ref={ref} type={type} className={resolvedClassName} {...props}>

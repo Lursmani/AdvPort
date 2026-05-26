@@ -9,7 +9,18 @@
     "actions": {
       "toggleTheme": "Toggle theme",
       "switchToTheme": "Switch to {theme} theme",
-      "switchToLanguage": "Switch to {language}"
+      "switchToLanguage": "Switch to {language}",
+      "openMenu": "Open navigation menu",
+      "closeMenu": "Close navigation menu"
+    },
+    "labels": {
+      "mobileNavigation": "Navigation menu"
+    },
+    "nav": {
+      "top": "Top",
+      "skills": "Skills",
+      "experience": "Experience",
+      "about": "About"
     },
     "themes": {
       "light": "light",
@@ -47,6 +58,66 @@
       "backend": "Back-end",
       "toolsPlatforms": "Tools & Platforms",
       "languages": "Languages"
+    }
+  },
+  "ExperienceSection": {
+    "eyebrow": "Experience",
+    "title": "Selected product work, arranged as stories you can open.",
+    "actions": {
+      "openProject": "Open project details for {title}",
+      "openProjectImage": "Open project gallery for {title}",
+      "externalProject": "Open external link for {title}",
+      "visitProject": "Visit {title}",
+      "closeModal": "Close project details",
+      "previousProject": "Show previous project",
+      "nextProject": "Show next project",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "galleryProgress": "Gallery position"
+    },
+    "tags": {
+      "nextjs": "Next.js",
+      "react": "React",
+      "typescript": "TypeScript",
+      "swr": "SWR",
+      "iotIntegration": "IoT Integration",
+      "dataVisualization": "Data Visualization",
+      "ciCd": "CI/CD",
+      "reactNative": "React Native",
+      "figma": "Figma",
+      "appStoreDeployment": "App Store Deployment",
+      "gatsby": "Gatsby",
+      "graphQl": "GraphQL",
+      "contentful": "Contentful",
+      "performanceOptimization": "Performance Optimization",
+      "apiIntegration": "API Integration",
+      "realTimeData": "Real-time Data",
+      "materialUi": "Material UI"
+    },
+    "projects": {
+      "energyGrip": {
+        "title": "EnergyGrip - Energy Management System",
+        "subtitle": "B2B energy management dashboard with heavy IoT integration and real-time analytics.",
+        "description": "Led the migration of the legacy Next.js codebase to the modern App Router, significantly boosting performance and developer velocity. Architected complex front-end logic to ensure 100% data availability for real-time telemetry during network drops, while building out advanced data visualizations and bi-directional controls for IoT hardware like thermostats and heat delivery sets.",
+        "externalLink": "https://www.energygrip.com/"
+      },
+      "energyFlip": {
+        "title": "EnergyFlip - Multi-platform Energy App",
+        "subtitle": "Cross-platform B2C/B2B2C energy monitoring application.",
+        "description": "Owned the end-to-end redesign of the platform, refactoring over 25,000 lines of code and pushing it to deployment in a massive three-week sprint despite shifting client specs. Managed the entire front-end architecture, designed the UI in Figma, and maintained the CI/CD pipelines to deploy across iOS, Android, and web simultaneously.",
+        "externalLink": "https://www.energyflip.com/"
+      },
+      "consultancyWork": {
+        "title": "Agency Consultancy - High-Profile Clients",
+        "subtitle": "Scalable web applications and performance optimizations for major Dutch brands.",
+        "description": "Delivered fast-paced, high-quality releases for enterprise clients including DPD, PON, and Nationale Nederlanden. Focused heavily on modernizing legacy codebases, squeezing out performance optimizations, and integrating headless CMS solutions into modern React environments."
+      },
+      "universalTransit": {
+        "title": "Universal Transit - Logistics Dispatch",
+        "subtitle": "Real-time tracking and route planning platform for trucking dispatchers.",
+        "description": "Acted as the sole front-end engineer building the entire logistics dispatch platform from scratch. Handled everything from mapping out the initial technical specifications for the back-end API integrations to architecting the Material UI front-end for real-time vehicle tracking.",
+        "externalLink": "https://www.universaltransit.com/"
+      }
     }
   }
 }

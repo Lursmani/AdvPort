@@ -9,7 +9,18 @@
     "actions": {
       "toggleTheme": "Thema wisselen",
       "switchToTheme": "Overschakelen naar het {theme}-thema",
-      "switchToLanguage": "Overschakelen naar {language}"
+      "switchToLanguage": "Overschakelen naar {language}",
+      "openMenu": "Navigatiemenu openen",
+      "closeMenu": "Navigatiemenu sluiten"
+    },
+    "labels": {
+      "mobileNavigation": "Navigatiemenu"
+    },
+    "nav": {
+      "top": "Bovenaan",
+      "skills": "Vaardigheden",
+      "experience": "Ervaring",
+      "about": "Over"
     },
     "themes": {
       "light": "lichte",
@@ -47,6 +58,66 @@
       "backend": "Back-end",
       "toolsPlatforms": "Tools & platforms",
       "languages": "Talen"
+    }
+  },
+  "ExperienceSection": {
+    "eyebrow": "Ervaring",
+    "title": "Geselecteerd productwerk, opgezet als verhalen die je kunt openen.",
+    "actions": {
+      "openProject": "Projectdetails openen voor {title}",
+      "openProjectImage": "Projectgalerij openen voor {title}",
+      "externalProject": "Externe link openen voor {title}",
+      "visitProject": "Bezoek {title}",
+      "closeModal": "Projectdetails sluiten",
+      "previousProject": "Vorig project tonen",
+      "nextProject": "Volgend project tonen",
+      "previousImage": "Vorige afbeelding",
+      "nextImage": "Volgende afbeelding",
+      "galleryProgress": "Galerijpositie"
+    },
+    "tags": {
+      "nextjs": "Next.js",
+      "react": "React",
+      "typescript": "TypeScript",
+      "swr": "SWR",
+      "iotIntegration": "IoT-integratie",
+      "dataVisualization": "Datavisualisatie",
+      "ciCd": "CI/CD",
+      "reactNative": "React Native",
+      "figma": "Figma",
+      "appStoreDeployment": "App Store Deployment",
+      "gatsby": "Gatsby",
+      "graphQl": "GraphQL",
+      "contentful": "Contentful",
+      "performanceOptimization": "Prestatieoptimalisatie",
+      "apiIntegration": "API-integratie",
+      "realTimeData": "Realtime Data",
+      "materialUi": "Material UI"
+    },
+    "projects": {
+      "energyGrip": {
+        "title": "EnergyGrip - Energiemanagementsysteem",
+        "subtitle": "B2B energiemanagement-dashboard met zware IoT-integratie en realtime analyses.",
+        "description": "Geleid de migratie van de legacy Next.js-codebase naar de moderne App Router, wat de prestaties en ontwikkelsnelheid aanzienlijk heeft verbeterd. Complexe front-end logica ontworpen om 100% databeschikbaarheid te garanderen voor realtime telemetrie tijdens netwerkuitval, terwijl ik geavanceerde datavisualisaties en bidirectionele besturingen bouwde voor IoT-hardware zoals thermostaten en warmteafgiftesets.",
+        "externalLink": "https://www.energygrip.com/"
+      },
+      "energyFlip": {
+        "title": "EnergyFlip - Multi-platform Energie-app",
+        "subtitle": "Cross-platform B2C/B2B2C energiebeheer-app.",
+        "description": "Verantwoordelijk voor de end-to-end herontwerpfase van het platform, waarbij meer dan 25.000 regels code zijn gerefactord en binnen een intensieve sprint van drie weken zijn opgeleverd, ondanks veranderende clientspecificaties. Beheerde de volledige front-end architectuur, ontwerpt de UI in Figma en onderhield de CI/CD-pipelines om gelijktijdig te distribueren naar iOS, Android en web.",
+        "externalLink": "https://www.energyflip.com/"
+      },
+      "consultancyWork": {
+        "title": "Agency Consultancy - High-Profile Klanten",
+        "subtitle": "Schaalbare webapplicaties en prestatieoptimalisaties voor grote Nederlandse merken.",
+        "description": "Geleverd aan snelle, hoogwaardige releases voor enterprise-klanten waaronder DPD, PON en Nationale Nederlanden. Sterk gefocust op het moderniseren van legacy codebases, het maximaliseren van prestatieoptimalisaties en het integreren van headless CMS-oplossingen in moderne React-omgevingen."
+      },
+      "universalTransit": {
+        "title": "Universal Transit - Logistieke Dispatch",
+        "subtitle": "Realtime tracking- en routeplanningsplatform voor vrachtwagendispensers.",
+        "description": "Gewerkt als de enige front-end engineer die het volledige logistieke dispatch-platform vanaf nul heeft opgebouwd. Verantwoordelijk voor alles van het in kaart brengen van de initiële technische specificaties voor de back-end API-integraties tot het ontwerpen van de Material UI front-end voor realtime voertuigtracking.",
+        "externalLink": "https://www.universaltransit.com/"
+      }
     }
   }
 }
