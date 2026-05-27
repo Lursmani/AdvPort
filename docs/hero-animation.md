@@ -4,17 +4,17 @@ This hero effect is a React Three Fiber scene that builds blob geometry on the C
 
 ## File map
 
-| File                                                  | Responsibility                                                                                       |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `src/app/page.tsx`                                    | Mounts the hero section on the home page.                                                            |
-| `src/components/hero/HeroBanner.tsx`                  | Captures pointer state, reduced-motion preference, and section visibility.                           |
-| `src/components/hero/FlowingScene.tsx`                | Creates the transparent React Three Fiber canvas and pauses or resumes the render loop.              |
-| `src/components/hero/flowing-scene/LavaLampStack.tsx` | Builds the layer list, injects lighting, and renders one `LayerBlob` per layer.                      |
-| `src/components/hero/flowing-scene/layer-models.ts`   | Defines each layer blueprint and generates the blob geometry, anchor data, and seeded noise sources. |
-| `src/components/hero/flowing-scene/LayerBlob.tsx`     | Runs the per-frame motion and vertex deformation loop.                                               |
-| `src/components/hero/flowing-scene/noise.ts`          | Provides deterministic seeded simplex noise used by both shape generation and animation.             |
-| `src/components/hero/flowing-scene/palette.ts`        | Defines the theme-aware layer colors.                                                                |
-| `src/providers/ThemeProvider.tsx`                     | Supplies the current theme so the scene can swap palettes.                                           |
+| File                                                  | Responsibility                                                                                              |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `src/app/page.tsx`                                    | Mounts the hero section on the home page.                                                                   |
+| `src/components/hero/HeroBanner.tsx`                  | Captures pointer state, reduced-motion preference, and section visibility.                                  |
+| `src/components/hero/FlowingScene.tsx`                | Creates the transparent React Three Fiber canvas and pauses or resumes the render loop.                     |
+| `src/components/hero/flowing-scene/LavaLampStack.tsx` | Builds the layer list, derives the entrance order, injects lighting, and renders one `LayerBlob` per layer. |
+| `src/components/hero/flowing-scene/layer-models.ts`   | Defines each layer blueprint and generates the blob geometry, anchor data, and seeded noise sources.        |
+| `src/components/hero/flowing-scene/LayerBlob.tsx`     | Runs the one-time entrance, per-frame motion, and vertex deformation loop.                                  |
+| `src/components/hero/flowing-scene/noise.ts`          | Provides deterministic seeded simplex noise used by both shape generation and animation.                    |
+| `src/components/hero/flowing-scene/palette.ts`        | Defines the theme-aware layer colors.                                                                       |
+| `src/providers/ThemeProvider.tsx`                     | Supplies the current theme so the scene can swap palettes.                                                  |
 
 ## High-level flow
 
@@ -68,6 +68,7 @@ Inside that canvas, `LavaLampStack` owns scene assembly.
 - It reads the current theme from `ThemeProvider`.
 - It picks either `LIGHT_PALETTE` or `DARK_PALETTE`.
 - It rebuilds the layer models when the theme changes or when `viewport.width` changes.
+- It derives a reverse entrance order so `wave-4` starts first and `wave-1` enters last.
 - It injects one ambient light and one directional light.
 - It offsets the whole blob stack with `SCENE_GROUP_Y = -0.1`.
 - It disposes each generated geometry when the layer list is replaced or the component unmounts.
@@ -170,8 +171,12 @@ On cleanup, it restores the original positions and clears its refs.
 
 Every frame, `useFrame` updates the layer's outer transform before touching any vertices.
 
+- On the first active frame only, each blob starts above the hero bounds and slides down into place.
+- The stagger is derived from the render order in reverse, so `wave-4`, `wave-3`, `wave-2`, and `wave-1` enter sequentially.
+- Once a layer finishes that entrance, it stays in its normal anchored motion path and does not replay on later viewport re-entry.
+
 - `positionGroup.position.x` drifts using `motionNoise` and `driftX`
-- `positionGroup.position.y` is recomputed from the current viewport height so the top edge stays pinned to the scene boundary
+- `positionGroup.position.y` is recomputed from the current viewport height, then combined with the temporary entrance offset so the top edge settles into the scene boundary
 - `positionGroup.position.z` floats around `config.depth`
 - `motionGroup.rotation.z` gets a subtle noise-driven wobble
 - `motionGroup.scale` breathes slightly over time

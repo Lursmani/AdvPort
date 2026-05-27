@@ -1,5 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BufferAttribute,
   DynamicDrawUsage,
@@ -12,6 +12,7 @@ import type { LayerModel } from "./types";
 
 type LayerBlobProps = {
   config: LayerModel;
+  entranceIndex: number;
   pointer: FlowingScenePointer;
   sceneOffsetY: number;
 };
@@ -25,6 +26,12 @@ type InteractionField = {
   focusY: number;
 };
 
+const ENTRANCE_DURATION_SECONDS = 0.55;
+const ENTRANCE_STAGGER_SECONDS = 0.08;
+const ENTRANCE_BOUNCE_AMPLITUDE = 0.02;
+const ENTRANCE_BOUNCE_CYCLES = 1.35;
+const ENTRANCE_BOUNCE_DURATION_SECONDS = 0.34;
+
 function getAnchoredPositionY(
   viewportHeight: number,
   sceneOffsetY: number,
@@ -33,6 +40,59 @@ function getAnchoredPositionY(
   const boundaryY = viewportHeight * 0.5 - sceneOffsetY;
 
   return boundaryY - config.anchorConstraint.edgeLocalY;
+}
+
+function getGeometryHeight(config: LayerModel) {
+  const bounds = config.geometry.boundingBox;
+
+  if (!bounds) {
+    return config.radiusY * 2.2;
+  }
+
+  return bounds.max.y - bounds.min.y;
+}
+
+function getEntranceTravelDistance(viewportHeight: number, config: LayerModel) {
+  const geometryHeight = getGeometryHeight(config);
+
+  return geometryHeight + Math.max(viewportHeight * 0.12, config.radiusY * 0.6);
+}
+
+function getEntranceOffset(
+  entranceElapsed: number,
+  entranceIndex: number,
+  viewportHeight: number,
+  config: LayerModel,
+) {
+  const layerElapsed =
+    entranceElapsed - entranceIndex * ENTRANCE_STAGGER_SECONDS;
+  const travelDistance = getEntranceTravelDistance(viewportHeight, config);
+
+  if (layerElapsed <= 0) {
+    return travelDistance;
+  }
+
+  if (layerElapsed < ENTRANCE_DURATION_SECONDS) {
+    const progress = MathUtils.smoothstep(
+      layerElapsed,
+      0,
+      ENTRANCE_DURATION_SECONDS,
+    );
+
+    return (1 - progress) * travelDistance;
+  }
+
+  if (layerElapsed >= ENTRANCE_DURATION_SECONDS + ENTRANCE_BOUNCE_DURATION_SECONDS) {
+    return 0;
+  }
+
+  const bounceProgress =
+    (layerElapsed - ENTRANCE_DURATION_SECONDS) /
+    ENTRANCE_BOUNCE_DURATION_SECONDS;
+  const damping = Math.pow(1 - bounceProgress, 2);
+  const bouncePhase = bounceProgress * Math.PI * 2 * ENTRANCE_BOUNCE_CYCLES;
+
+  return -Math.sin(bouncePhase) * travelDistance * ENTRANCE_BOUNCE_AMPLITUDE * damping;
 }
 
 function getConstrainedDirectionY(directionY: number) {
@@ -106,13 +166,31 @@ function createInteractionField(
   } satisfies InteractionField;
 }
 
-export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
+export function LayerBlob({
+  config,
+  entranceIndex,
+  pointer,
+  sceneOffsetY,
+}: LayerBlobProps) {
   const { viewport } = useThree();
   const positionRef = useRef<Group>(null);
   const motionRef = useRef<Group>(null);
   const basePositionsRef = useRef<Float32Array | null>(null);
   const deformationSourcesRef = useRef<Float32Array | null>(null);
   const deformationActiveRef = useRef(false);
+  const [initialPosition] = useState<readonly [number, number, number]>(
+    () =>
+      [
+        0,
+        getAnchoredPositionY(viewport.height, sceneOffsetY, config) +
+          getEntranceTravelDistance(viewport.height, config),
+        config.depth,
+      ] as const,
+  );
+  const entranceStateRef = useRef({
+    completed: false,
+    startedAt: -1,
+  });
   const clickStateRef = useRef({
     startedAt: -100,
     token: 0,
@@ -173,6 +251,34 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
     }
 
     const elapsed = clock.getElapsedTime();
+    const entranceState = entranceStateRef.current;
+
+    if (entranceState.startedAt < 0) {
+      entranceState.startedAt = elapsed;
+    }
+
+    const anchoredPositionY = getAnchoredPositionY(
+      viewport.height,
+      sceneOffsetY,
+      config,
+    );
+    const entranceElapsed = elapsed - entranceState.startedAt;
+    const entranceDuration =
+      entranceIndex * ENTRANCE_STAGGER_SECONDS +
+      ENTRANCE_DURATION_SECONDS +
+      ENTRANCE_BOUNCE_DURATION_SECONDS;
+    const entranceOffset = entranceState.completed
+      ? 0
+      : getEntranceOffset(
+          entranceElapsed,
+          entranceIndex,
+          viewport.height,
+          config,
+        );
+
+    if (!entranceState.completed && entranceElapsed >= entranceDuration) {
+      entranceState.completed = true;
+    }
 
     if (pointer.current.clickToken !== clickStateRef.current.token) {
       clickStateRef.current.token = pointer.current.clickToken;
@@ -213,11 +319,7 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       3.6,
       delta,
     );
-    positionGroup.position.y = getAnchoredPositionY(
-      viewport.height,
-      sceneOffsetY,
-      config,
-    );
+    positionGroup.position.y = anchoredPositionY + entranceOffset;
     positionGroup.position.z = MathUtils.damp(
       positionGroup.position.z,
       config.depth + floatZ,
@@ -419,12 +521,6 @@ export function LayerBlob({ config, pointer, sceneOffsetY }: LayerBlobProps) {
       }
     }
   });
-
-  const initialPosition = [
-    0,
-    getAnchoredPositionY(viewport.height, sceneOffsetY, config),
-    config.depth,
-  ] as const;
 
   return (
     <group ref={positionRef} position={initialPosition}>
