@@ -82,7 +82,10 @@ function getEntranceOffset(
     return (1 - progress) * travelDistance;
   }
 
-  if (layerElapsed >= ENTRANCE_DURATION_SECONDS + ENTRANCE_BOUNCE_DURATION_SECONDS) {
+  if (
+    layerElapsed >=
+    ENTRANCE_DURATION_SECONDS + ENTRANCE_BOUNCE_DURATION_SECONDS
+  ) {
     return 0;
   }
 
@@ -92,7 +95,12 @@ function getEntranceOffset(
   const damping = Math.pow(1 - bounceProgress, 2);
   const bouncePhase = bounceProgress * Math.PI * 2 * ENTRANCE_BOUNCE_CYCLES;
 
-  return -Math.sin(bouncePhase) * travelDistance * ENTRANCE_BOUNCE_AMPLITUDE * damping;
+  return (
+    -Math.sin(bouncePhase) *
+    travelDistance *
+    ENTRANCE_BOUNCE_AMPLITUDE *
+    damping
+  );
 }
 
 function getConstrainedDirectionY(directionY: number) {
