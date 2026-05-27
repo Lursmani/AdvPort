@@ -171,7 +171,7 @@ On cleanup, it restores the original positions and clears its refs.
 
 Every frame, `useFrame` updates the layer's outer transform before touching any vertices.
 
-- On the first active frame only, each blob starts above the hero bounds and slides down into place.
+- On the first active frame only, each blob starts above the hero bounds, slides down into place, and finishes with a small bounce.
 - The stagger is derived from the render order in reverse, so `wave-4`, `wave-3`, `wave-2`, and `wave-1` enter sequentially.
 - Once a layer finishes that entrance, it stays in its normal anchored motion path and does not replay on later viewport re-entry.
 

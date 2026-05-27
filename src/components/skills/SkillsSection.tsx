@@ -1,3 +1,4 @@
+import Reveal from "@/components/Reveal";
 import { useTranslations } from "next-intl";
 import ViewportSection from "@/components/ViewportSection";
 import SkillCard from "@/components/skills/SkillCard";
@@ -109,19 +110,20 @@ function SkillsSection() {
           }}
         />
 
-        <div className="max-w-3xl">
+        <Reveal className="max-w-3xl" delay={0.04} viewportAmount={0.3}>
           <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
             {t("eyebrow")}
           </p>
           <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
             {t("title")}
           </h2>
-        </div>
+        </Reveal>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-3 lg:items-start">
-          {cards.map((card) => (
+          {cards.map((card, index) => (
             <SkillCard
               key={card.title}
+              index={index}
               title={card.title}
               description={card.description}
               tone={card.tone}
