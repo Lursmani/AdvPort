@@ -113,12 +113,9 @@ function SkillsSection() {
           <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
             {t("eyebrow")}
           </p>
-          <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
             {t("title")}
           </h2>
-          <p className="text-foreground-soft mt-6 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8">
-            {t("description")}
-          </p>
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-3 lg:items-start">
