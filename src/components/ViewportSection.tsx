@@ -18,7 +18,7 @@ function ViewportSection({
       ref={ref}
       {...props}
       className={cn(
-        "relative min-h-svh w-full flex flex-col items-center px-4 py-10 sm:px-6 lg:px-8 self-center",
+        "relative min-h-svh w-full flex flex-col items-center self-center overflow-x-clip px-4 py-10 sm:px-6 lg:px-8",
         width === "wide" && "max-w-5xl",
         width === "narrow" && "max-w-3xl",
         className,

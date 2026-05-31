@@ -15,7 +15,6 @@ type LavaLampStackProps = {
 
 export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
   const { viewport } = useThree();
-  const layerCount = 4;
   const keyLightPosition = useMemo(
     () => [viewport.width * -0.3, viewport.height * -0.4, 2.2] as const,
     [viewport.height, viewport.width],
@@ -41,7 +40,6 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
       })),
     [baseLayers, layerColors],
   );
-  const totalLayers = layers.length || layerCount;
 
   useEffect(() => {
     return () => {
@@ -64,7 +62,7 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
           <LayerBlob
             key={layer.id}
             config={layer}
-            entranceIndex={totalLayers - 1 - index}
+            entranceIndex={layers.length - 1 - index}
             pointer={pointer}
             sceneOffsetY={SCENE_GROUP_Y}
           />

@@ -1,7 +1,7 @@
 "use client";
 
 import GlyphButton from "@/components/GlyphButton";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m as motion } from "framer-motion";
 import {
   usePrefersReducedMotion,
   useTheme,
@@ -18,7 +18,7 @@ const navLinks = [
   { href: "#top", key: "top" },
   { href: "#skills", key: "skills" },
   { href: "#experience", key: "experience" },
-  { href: "#about", key: "about" },
+  { href: "#contact", key: "contact" },
 ] as const;
 
 function ThemeGlyph({ theme }: { theme: Theme }) {

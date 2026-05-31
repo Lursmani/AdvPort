@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import type { ComponentPropsWithoutRef, PointerEvent } from "react";
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
