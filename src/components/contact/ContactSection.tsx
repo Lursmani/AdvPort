@@ -14,11 +14,15 @@ import styles from "./ContactSection.module.css";
 
 type ContactActionKey = "linkedin" | "github" | "email" | "cv";
 
+type ContactAccentStyle = CSSProperties & {
+  "--contact-accent": string;
+};
+
 type ContactAction = {
   key: ContactActionKey;
   href: string;
   icon: LucideIcon;
-  accentStyle: CSSProperties;
+  accentStyle: ContactAccentStyle;
   external?: boolean;
   download?: string;
 };
@@ -32,7 +36,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     accentStyle: {
       "--contact-accent":
         "color-mix(in oklab, var(--hero-three) 82%, white 18%)",
-    } as CSSProperties,
+    },
   },
   {
     key: "github",
@@ -42,7 +46,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     accentStyle: {
       "--contact-accent":
         "color-mix(in oklab, var(--hero-four) 86%, white 14%)",
-    } as CSSProperties,
+    },
   },
   {
     key: "email",
@@ -50,7 +54,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     icon: Mail,
     accentStyle: {
       "--contact-accent": "color-mix(in oklab, var(--hero-two) 78%, white 22%)",
-    } as CSSProperties,
+    },
   },
   {
     key: "cv",
@@ -60,7 +64,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     accentStyle: {
       "--contact-accent":
         "color-mix(in oklab, var(--foreground) 72%, var(--hero-one) 28%)",
-    } as CSSProperties,
+    },
   },
 ] as const;
 
@@ -90,9 +94,6 @@ function ContactSection() {
           <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
             {t("title")}
           </h2>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-foreground-soft sm:text-lg">
-            {t("description")}
-          </p>
         </Reveal>
 
         <Reveal

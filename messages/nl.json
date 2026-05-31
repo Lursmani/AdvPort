@@ -119,7 +119,6 @@
   "ContactSection": {
     "eyebrow": "Contact",
     "title": "Kies het kanaal dat bij het gesprek past.",
-    "description": "Een directe set routes om contact op te nemen, meer werk te bekijken of een PDF-samenvatting van mijn achtergrond te downloaden.",
     "actions": {
       "linkedin": {
         "label": "LinkedIn",

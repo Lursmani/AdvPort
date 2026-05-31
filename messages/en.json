@@ -119,7 +119,6 @@
   "ContactSection": {
     "eyebrow": "Contact",
     "title": "Choose the channel that fits the conversation.",
-    "description": "A quick set of ways to reach me, browse more work, or download a PDF snapshot of my background.",
     "actions": {
       "linkedin": {
         "label": "LinkedIn",
