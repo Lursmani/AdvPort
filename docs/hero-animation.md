@@ -6,7 +6,7 @@ This hero effect is a React Three Fiber scene that builds blob geometry on the C
 
 | File                                                  | Responsibility                                                                                              |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `src/app/page.tsx`                                    | Mounts the hero section on the home page.                                                                   |
+| `src/app/[locale]/page.tsx`                           | Mounts the localized hero section on the home page.                                                          |
 | `src/components/hero/HeroBanner.tsx`                  | Captures pointer state, reduced-motion preference, and section visibility.                                  |
 | `src/components/hero/FlowingScene.tsx`                | Creates the transparent React Three Fiber canvas and pauses or resumes the render loop.                     |
 | `src/components/hero/flowing-scene/LavaLampStack.tsx` | Builds the layer list, derives the entrance order, injects lighting, and renders one `LayerBlob` per layer. |
