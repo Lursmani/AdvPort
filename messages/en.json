@@ -115,5 +115,28 @@
         "description": "Acted as the sole front-end engineer building the entire logistics dispatch platform from scratch. Handled everything from mapping out the initial technical specifications for the back-end API integrations to architecting the Material UI front-end for real-time vehicle tracking."
       }
     }
+  },
+  "ContactSection": {
+    "eyebrow": "Contact",
+    "title": "Choose the channel that fits the conversation.",
+    "description": "A quick set of ways to reach me, browse more work, or download a PDF snapshot of my background.",
+    "actions": {
+      "linkedin": {
+        "label": "LinkedIn",
+        "detail": "Professional profile, experience, and current role context."
+      },
+      "github": {
+        "label": "GitHub",
+        "detail": "Repositories, experiments, and the code behind side projects."
+      },
+      "email": {
+        "label": "Email",
+        "detail": "The fastest route for direct questions, freelance work, or collaboration."
+      },
+      "cv": {
+        "label": "Download CV",
+        "detail": "A PDF snapshot of experience, delivery scope, and recent product work."
+      }
+    }
   }
 }

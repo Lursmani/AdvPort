@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import ContactSection from "@/components/contact/ContactSection";
 import SkillsSection from "@/components/skills/SkillsSection";
 import HeroBanner from "@/components/hero/HeroBanner";
 import HeroContent from "@/components/hero/HeroContent";
@@ -14,6 +15,7 @@ export default function Page() {
         </HeroBanner>
         <SkillsSection />
         <ExperienceSection />
+        <ContactSection />
       </main>
     </>
   );
