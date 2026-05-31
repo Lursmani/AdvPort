@@ -20,7 +20,7 @@
       "top": "Bovenaan",
       "skills": "Vaardigheden",
       "experience": "Ervaring",
-      "about": "Over"
+      "contact": "Contact"
     },
     "themes": {
       "light": "lichte",
@@ -37,7 +37,6 @@
   "SkillsSection": {
     "eyebrow": "Vaardigheden",
     "title": "Drie werksporen, één productgerichte aanpak.",
-    "description": "Ik werk over interface-implementatie, data-verbonden architectuur en de tooling die releases snel en betrouwbaar houdt.",
     "cards": {
       "frontend": {
         "title": "Interfaces Bouwen",

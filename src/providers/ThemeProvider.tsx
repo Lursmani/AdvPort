@@ -12,6 +12,7 @@ import {
   ThemeProvider as NextThemesProvider,
   useTheme as useNextTheme,
 } from "next-themes";
+import MotionProvider from "./MotionProvider";
 
 export type Theme = "light" | "dark";
 
@@ -92,7 +93,9 @@ function ThemeProvider({ children }: ThemeProviderProps) {
       enableSystem
       themes={["light", "dark"]}
     >
-      <ReducedMotionProvider>{children}</ReducedMotionProvider>
+      <ReducedMotionProvider>
+        <MotionProvider>{children}</MotionProvider>
+      </ReducedMotionProvider>
     </NextThemesProvider>
   );
 }

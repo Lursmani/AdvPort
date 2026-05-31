@@ -1,5 +1,6 @@
 "use client";
 
+import { m as motion } from "framer-motion";
 import type { ComponentPropsWithoutRef, PointerEvent } from "react";
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
@@ -14,6 +15,7 @@ export type SkillCardGroup = {
 type SkillCardTone = "amber" | "teal" | "slate";
 
 type SkillCardProps = ComponentPropsWithoutRef<"article"> & {
+  index?: number;
   title: string;
   description: string;
   groups: readonly SkillCardGroup[];
@@ -31,6 +33,10 @@ type SkillCardBounds = {
 };
 
 const ACTIVE_GLOW_OPACITY = "1";
+const CARD_REVEAL_TRANSITION = {
+  duration: 0.58,
+  ease: [0.22, 1, 0.36, 1],
+} as const;
 
 const cardClasses =
   "relative flex h-full flex-col overflow-hidden rounded-4xl p-6 sm:p-8";
@@ -80,6 +86,7 @@ function resetGlowPosition(element: HTMLElement) {
 
 function SkillCard({
   className,
+  index = 0,
   title,
   description,
   groups,
@@ -173,54 +180,77 @@ function SkillCard({
   };
 
   return (
-    <article
-      {...props}
-      onPointerEnter={handlePointerEnter}
-      onPointerLeave={handlePointerLeave}
-      onPointerMove={handlePointerMove}
-      style={style}
-      className={cn(
-        cardClasses,
-        styles.cardEffect,
-        toneClasses[tone],
-        className,
-      )}
+    <motion.div
+      className={cn("h-full", styles.revealFrame)}
+      data-reveal-index={index % 3}
+      initial={
+        prefersReducedMotion
+          ? false
+          : {
+              opacity: 0,
+              x: "var(--skills-card-enter-x)",
+              y: "var(--skills-card-enter-y)",
+            }
+      }
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, amount: 0.28 }}
+      transition={
+        prefersReducedMotion
+          ? { duration: 0 }
+          : { ...CARD_REVEAL_TRANSITION, delay: index * 0.12 }
+      }
     >
-      <div className={styles.effects}>
-        <div className={styles.glow} />
-        <div className={styles.grid} />
-        <div className={styles.gridHighlight} />
-      </div>
+      <div className="h-full">
+        <article
+          {...props}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+          onPointerMove={handlePointerMove}
+          style={style}
+          className={cn(
+            cardClasses,
+            styles.cardEffect,
+            toneClasses[tone],
+            className,
+          )}
+        >
+          <div className={styles.effects}>
+            <div className={styles.glow} />
+            <div className={styles.grid} />
+            <div className={styles.gridHighlight} />
+          </div>
 
-      <div className="relative z-10 flex h-full flex-col">
-        <h3 className="max-w-xs text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem]">
-          {title}
-        </h3>
-        <p className="text-foreground-muted mt-4 max-w-sm text-sm leading-6 sm:text-base">
-          {description}
-        </p>
+          <div className="relative z-10 flex h-full flex-col">
+            <h3 className="max-w-xs text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem]">
+              {title}
+            </h3>
+            <p className="text-foreground-muted mt-4 max-w-sm text-sm leading-6 sm:text-base">
+              {description}
+            </p>
 
-        <div className="mt-8 space-y-6">
-          {groups.map((group, index) => (
-            <div key={group.title ?? `${title}-${index}`}>
-              {group.title ? (
-                <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em]">
-                  {group.title}
-                </p>
-              ) : null}
+            <div className="mt-8 space-y-6">
+              {groups.map((group, groupIndex) => (
+                <div key={group.title ?? `${title}-${groupIndex}`}>
+                  {group.title ? (
+                    <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em]">
+                      {group.title}
+                    </p>
+                  ) : null}
 
-              <ul className="mt-3 flex flex-wrap gap-2.5">
-                {group.skills.map((skill) => (
-                  <li key={skill}>
-                    <span className={chipClasses}>{skill}</span>
-                  </li>
-                ))}
-              </ul>
+                  <ul className="mt-3 flex flex-wrap gap-2.5">
+                    {group.skills.map((skill) => (
+                      <li key={skill}>
+                        <span className={chipClasses}>{skill}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </article>
       </div>
-    </article>
+    </motion.div>
   );
 }
 

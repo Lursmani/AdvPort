@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Transition } from "framer-motion";
+import { m as motion, type Transition } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import GlyphButton from "@/components/GlyphButton";

@@ -319,7 +319,6 @@ export function createLayerModels(
       scale: 0.92,
       seed: 41,
     },
-
     {
       id: "wave-4",
       depth: 0,

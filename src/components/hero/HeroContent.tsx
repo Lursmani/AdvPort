@@ -1,3 +1,4 @@
+import Reveal from "@/components/Reveal";
 import { useTranslations } from "next-intl";
 
 function HeroContent() {
@@ -5,7 +6,7 @@ function HeroContent() {
 
   return (
     <div className="flex flex-1 items-end pb-8 pt-16 sm:pb-14 lg:pb-20">
-      <div className="max-w-3xl">
+      <Reveal className="max-w-3xl" delay={0.08} viewportAmount={0.45}>
         <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
           {t("intro1")}
         </p>
@@ -15,7 +16,7 @@ function HeroContent() {
         <p className="text-foreground-soft mt-6 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8">
           {t("intro2")}
         </p>
-      </div>
+      </Reveal>
     </div>
   );
 }

@@ -58,10 +58,11 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
         position={keyLightPosition}
       />
       <group position={[0, SCENE_GROUP_Y, 0]}>
-        {layers.map((layer) => (
+        {layers.map((layer, index) => (
           <LayerBlob
             key={layer.id}
             config={layer}
+            entranceIndex={layers.length - 1 - index}
             pointer={pointer}
             sceneOffsetY={SCENE_GROUP_Y}
           />

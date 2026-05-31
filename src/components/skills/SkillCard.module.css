@@ -1,3 +1,8 @@
+.revealFrame {
+  --skills-card-enter-x: 0px;
+  --skills-card-enter-y: 56px;
+}
+
 .cardEffect {
   --skills-card-glow-x: calc(100% + 2rem);
   --skills-card-glow-y: 2rem;
@@ -112,5 +117,17 @@
 @media (prefers-reduced-motion: reduce) {
   .glow {
     transition: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .revealFrame[data-reveal-index="0"] {
+    --skills-card-enter-x: -64px;
+    --skills-card-enter-y: 22px;
+  }
+
+  .revealFrame[data-reveal-index="2"] {
+    --skills-card-enter-x: 64px;
+    --skills-card-enter-y: 22px;
   }
 }

@@ -1,3 +1,4 @@
+import Reveal from "@/components/Reveal";
 import { useLocale, useTranslations } from "next-intl";
 import ViewportSection from "@/components/ViewportSection";
 import ExperienceCarousel from "./ExperienceCarousel";
@@ -65,14 +66,14 @@ function ExperienceSection() {
           }}
         />
 
-        <div className="max-w-3xl">
+        <Reveal className="max-w-3xl" delay={0.04} viewportAmount={0.3}>
           <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
             {t("eyebrow")}
           </p>
           <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
             {t("title")}
           </h2>
-        </div>
+        </Reveal>
 
         <ExperienceCarousel projects={projects} labels={labels} />
       </div>

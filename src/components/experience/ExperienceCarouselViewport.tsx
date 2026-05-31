@@ -1,5 +1,6 @@
 "use client";
 
+import { m as motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import ExperienceCarouselCard from "./ExperienceCarouselCard";
@@ -22,6 +23,16 @@ type ExperienceCarouselViewportProps = {
   labels: ExperienceCarouselLabels;
   onOpenProject: (payload: ExperienceCarouselOpenProject) => void;
 };
+
+const CAROUSEL_REVEAL_VARIANTS = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.08,
+    },
+  },
+} as const;
 
 function toRect(bounds: DOMRect): ExperienceRect {
   return {
@@ -175,7 +186,13 @@ function ExperienceCarouselViewport({
   };
 
   return (
-    <div className={styles.carouselShell}>
+    <motion.div
+      className={styles.carouselShell}
+      initial={prefersReducedMotion ? false : "hidden"}
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={CAROUSEL_REVEAL_VARIANTS}
+    >
       <ExperienceCarouselControls
         onPrevious={() => {
           scrollByDirection(-1);
@@ -203,7 +220,7 @@ function ExperienceCarouselViewport({
           ))}
         </ul>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

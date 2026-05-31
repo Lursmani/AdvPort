@@ -1,7 +1,9 @@
 "use client";
 
+import { m as motion } from "framer-motion";
 import Image from "next/image";
 import type { MouseEvent } from "react";
+import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import cn from "@/utils/cn";
 import {
   getExperienceToneStyle,
@@ -18,17 +20,38 @@ type ExperienceCarouselCardProps = {
   ) => void;
 };
 
+const CARD_REVEAL_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 52,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.56,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+} as const;
+
 function ExperienceCarouselCard({
   project,
   cardRef,
   onOpenProject,
 }: ExperienceCarouselCardProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
   const handleOpenProject = (event: MouseEvent<HTMLButtonElement>) => {
     onOpenProject(project, event.currentTarget);
   };
 
   return (
-    <li ref={cardRef} className={styles.cardItem}>
+    <motion.li
+      ref={cardRef}
+      className={styles.cardItem}
+      variants={prefersReducedMotion ? undefined : CARD_REVEAL_VARIANTS}
+    >
       <article
         data-experience-card
         className={styles.card}
@@ -80,7 +103,7 @@ function ExperienceCarouselCard({
           ) : null}
         </div>
       </article>
-    </li>
+    </motion.li>
   );
 }
 

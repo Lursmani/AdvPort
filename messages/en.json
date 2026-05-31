@@ -20,7 +20,7 @@
       "top": "Top",
       "skills": "Skills",
       "experience": "Experience",
-      "about": "About"
+      "contact": "Contact"
     },
     "themes": {
       "light": "light",
@@ -37,7 +37,6 @@
   "SkillsSection": {
     "eyebrow": "Skills",
     "title": "Three working lanes, one product mindset.",
-    "description": "I work across interface implementation, data-connected architecture, and the tooling that keeps releases fast and dependable.",
     "cards": {
       "frontend": {
         "title": "Build Interfaces",
