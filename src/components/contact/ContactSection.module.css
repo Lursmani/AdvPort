@@ -4,7 +4,7 @@
 }
 
 .cardLink {
-  --contact-accent: color-mix(in oklab, var(--hero-three) 82%, white 18%);
+  --contact-accent: color-mix(in oklab, var(--accent-three) 82%, white 18%);
   position: relative;
   display: block;
   overflow: hidden;
@@ -29,10 +29,17 @@
   z-index: 0;
   background: linear-gradient(
     135deg,
-    color-mix(in oklab, var(--contact-accent) 92%, transparent) 0%,
-    color-mix(in oklab, var(--contact-accent) 74%, transparent) 100%
+    color-mix(in oklab, var(--contact-accent) 96%, transparent) 0%,
+    color-mix(in oklab, var(--contact-accent) 86%, transparent) 100%
   );
-  opacity: 0.24;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 65%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to right, #000 0%, #000 65%, transparent 100%);
+  opacity: 0.50;
   transform: scaleX(0.18);
   transform-origin: left center;
   transition:
@@ -51,7 +58,7 @@
     linear-gradient(
       135deg,
       color-mix(in oklab, var(--foreground) 9%, transparent) 0%,
-      transparent 34%
+      transparent 85%
     ),
     linear-gradient(
       180deg,
@@ -138,6 +145,8 @@
 .cardLink:focus-visible::before {
   transform: scaleX(1);
   opacity: 0.94;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 .cardLink:focus-visible .trailingShell {
@@ -150,7 +159,7 @@
     transform: translateY(-6px);
     border-color: color-mix(
       in oklab,
-      var(--contact-accent) 34%,
+      var(--contact-accent) 50%,
       var(--foreground) 12%
     );
     box-shadow: 0 34px 96px
@@ -160,6 +169,8 @@
   .cardLink:hover::before {
     transform: scaleX(1);
     opacity: 0.94;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   .cardLink:hover .trailingShell {

@@ -35,7 +35,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     external: true,
     accentStyle: {
       "--contact-accent":
-        "color-mix(in oklab, var(--hero-three) 82%, white 18%)",
+        "color-mix(in oklab, var(--accent-one) 82%, white 5%)",
     },
   },
   {
@@ -45,7 +45,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     external: true,
     accentStyle: {
       "--contact-accent":
-        "color-mix(in oklab, var(--hero-four) 86%, white 14%)",
+        "color-mix(in oklab, var(--accent-four) 65%, white 14%)",
     },
   },
   {
@@ -53,7 +53,8 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     href: "mailto:lursmanashvilidavit@gmail.com",
     icon: Mail,
     accentStyle: {
-      "--contact-accent": "color-mix(in oklab, var(--hero-two) 78%, white 22%)",
+      "--contact-accent":
+        "color-mix(in oklab, var(--accent-two) 78%, white 22%)",
     },
   },
   {
@@ -63,7 +64,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
     download: "Davit-Lursmanashvili-CV.pdf",
     accentStyle: {
       "--contact-accent":
-        "color-mix(in oklab, var(--foreground) 72%, var(--hero-one) 28%)",
+        "color-mix(in oklab, white 20%, var(--accent-three) 50%)",
     },
   },
 ] as const;
@@ -83,7 +84,7 @@ function ContactSection() {
           className="pointer-events-none absolute inset-x-8 top-10 -z-10 h-64 rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle at center, color-mix(in oklab, var(--hero-four) 24%, transparent) 0%, transparent 74%)",
+              "radial-gradient(circle at center, color-mix(in oklab, var(--accent-four) 24%, transparent) 0%, transparent 74%)",
           }}
         />
 

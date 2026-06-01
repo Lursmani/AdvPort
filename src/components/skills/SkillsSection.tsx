@@ -51,7 +51,7 @@ function SkillsSection() {
     {
       title: t("cards.frontend.title"),
       description: t("cards.frontend.description"),
-      tone: "amber" as const,
+      tone: "firstCardTone",
       className: "xl:translate-y-5",
       groups: [
         {
@@ -63,7 +63,7 @@ function SkillsSection() {
     {
       title: t("cards.data.title"),
       description: t("cards.data.description"),
-      tone: "teal" as const,
+      tone: "secondCardTone",
       className: "xl:-translate-y-3",
       groups: [
         {
@@ -79,7 +79,7 @@ function SkillsSection() {
     {
       title: t("cards.delivery.title"),
       description: t("cards.delivery.description"),
-      tone: "slate" as const,
+      tone: "thirdCardTone",
       className: "xl:translate-y-9",
       groups: [
         {
@@ -106,7 +106,7 @@ function SkillsSection() {
           className="pointer-events-none absolute inset-x-10 top-10 -z-10 h-56 rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle at center, color-mix(in oklab, var(--hero-three) 22%, transparent) 0%, transparent 72%)",
+              "radial-gradient(circle at center, color-mix(in oklab, var(--accent-three) 22%, transparent) 0%, transparent 72%)",
           }}
         />
 

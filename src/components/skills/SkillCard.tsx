@@ -12,7 +12,7 @@ export type SkillCardGroup = {
   skills: readonly string[];
 };
 
-type SkillCardTone = "amber" | "teal" | "slate";
+type SkillCardTone = "firstCardTone" | "secondCardTone" | "thirdCardTone";
 
 type SkillCardProps = ComponentPropsWithoutRef<"article"> & {
   index?: number;
@@ -45,11 +45,12 @@ const chipClasses =
   "inline-flex rounded-full border border-[color-mix(in_oklab,var(--foreground)_10%,transparent)] bg-[color-mix(in_oklab,var(--background)_78%,transparent)] px-3 py-1.5 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_8%,transparent)]";
 
 const toneClasses: Record<SkillCardTone, string> = {
-  amber:
-    "[--skills-card-accent:color-mix(in_oklab,var(--hero-two)_66%,transparent)]",
-  teal: "[--skills-card-accent:color-mix(in_oklab,var(--hero-three)_68%,transparent)]",
-  slate:
-    "[--skills-card-accent:color-mix(in_oklab,var(--hero-four)_66%,transparent)]",
+  firstCardTone:
+    "[--skills-card-accent:color-mix(in_oklab,var(--accent-two)_66%,transparent)]",
+  secondCardTone:
+    "[--skills-card-accent:color-mix(in_oklab,var(--accent-three)_68%,transparent)]",
+  thirdCardTone:
+    "[--skills-card-accent:color-mix(in_oklab,var(--accent-four)_66%,transparent)]",
 };
 
 function setGlowPosition(
@@ -90,7 +91,7 @@ function SkillCard({
   title,
   description,
   groups,
-  tone = "amber",
+  tone = "firstCardTone",
   onPointerEnter,
   onPointerLeave,
   onPointerMove,
