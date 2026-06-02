@@ -1,31 +1,9 @@
-import type { CSSProperties } from "react";
-import {
-  ArrowUpRight,
-  BriefcaseBusiness,
-  Download,
-  GitBranch,
-  Mail,
-  type LucideIcon,
-} from "lucide-react";
+import { BriefcaseBusiness, Download, GitBranch, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
 import ViewportSection from "@/components/ViewportSection";
+import ContactCard, { type ContactAction } from "./ContactCard";
 import styles from "./ContactSection.module.scss";
-
-type ContactActionKey = "linkedin" | "github" | "email" | "cv";
-
-type ContactAccentStyle = CSSProperties & {
-  "--contact-accent": string;
-};
-
-type ContactAction = {
-  key: ContactActionKey;
-  href: string;
-  icon: LucideIcon;
-  accentStyle: ContactAccentStyle;
-  external?: boolean;
-  download?: string;
-};
 
 const CONTACT_ACTIONS: readonly ContactAction[] = [
   {
@@ -104,47 +82,14 @@ function ContactSection() {
           viewportAmount={0.2}
         >
           <div className={styles.grid}>
-            {CONTACT_ACTIONS.map((action) => {
-              const ActionIcon = action.icon;
-              const TrailingIcon = action.download ? Download : ArrowUpRight;
-
-              return (
-                <a
-                  key={action.key}
-                  href={action.href}
-                  className={styles.cardLink}
-                  style={action.accentStyle}
-                  target={action.external ? "_blank" : undefined}
-                  rel={action.external ? "noopener noreferrer" : undefined}
-                  download={action.download}
-                >
-                  <span className={styles.content}>
-                    <span className={styles.iconShell} aria-hidden="true">
-                      <ActionIcon
-                        className={styles.actionIcon}
-                        strokeWidth={1.85}
-                      />
-                    </span>
-
-                    <span className={styles.copy}>
-                      <span className={styles.label}>
-                        {t(`actions.${action.key}.label`)}
-                      </span>
-                      <span className={styles.detail}>
-                        {t(`actions.${action.key}.detail`)}
-                      </span>
-                    </span>
-
-                    <span className={styles.trailingShell} aria-hidden="true">
-                      <TrailingIcon
-                        className={styles.trailingIcon}
-                        strokeWidth={1.85}
-                      />
-                    </span>
-                  </span>
-                </a>
-              );
-            })}
+            {CONTACT_ACTIONS.map((action) => (
+              <ContactCard
+                key={action.key}
+                action={action}
+                label={t(`actions.${action.key}.label`)}
+                detail={t(`actions.${action.key}.detail`)}
+              />
+            ))}
           </div>
         </Reveal>
       </div>
