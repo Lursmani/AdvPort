@@ -10,7 +10,7 @@ import {
 import { useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
 import ViewportSection from "@/components/ViewportSection";
-import styles from "./ContactSection.module.css";
+import styles from "./ContactSection.module.scss";
 
 type ContactActionKey = "linkedin" | "github" | "email" | "cv";
 

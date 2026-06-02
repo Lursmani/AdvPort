@@ -1,7 +1,23 @@
-@import "tailwindcss";
+@use "tailwindcss";
+@use "../styles/breakpoints" as bp;
+
+// Single source of truth for the breakpoint scale. SCSS modules use the
+// `from(...)` / `until(...)` / `between(...)` mixins; the values are also
+// exposed as `--breakpoint-*` custom properties so Tailwind's `sm:` /
+// `md:` / `lg:` / `xl:` / `2xl:` utilities resolve against the same scale.
+$breakpoint-css-vars: (
+  "--breakpoint-sm": bp.get(sm),
+  "--breakpoint-md": bp.get(md),
+  "--breakpoint-lg": bp.get(lg),
+  "--breakpoint-xl": bp.get(xl),
+  "--breakpoint-2xl": bp.get(2xl),
+);
 
 :root {
   color-scheme: dark;
+  @each $name, $value in $breakpoint-css-vars {
+    #{$name}: #{$value};
+  }
   --background: #001219;
   --foreground: #ffffff;
   --foreground-soft: color-mix(in oklab, var(--foreground) 88%, transparent);
@@ -28,6 +44,16 @@
   --color-gradient-end: var(--gradient-end);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  // Tailwind v4 breakpoint tokens — utilities like `sm:`, `md:`, `lg:`
+  // resolve against these. Values are sourced from
+  // `src/styles/_breakpoints.scss` so the SCSS modules and Tailwind share
+  // a single scale.
+  --breakpoint-sm: #{bp.get(sm)};
+  --breakpoint-md: #{bp.get(md)};
+  --breakpoint-lg: #{bp.get(lg)};
+  --breakpoint-xl: #{bp.get(xl)};
+  --breakpoint-2xl: #{bp.get(2xl)};
 }
 
 html[data-theme="light"] {
@@ -62,6 +88,13 @@ html[data-theme="dark"] {
 
 html {
   background: var(--background);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {

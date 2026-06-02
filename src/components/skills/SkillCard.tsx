@@ -5,7 +5,7 @@ import type { ComponentPropsWithoutRef, PointerEvent } from "react";
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import cn from "@/utils/cn";
-import styles from "./SkillCard.module.css";
+import styles from "./SkillCard.module.scss";
 
 export type SkillCardGroup = {
   title?: string;

@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import GlyphButton from "@/components/GlyphButton";
-import styles from "./ExperienceSection.module.css";
+import styles from "./ExperienceSection.module.scss";
 
 type ExperienceCarouselControlsProps = {
   onPrevious: () => void;

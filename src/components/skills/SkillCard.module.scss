@@ -1,3 +1,5 @@
+@use "../../styles/breakpoints" as bp;
+
 .revealFrame {
   --skills-card-enter-x: 0px;
   --skills-card-enter-y: 56px;
@@ -120,7 +122,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@include bp.from(lg) {
   .revealFrame[data-reveal-index="0"] {
     --skills-card-enter-x: -64px;
     --skills-card-enter-y: 22px;

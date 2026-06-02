@@ -9,7 +9,7 @@ import {
   getExperienceToneStyle,
   type ExperienceProject,
 } from "./experience-data";
-import styles from "./ExperienceSection.module.css";
+import styles from "./ExperienceSection.module.scss";
 
 type ExperienceCarouselCardProps = {
   project: ExperienceProject;

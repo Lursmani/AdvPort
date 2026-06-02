@@ -1,6 +1,6 @@
 import type { ComponentPropsWithRef, ReactNode } from "react";
 import cn from "@/utils/cn";
-import styles from "./GlyphButton.module.css";
+import styles from "./GlyphButton.module.scss";
 
 type GlyphButtonProps = Omit<ComponentPropsWithRef<"button">, "children"> & {
   children: ReactNode;
