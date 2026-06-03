@@ -121,20 +121,16 @@
     "title": "Kies het kanaal dat bij het gesprek past.",
     "actions": {
       "linkedin": {
-        "label": "LinkedIn",
-        "detail": "Professioneel profiel, ervaring en actuele rolcontext."
+        "label": "LinkedIn"
       },
       "github": {
-        "label": "GitHub",
-        "detail": "Repositories, experimenten en de code achter side projects."
+        "label": "GitHub"
       },
       "email": {
-        "label": "E-mail",
-        "detail": "lursmanashvildavit@gmail.com"
+        "label": "E-mail"
       },
       "cv": {
-        "label": "CV downloaden",
-        "detail": "Een PDF-samenvatting van ervaring, leveringsscope en recent productwerk."
+        "label": "CV downloaden"
       }
     }
   }

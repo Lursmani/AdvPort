@@ -121,20 +121,16 @@
     "title": "აირჩიეთ არხი, რომელიც ამ საუბარს ყველაზე მეტად შეეფერება.",
     "actions": {
       "linkedin": {
-        "label": "LinkedIn",
-        "detail": "პროფესიული პროფილი, გამოცდილება და მიმდინარე როლის კონტექსტი."
+        "label": "LinkedIn"
       },
       "github": {
-        "label": "GitHub",
-        "detail": "რეპოზიტორიები, ექსპერიმენტები და side project-ების კოდი."
+        "label": "GitHub"
       },
       "email": {
-        "label": "ელფოსტა",
-        "detail": "lursmanashvildavit@gmail.com"
+        "label": "ელფოსტა"
       },
       "cv": {
-        "label": "CV-ის ჩამოტვირთვა",
-        "detail": "გამოცდილებისა და ბოლო პროდუქტული ნამუშევრების PDF შეჯამება."
+        "label": "CV-ის ჩამოტვირთვა"
       }
     }
   }

@@ -7,7 +7,7 @@
   grid-template-rows: repeat(4, 1fr);
 }
 
-.cardLink {
+.card {
   --contact-accent: color-mix(in oklab, var(--accent-three) 82%, white 18%);
   position: relative;
   display: block;
@@ -26,7 +26,7 @@
   isolation: isolate;
 }
 
-.cardLink::before {
+.card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -51,7 +51,7 @@
     opacity 260ms ease;
 }
 
-.cardLink::after {
+.card::after {
   content: "";
   position: absolute;
   inset: 1px;
@@ -116,6 +116,20 @@
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.03em;
+  text-decoration: none;
+  width: fit-content;
+  transition: color 220ms ease;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.detailRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 .detail {
@@ -125,41 +139,91 @@
   line-height: 1.6;
 }
 
-.trailingShell {
-  display: inline-flex;
-  align-self: flex-start;
-  margin-left: auto;
-  border-radius: 9999px;
+.trailingIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
   color: var(--foreground-muted);
   transition:
     transform 220ms ease,
     color 220ms ease;
 }
 
-.trailingIcon {
-  width: 1rem;
-  height: 1rem;
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  color: var(--foreground-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: pointer;
+  transition:
+    color 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+
+  &:hover {
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--contact-accent) 84%, white);
+    outline-offset: 2px;
+  }
 }
 
-.cardLink:focus-visible {
+.card:focus-within {
   outline: 2px solid color-mix(in oklab, var(--contact-accent) 84%, white);
   outline-offset: 4px;
 }
 
-.cardLink:focus-visible::before {
+@media (hover: hover) and (pointer: fine) {
+  .card:focus-within::before {
+    transform: scaleX(1);
+    opacity: 0.94;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .card:focus-within .trailingIcon {
+    color: var(--foreground);
+    transform: translateX(2px);
+  }
+}
+
+/* Touch auto-activate: when the grid enters the viewport on touch devices,
+   JS adds this class with a staggered --activation-delay per card. */
+.cardActive {
+  transform: translateY(-6px);
+  border-color: color-mix(
+    in oklab,
+    var(--contact-accent) 50%,
+    var(--foreground) 12%
+  );
+  box-shadow:
+    0 0 2rem 0.2rem color-mix(in oklab, var(--contact-accent) 40%, transparent),
+    0 34px 96px color-mix(in oklab, var(--background) 72%, transparent);
+  transition-delay: var(--activation-delay, 0s);
+}
+
+.cardActive::before {
   transform: scaleX(1);
   opacity: 0.94;
   -webkit-mask-image: none;
   mask-image: none;
+  transition-delay: var(--activation-delay, 0s);
 }
 
-.cardLink:focus-visible .trailingShell {
+.cardActive .trailingIcon {
   color: var(--foreground);
   transform: translateX(2px);
+  transition-delay: var(--activation-delay, 0s);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .cardLink:hover {
+  .card:hover {
     transform: translateY(-6px);
     border-color: color-mix(
       in oklab,
@@ -172,14 +236,14 @@
       0 34px 96px color-mix(in oklab, var(--background) 72%, transparent);
   }
 
-  .cardLink:hover::before {
+  .card:hover::before {
     transform: scaleX(1);
     opacity: 0.94;
     -webkit-mask-image: none;
     mask-image: none;
   }
 
-  .cardLink:hover .trailingShell {
+  .card:hover .trailingIcon {
     color: var(--foreground);
     transform: translateX(2px);
   }

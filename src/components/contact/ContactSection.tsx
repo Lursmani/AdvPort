@@ -1,5 +1,8 @@
+"use client";
+
 import { BriefcaseBusiness, Download, GitBranch, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 import Reveal from "@/components/Reveal";
 import ViewportSection from "@/components/ViewportSection";
 import ContactCard, { type ContactAction } from "./ContactCard";
@@ -49,6 +52,32 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
 
 function ContactSection() {
   const t = useTranslations("ContactSection");
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [activated, setActivated] = useState(false);
+  const [isTouch] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(hover: none)").matches ||
+        window.matchMedia("(pointer: coarse)").matches
+      : false,
+  );
+
+  useEffect(() => {
+    if (!isTouch) return;
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActivated(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [isTouch]);
 
   return (
     <ViewportSection
@@ -81,13 +110,18 @@ function ContactSection() {
           delay={0.1}
           viewportAmount={0.2}
         >
-          <div className={styles.grid}>
-            {CONTACT_ACTIONS.map((action) => (
+          <div className={styles.grid} ref={gridRef}>
+            {CONTACT_ACTIONS.map((action, index) => (
               <ContactCard
                 key={action.key}
                 action={action}
                 label={t(`actions.${action.key}.label`)}
-                detail={t(`actions.${action.key}.detail`)}
+                subtitle={
+                  action.key === "email" ? "lursmanashvilidavit@gmail.com" : ""
+                }
+                copyButton={action.key === "email"}
+                activated={activated}
+                activationDelay={index * 0.15}
               />
             ))}
           </div>

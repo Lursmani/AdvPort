@@ -51,7 +51,7 @@ function SkillsSection() {
     {
       title: t("cards.frontend.title"),
       description: t("cards.frontend.description"),
-      tone: "firstCardTone",
+      tone: "firstCardTone" as const,
       className: "xl:translate-y-5",
       groups: [
         {
@@ -63,7 +63,7 @@ function SkillsSection() {
     {
       title: t("cards.data.title"),
       description: t("cards.data.description"),
-      tone: "secondCardTone",
+      tone: "secondCardTone" as const,
       className: "xl:-translate-y-3",
       groups: [
         {
@@ -79,7 +79,7 @@ function SkillsSection() {
     {
       title: t("cards.delivery.title"),
       description: t("cards.delivery.description"),
-      tone: "thirdCardTone",
+      tone: "thirdCardTone" as const,
       className: "xl:translate-y-9",
       groups: [
         {

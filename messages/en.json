@@ -121,20 +121,16 @@
     "title": "Choose the channel that fits the conversation.",
     "actions": {
       "linkedin": {
-        "label": "LinkedIn",
-        "detail": "Professional profile, experience, and current role context."
+        "label": "LinkedIn"
       },
       "github": {
-        "label": "GitHub",
-        "detail": "Repositories, experiments, and the code behind side projects."
+        "label": "GitHub"
       },
       "email": {
-        "label": "Email",
-        "detail": "lursmanashvildavit@gmail.com"
+        "label": "Email"
       },
       "cv": {
-        "label": "Download CV",
-        "detail": "A PDF snapshot of experience, delivery scope, and recent product work."
+        "label": "Download CV"
       }
     }
   }
