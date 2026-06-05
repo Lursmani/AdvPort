@@ -2,8 +2,7 @@
   "HeroBanner": {
     "intro1": "Hi, I'm",
     "name": "Davit Lursmanashvili",
-    "intro2": "a passionate software developer specializing in crafting high-quality web experiences.",
-    "intro3": "I also just like to build useful stuff."
+    "intro2": "a passionate software developer specializing in crafting high-quality web experiences."
   },
   "Header": {
     "actions": {
@@ -127,7 +126,10 @@
         "label": "GitHub"
       },
       "email": {
-        "label": "Email"
+        "label": "Email",
+        "copyLabel": "Copy email address",
+        "copySuccess": "Email address copied to clipboard.",
+        "copyError": "Could not copy email address."
       },
       "cv": {
         "label": "Download CV"

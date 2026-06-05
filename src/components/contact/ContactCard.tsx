@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import type { CSSProperties } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ArrowUpRight, Download, Copy } from "lucide-react";
@@ -26,6 +26,9 @@ type ContactCardProps = {
   label: string;
   subtitle: string;
   copyButton?: boolean;
+  copyLabel?: string;
+  copySuccessMessage?: string;
+  copyErrorMessage?: string;
   activated?: boolean;
   activationDelay?: number;
 };
@@ -35,19 +38,48 @@ export default function ContactCard({
   label,
   subtitle,
   copyButton,
+  copyLabel,
+  copySuccessMessage,
+  copyErrorMessage,
   activated,
   activationDelay = 0,
 }: ContactCardProps) {
   const ActionIcon = action.icon;
   const TrailingIcon = action.download ? Download : ArrowUpRight;
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const statusMessageId = useId();
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(subtitle);
+      setCopyStatus("success");
     } catch {
-      // Clipboard API unavailable — silently ignore
+      setCopyStatus("error");
     }
   }, [subtitle]);
+
+  useEffect(() => {
+    if (copyStatus === "idle") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCopyStatus("idle");
+    }, 2400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [copyStatus]);
+
+  const copyStatusMessage =
+    copyStatus === "success"
+      ? copySuccessMessage
+      : copyStatus === "error"
+        ? copyErrorMessage
+        : undefined;
 
   return (
     <div
@@ -83,17 +115,33 @@ export default function ContactCard({
             {subtitle && <span className={styles.detail}>{subtitle}</span>}
 
             {copyButton && (
-              <button
-                type="button"
-                className={cn(styles.copyButton, "ml-4")}
-                onClick={handleCopy}
-              >
-                <Copy
-                  className={styles.trailingIcon}
-                  strokeWidth={1.85}
-                  aria-hidden="true"
-                />
-              </button>
+              <>
+                <button
+                  type="button"
+                  className={cn(styles.copyButton, "ml-4")}
+                  onClick={handleCopy}
+                  aria-label={copyLabel}
+                  title={copyLabel}
+                  aria-describedby={
+                    copyStatusMessage ? statusMessageId : undefined
+                  }
+                >
+                  <Copy
+                    className={styles.trailingIcon}
+                    strokeWidth={1.85}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                <span
+                  id={statusMessageId}
+                  className={styles.copyStatus}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {copyStatusMessage ?? ""}
+                </span>
+              </>
             )}
           </span>
         </span>
