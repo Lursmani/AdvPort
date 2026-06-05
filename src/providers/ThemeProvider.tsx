@@ -11,7 +11,7 @@ import {
 import {
   ThemeProvider as NextThemesProvider,
   useTheme as useNextTheme,
-} from "next-themes";
+} from "@teispace/next-themes";
 import MotionProvider from "./MotionProvider";
 
 export type Theme = "light" | "dark";
