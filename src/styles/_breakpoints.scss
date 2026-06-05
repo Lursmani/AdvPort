@@ -1,0 +1,58 @@
+// Shared responsive breakpoints.
+//
+// Usage in SCSS:
+//   @use "src/styles/breakpoints" as bp;
+//
+//   @media (max-width: bp.maxWidth(sm)) { ... }
+//   @include bp.from(md) { ... }
+//   @include bp.until(md) { ... }
+//   @include bp.between(md, lg) { ... }
+
+@use "sass:map";
+
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+  2xl: 1536px,
+);
+
+@function get($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error "Unknown breakpoint `#{$name}`. Add it to $breakpoints in src/styles/_breakpoints.scss.";
+  }
+  @return map.get($breakpoints, $name);
+}
+
+// Return a `min-width` value (the breakpoint itself).
+@function minWidth($name) {
+  @return get($name);
+}
+
+// Return a `max-width` value one pixel below the breakpoint, so the
+// `min-width: <name>` and `max-width: <name>` queries are non-overlapping.
+@function maxWidth($name) {
+  @return get($name) - 0.02px;
+}
+
+// `min-width` media query.
+@mixin from($name) {
+  @media (min-width: get($name)) {
+    @content;
+  }
+}
+
+// `max-width` media query.
+@mixin until($name) {
+  @media (max-width: maxWidth($name)) {
+    @content;
+  }
+}
+
+// `min-width` ... `max-width` range query.
+@mixin between($from, $until) {
+  @media (min-width: get($from)) and (max-width: maxWidth($until)) {
+    @content;
+  }
+}

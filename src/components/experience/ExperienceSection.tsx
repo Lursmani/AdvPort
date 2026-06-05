@@ -62,7 +62,7 @@ function ExperienceSection() {
           className="pointer-events-none absolute inset-x-16 top-6 -z-10 h-64 rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle at center, color-mix(in oklab, var(--hero-two) 20%, transparent) 0%, transparent 74%)",
+              "radial-gradient(circle at center, color-mix(in oklab, var(--accent-two) 20%, transparent) 0%, transparent 74%)",
           }}
         />
 

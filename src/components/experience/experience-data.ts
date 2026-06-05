@@ -80,21 +80,21 @@ export type ExperienceRect = {
 const TONE_STYLES: Record<ExperienceTone, CSSProperties> = {
   amber: {
     "--experience-accent":
-      "color-mix(in oklab, var(--hero-two) 78%, transparent)",
+      "color-mix(in oklab, var(--accent-two) 78%, transparent)",
     "--experience-accent-strong":
-      "color-mix(in oklab, var(--hero-two) 86%, white 14%)",
+      "color-mix(in oklab, var(--accent-two) 86%, white 14%)",
   } as CSSProperties,
   teal: {
     "--experience-accent":
-      "color-mix(in oklab, var(--hero-three) 82%, transparent)",
+      "color-mix(in oklab, var(--accent-three) 82%, transparent)",
     "--experience-accent-strong":
-      "color-mix(in oklab, var(--hero-three) 84%, white 16%)",
+      "color-mix(in oklab, var(--accent-three) 84%, white 16%)",
   } as CSSProperties,
   slate: {
     "--experience-accent":
-      "color-mix(in oklab, var(--hero-four) 82%, transparent)",
+      "color-mix(in oklab, var(--accent-four) 82%, transparent)",
     "--experience-accent-strong":
-      "color-mix(in oklab, var(--hero-four) 86%, white 14%)",
+      "color-mix(in oklab, var(--accent-four) 86%, white 14%)",
   } as CSSProperties,
 };
 

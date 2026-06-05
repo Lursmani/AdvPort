@@ -1,3 +1,5 @@
+@use "../../styles/breakpoints" as bp;
+
 .carouselShell {
   position: relative;
   margin-top: 3.5rem;
@@ -85,8 +87,8 @@
     width: min(
       calc(
         (
-            100cqi - (var(--experience-inline-padding) * 2) -
-              var(--experience-gap)
+            100cqi -
+              (var(--experience-inline-padding) * 2) - var(--experience-gap)
           ) /
           2
       ),
@@ -95,8 +97,8 @@
     flex-basis: min(
       calc(
         (
-            100cqi - (var(--experience-inline-padding) * 2) -
-              var(--experience-gap)
+            100cqi -
+              (var(--experience-inline-padding) * 2) - var(--experience-gap)
           ) /
           2
       ),
@@ -178,7 +180,9 @@
 .card:has(:focus-visible) {
   box-shadow:
     inset 0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
-    0 34px 96px color-mix(in oklab, var(--background) 72%, transparent);
+    0 34px 96px color-mix(in oklab, var(--background) 72%, transparent),
+    0 0 2.2rem 0.15rem
+      color-mix(in oklab, var(--experience-accent-strong) 50%, transparent);
   z-index: 10;
 }
 
@@ -196,6 +200,10 @@
   );
   opacity: 0.95;
   filter: blur(34px);
+  transition:
+    opacity 280ms ease,
+    transform 280ms ease,
+    filter 280ms ease;
 }
 
 .pictureButton {
@@ -325,9 +333,17 @@
   .card:is(:hover, :has(:focus-visible)) {
     box-shadow:
       inset 0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
-      0 34px 96px color-mix(in oklab, var(--background) 72%, transparent);
+      0 34px 55px color-mix(in oklab, var(--background) 72%, transparent),
+      0 0 0.5rem 0.15rem
+        color-mix(in oklab, var(--experience-accent-strong) 50%, transparent);
     z-index: 10;
     transform: translateY(-10px);
+  }
+
+  .card:is(:hover, :has(:focus-visible)) .cardGlow {
+    opacity: 1;
+    transform: translateY(-0.2rem) scale(1.02);
+    filter: blur(40px);
   }
 }
 
@@ -555,7 +571,7 @@
   text-transform: uppercase;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@include bp.between(md, lg) {
   .galleryFrame {
     height: clamp(12.5rem, 26vw, 16rem);
   }
@@ -566,7 +582,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@include bp.from(lg) {
   .modalGallery {
     height: 100%;
   }
@@ -623,7 +639,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@include bp.until(md) {
   .carouselShell {
     margin-top: 2.75rem;
     --experience-card-bleed: 0.85rem;

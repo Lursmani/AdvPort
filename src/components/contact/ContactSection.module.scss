@@ -1,0 +1,260 @@
+@use "../../styles/breakpoints" as bp;
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(4, 1fr);
+}
+
+.card {
+  --contact-accent: color-mix(in oklab, var(--accent-three) 82%, white 18%);
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  background: color-mix(in oklab, var(--background) 78%, transparent);
+  box-shadow: 0 24px 70px
+    color-mix(in oklab, var(--background) 74%, transparent);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+  isolation: isolate;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--contact-accent) 96%, transparent) 0%,
+    color-mix(in oklab, var(--contact-accent) 86%, transparent) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 65%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to right, #000 0%, #000 65%, transparent 100%);
+  opacity: 0.5;
+  transform: scaleX(0.18);
+  transform-origin: left center;
+  transition:
+    transform 260ms ease,
+    opacity 260ms ease;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--foreground) 9%, transparent) 0%,
+      transparent 85%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 56%,
+      color-mix(in oklab, var(--foreground) 5%, transparent) 100%
+    );
+  opacity: 0.72;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.2rem;
+}
+
+.iconShell {
+  display: inline-flex;
+  width: 3.25rem;
+  height: 3.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.1rem;
+  border: 1px solid color-mix(in oklab, var(--foreground) 14%, transparent);
+  background: color-mix(in oklab, var(--background) 72%, transparent);
+  box-shadow: inset 0 1px 0
+    color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+
+.actionIcon {
+  width: 1.3rem;
+  height: 1.3rem;
+  color: var(--foreground);
+}
+
+.copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  color: var(--foreground);
+  font-size: clamp(1.05rem, 0.8vw + 0.95rem, 1.35rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  width: fit-content;
+  transition: color 220ms ease;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.detailRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.detail {
+  max-width: 30ch;
+  color: var(--foreground-soft);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.trailingIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--foreground-muted);
+  transition:
+    transform 220ms ease,
+    color 220ms ease;
+}
+
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  color: var(--foreground-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: pointer;
+  transition:
+    color 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+
+  &:hover {
+    color: var(--foreground);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--contact-accent) 84%, white);
+    outline-offset: 2px;
+  }
+}
+
+.card:focus-within {
+  outline: 2px solid color-mix(in oklab, var(--contact-accent) 84%, white);
+  outline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:focus-within::before {
+    transform: scaleX(1);
+    opacity: 0.94;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .card:focus-within .trailingIcon {
+    color: var(--foreground);
+    transform: translateX(2px);
+  }
+}
+
+/* Touch auto-activate: when the grid enters the viewport on touch devices,
+   JS adds this class with a staggered --activation-delay per card. */
+.cardActive {
+  transform: translateY(-6px);
+  border-color: color-mix(
+    in oklab,
+    var(--contact-accent) 50%,
+    var(--foreground) 12%
+  );
+  box-shadow:
+    0 0 2rem 0.2rem color-mix(in oklab, var(--contact-accent) 40%, transparent),
+    0 34px 96px color-mix(in oklab, var(--background) 72%, transparent);
+  transition-delay: var(--activation-delay, 0s);
+}
+
+.cardActive::before {
+  transform: scaleX(1);
+  opacity: 0.94;
+  -webkit-mask-image: none;
+  mask-image: none;
+  transition-delay: var(--activation-delay, 0s);
+}
+
+.cardActive .trailingIcon {
+  color: var(--foreground);
+  transform: translateX(2px);
+  transition-delay: var(--activation-delay, 0s);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(
+      in oklab,
+      var(--contact-accent) 50%,
+      var(--foreground) 12%
+    );
+    box-shadow:
+      0 0 2rem 0.2rem
+        color-mix(in oklab, var(--contact-accent) 40%, transparent),
+      0 34px 96px color-mix(in oklab, var(--background) 72%, transparent);
+  }
+
+  .card:hover::before {
+    transform: scaleX(1);
+    opacity: 0.94;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .card:hover .trailingIcon {
+    color: var(--foreground);
+    transform: translateX(2px);
+  }
+}
+
+@include bp.from(sm) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content {
+    padding: 1.25rem 1.3rem;
+  }
+}

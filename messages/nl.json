@@ -115,5 +115,23 @@
         "description": "Gewerkt als de enige front-end engineer die het volledige logistieke dispatch-platform vanaf nul heeft opgebouwd. Verantwoordelijk voor alles van het in kaart brengen van de initiële technische specificaties voor de back-end API-integraties tot het ontwerpen van de Material UI front-end voor realtime voertuigtracking."
       }
     }
+  },
+  "ContactSection": {
+    "eyebrow": "Contact",
+    "title": "Kies het kanaal dat bij het gesprek past.",
+    "actions": {
+      "linkedin": {
+        "label": "LinkedIn"
+      },
+      "github": {
+        "label": "GitHub"
+      },
+      "email": {
+        "label": "E-mail"
+      },
+      "cv": {
+        "label": "CV downloaden"
+      }
+    }
   }
 }

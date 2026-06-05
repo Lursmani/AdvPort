@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import cn from "@/utils/cn";
 import { type ExperienceProject } from "./experience-data";
-import styles from "./ExperienceSection.module.css";
+import styles from "./ExperienceSection.module.scss";
 
 type ExperienceModalDetailsProps = {
   project: ExperienceProject;

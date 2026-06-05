@@ -10,7 +10,7 @@ import {
   type ExperienceProject,
   type ExperienceRect,
 } from "./experience-data";
-import styles from "./ExperienceSection.module.css";
+import styles from "./ExperienceSection.module.scss";
 
 export type ExperienceCarouselOpenProject = {
   project: ExperienceProject;
