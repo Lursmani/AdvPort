@@ -120,6 +120,21 @@ function ContactSection() {
                   action.key === "email" ? "lursmanashvilidavit@gmail.com" : ""
                 }
                 copyButton={action.key === "email"}
+                copyLabel={
+                  action.key === "email"
+                    ? t("actions.email.copyLabel")
+                    : undefined
+                }
+                copySuccessMessage={
+                  action.key === "email"
+                    ? t("actions.email.copySuccess")
+                    : undefined
+                }
+                copyErrorMessage={
+                  action.key === "email"
+                    ? t("actions.email.copyError")
+                    : undefined
+                }
                 activated={activated}
                 activationDelay={index * 0.15}
               />
