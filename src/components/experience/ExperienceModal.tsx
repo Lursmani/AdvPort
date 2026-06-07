@@ -3,6 +3,7 @@
 import { m as motion, type Transition } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import GlyphButton from "@/components/GlyphButton";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import {
@@ -192,7 +193,7 @@ function ExperienceModal({
   }, [onClose]);
   const toneStyle = getExperienceToneStyle(project.tone);
 
-  return (
+  return createPortal(
     <div className={styles.modalRoot}>
       <motion.div
         aria-hidden="true"
@@ -251,7 +252,8 @@ function ExperienceModal({
           </div>
         </motion.div>
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
