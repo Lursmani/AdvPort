@@ -24,10 +24,10 @@ $breakpoint-css-vars: (
   --foreground-muted: color-mix(in oklab, var(--foreground) 80%, transparent);
   --foreground-faint: color-mix(in oklab, var(--foreground) 64%, transparent);
   --primary: #000000;
-  --gradient-start: #005f73;
+  --gradient-start: #044552;
   --gradient-end: #001219;
   --hero-background: #001219;
-  --accent-one: #003049;
+  --accent-one: #0f3143;
   --accent-two: #005f73;
   --accent-three: #e40707;
   --accent-four: #8d8231;
@@ -104,11 +104,7 @@ body {
 }
 
 .hero-backdrop {
-  background: linear-gradient(
-    180deg,
-    var(--gradient-start) 0%,
-    var(--gradient-end) 100%
-  );
+  background: var(--gradient-start);
 }
 
 .hero-vignette {

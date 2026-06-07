@@ -8,7 +8,7 @@ export const LIGHT_PALETTE: LayerPalette = {
 };
 
 export const DARK_PALETTE: LayerPalette = {
-  heroOne: "#003049",
+  heroOne: "#0f3143",
   heroTwo: "#22333b",
   heroThree: "#005f73",
   heroFour: "#264653",

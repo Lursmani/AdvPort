@@ -1,6 +1,7 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
+import { useEffect } from "react";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { LavaLampStack } from "@/components/hero/flowing-scene/LavaLampStack";
 import {
@@ -14,9 +15,20 @@ type FlowingSceneProps = {
   pointer: FlowingScenePointer;
 };
 
+function ClearColorUpdater({ color }: { color: number }) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    gl.setClearColor(color);
+  }, [color, gl]);
+
+  return null;
+}
+
 export default function FlowingScene({ active, pointer }: FlowingSceneProps) {
   const { theme } = useTheme();
   const scenePalette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
+  const clearColor = theme === "light" ? 0xfaedcd : 0x044552;
 
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -28,13 +40,14 @@ export default function FlowingScene({ active, pointer }: FlowingSceneProps) {
         dpr={[1, 1.5]}
         frameloop={active ? "always" : "never"}
         gl={{
-          alpha: true,
+          alpha: false,
         }}
         onCreated={({ gl }) => {
-          gl.setClearColor(0x000000, 0);
+          gl.setClearColor(clearColor);
         }}
         performance={{ min: 0.65 }}
       >
+        <ClearColorUpdater color={clearColor} />
         <LavaLampStack pointer={pointer} palette={scenePalette} />
       </Canvas>
     </div>
