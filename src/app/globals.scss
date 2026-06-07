@@ -33,6 +33,22 @@ $breakpoint-css-vars: (
   --accent-four: #8d8231;
 }
 
+html[data-theme="light"] {
+  color-scheme: light;
+  --background: #faf9f9;
+  --foreground: #000000;
+  --header-background: color-mix(in oklab, var(--primary) 90%, transparent);
+  --header-shell-background: color-mix(in oklab, #51c8ba 25%, transparent);
+  --primary: #ffffff;
+  --gradient-start: #f9e79f;
+  --gradient-end: #faedcd;
+  --hero-background: #faedcd;
+  --accent-one: #289c68;
+  --accent-two: #f2ca49;
+  --accent-three: #bd764f;
+  --accent-four: #9e73b2;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -54,22 +70,6 @@ $breakpoint-css-vars: (
   --breakpoint-lg: #{bp.get(lg)};
   --breakpoint-xl: #{bp.get(xl)};
   --breakpoint-2xl: #{bp.get(2xl)};
-}
-
-html[data-theme="light"] {
-  color-scheme: light;
-  --background: #faf9f9;
-  --foreground: #000000;
-  --header-background: color-mix(in oklab, var(--primary) 90%, transparent);
-  --header-shell-background: color-mix(in oklab, #51c8ba 25%, transparent);
-  --primary: #ffffff;
-  --gradient-start: #f9e79f;
-  --gradient-end: #faedcd;
-  --hero-background: #faedcd;
-  --accent-one: #289c68;
-  --accent-two: #f2ca49;
-  --accent-three: #bd764f;
-  --accent-four: #9e73b2;
 }
 
 html[data-theme="dark"] {

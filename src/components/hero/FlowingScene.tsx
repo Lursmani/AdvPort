@@ -28,7 +28,7 @@ function ClearColorUpdater({ color }: { color: number }) {
 export default function FlowingScene({ active, pointer }: FlowingSceneProps) {
   const { theme } = useTheme();
   const scenePalette = theme === "light" ? LIGHT_PALETTE : DARK_PALETTE;
-  const clearColor = theme === "light" ? 0xfaedcd : 0x044552;
+  const clearColor = theme === "light" ? 0xf9e79f : 0x044552;
 
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
