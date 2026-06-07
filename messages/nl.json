@@ -94,7 +94,7 @@
     },
     "projects": {
       "energyGrip": {
-        "title": "EnergyGrip - Energiemanagementsysteem",
+        "title": "EnergyGrip - Energie-managementsysteem",
         "subtitle": "B2B energiemanagement-dashboard met zware IoT-integratie en realtime analyses.",
         "description": "Geleid de migratie van de legacy Next.js-codebase naar de moderne App Router, wat de prestaties en ontwikkelsnelheid aanzienlijk heeft verbeterd. Complexe front-end logica ontworpen om 100% databeschikbaarheid te garanderen voor realtime telemetrie tijdens netwerkuitval, terwijl ik geavanceerde datavisualisaties en bidirectionele besturingen bouwde voor IoT-hardware zoals thermostaten en warmteafgiftesets."
       },

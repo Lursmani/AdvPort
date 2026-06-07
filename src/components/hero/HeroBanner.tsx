@@ -154,7 +154,7 @@ function HeroBanner({ children }: HeroBannerProps) {
         <FlowingScene active={sceneActive} pointer={pointer} />
       ) : null}
 
-      <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-40 z-10" />
+      <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-60 z-10" />
 
       <div className="relative z-20 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pb-12 pt-5 sm:px-10 lg:px-12">
         {children}
