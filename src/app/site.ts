@@ -2,8 +2,23 @@ import type { AppLocale } from "@/i18n/config";
 
 export const siteUrl = "https://davitl.com";
 export const siteName = "Davit Lursmanashvili";
-export const siteTitle = "Davit Lursmanashvili | Software Developer";
-export const siteImagePath = "/images/davit ski.jpg";
+export const siteTitles: Record<AppLocale, string> = {
+  en: "Davit Lursmanashvili | Software Developer",
+  nl: "Davit Lursmanashvili | Softwareontwikkelaar",
+  ka: "დავით ლურსმანაშვილი | დეველოპერი",
+};
+export const siteJobTitles: Record<AppLocale, string> = {
+  en: "Software Developer",
+  nl: "Softwareontwikkelaar",
+  ka: "დეველოპერი",
+};
+
+export const siteSameAs = [
+  "https://www.linkedin.com/in/davit-lursmanashvili/",
+  "https://github.com/Lursmani",
+];
+
+export const siteEmail = "lursmanashvilidavit@gmail.com";
 
 export const siteDescriptions: Record<AppLocale, string> = {
   en: "Portfolio of Davit Lursmanashvili, a software developer building polished, high-performance web experiences.",

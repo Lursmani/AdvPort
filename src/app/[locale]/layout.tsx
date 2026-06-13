@@ -10,7 +10,7 @@ import {
   siteDescriptions,
   siteImagePath,
   siteName,
-  siteTitle,
+  siteTitles,
   siteUrl,
 } from "@/app/site";
 import {
@@ -20,6 +20,7 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import ThemeProvider from "@/providers/ThemeProvider";
+import { generatePersonJsonLd } from "@/utils/jsonLd";
 import "../globals.scss";
 
 function resolveMetadataLocale(locale: string): AppLocale {
@@ -44,9 +45,11 @@ export async function generateMetadata({
     .filter((candidateLocale) => candidateLocale !== locale)
     .map((candidateLocale) => localeOpenGraphTags[candidateLocale]);
 
+  const pageTitle = siteTitles[locale];
+
   return {
     metadataBase: new URL(siteUrl),
-    title: siteTitle,
+    title: pageTitle,
     description: siteDescriptions[locale],
     alternates: {
       canonical: canonicalPath,
@@ -58,7 +61,7 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       url: canonicalPath,
-      title: siteTitle,
+      title: pageTitle,
       description: siteDescriptions[locale],
       siteName,
       locale: localeOpenGraphTags[locale],
@@ -72,11 +75,20 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: siteTitle,
+      title: pageTitle,
       description: siteDescriptions[locale],
       images: [siteImagePath],
     },
-    manifest: "/manifest.webmanifest",
+    manifest: `/${locale}/manifest.webmanifest`,
+    icons: {
+      icon: "/file.svg",
+      apple: "/file.svg",
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: siteName,
+    },
   };
 }
 
@@ -101,10 +113,17 @@ export default async function RootLayout({
 
   setRequestLocale(locale);
   const messages = await getMessages({ locale });
+  const personJsonLd = generatePersonJsonLd(locale);
 
   return (
     <html lang={locale} suppressHydrationWarning className={rootHtmlClassName}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(personJsonLd),
+          }}
+        />
         <ThemeProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
