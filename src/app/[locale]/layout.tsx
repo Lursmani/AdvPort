@@ -72,10 +72,6 @@ export async function generateMetadata({
       description: siteDescriptions[locale],
     },
     manifest: `/${locale}/manifest.webmanifest`,
-    icons: {
-      icon: "/file.svg",
-      apple: "/file.svg",
-    },
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
