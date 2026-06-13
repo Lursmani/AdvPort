@@ -1,7 +1,6 @@
 import {
   siteDescriptions,
   siteEmail,
-  siteImagePath,
   siteJobTitles,
   siteName,
   siteSameAs,
@@ -14,7 +13,6 @@ export interface PersonSchema {
   "@type": "Person";
   name: string;
   url: string;
-  image: string;
   jobTitle: string;
   description: string;
   email: string;
@@ -28,7 +26,6 @@ export function generatePersonJsonLd(locale: AppLocale): PersonSchema {
     "@type": "Person",
     name: siteName,
     url: `${siteUrl}/${locale}`,
-    image: encodeURI(`${siteUrl}${siteImagePath}`),
     jobTitle: siteJobTitles[locale],
     description: siteDescriptions[locale],
     email: siteEmail,

@@ -8,7 +8,6 @@ import {
   localeLanguageTags,
   localeOpenGraphTags,
   siteDescriptions,
-  siteImagePath,
   siteName,
   siteTitles,
   siteUrl,
@@ -66,18 +65,11 @@ export async function generateMetadata({
       siteName,
       locale: localeOpenGraphTags[locale],
       alternateLocale: alternateLocales,
-      images: [
-        {
-          url: siteImagePath,
-          alt: `${siteName} portrait`,
-        },
-      ],
     },
     twitter: {
-      card: "summary_large_image",
+      card: "summary",
       title: pageTitle,
       description: siteDescriptions[locale],
-      images: [siteImagePath],
     },
     manifest: `/${locale}/manifest.webmanifest`,
     icons: {
