@@ -1,5 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
 import {
+  getScrollbarWidth,
   getTabbableElements,
   isElementVisible,
 } from "@/utils/domAccessibility";
@@ -42,9 +43,25 @@ export const handleHeaderFocus = ({
     element.setAttribute("aria-hidden", "true");
   }
 
-  const handleScrollEvent = (event: Event) => {
-    event.preventDefault();
-  };
+  // Lock background scrolling by freezing the body instead of swallowing wheel
+  // and touch events on the document, which also blocks scrolling inside the
+  // drawer and ignores keyboard scroll keys. Mirrors ExperienceModal.
+  const body = document.body;
+  const previousBodyOverflow = body.style.overflow;
+  const previousBodyPaddingRight = body.style.paddingRight;
+  const parsedPaddingRight = Number.parseFloat(
+    window.getComputedStyle(body).paddingRight,
+  );
+  const currentPaddingRight = Number.isNaN(parsedPaddingRight)
+    ? 0
+    : parsedPaddingRight;
+  const scrollbarWidth = getScrollbarWidth();
+
+  body.style.overflow = "hidden";
+
+  if (scrollbarWidth > 0) {
+    body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
+  }
 
   (
     closeDrawerButtonRef.current ??
@@ -106,17 +123,14 @@ export const handleHeaderFocus = ({
   };
 
   document.addEventListener("keydown", handleKeyDown);
-  document.addEventListener("wheel", handleScrollEvent, { passive: false });
-  document.addEventListener("touchmove", handleScrollEvent, {
-    passive: false,
-  });
   window.addEventListener("resize", handleResize);
 
   return () => {
     document.removeEventListener("keydown", handleKeyDown);
-    document.removeEventListener("wheel", handleScrollEvent);
-    document.removeEventListener("touchmove", handleScrollEvent);
     window.removeEventListener("resize", handleResize);
+
+    body.style.overflow = previousBodyOverflow;
+    body.style.paddingRight = previousBodyPaddingRight;
 
     for (const {
       element,
