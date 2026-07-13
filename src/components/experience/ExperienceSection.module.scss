@@ -682,4 +682,10 @@
   .externalLink {
     transition: none;
   }
+
+  // scrollTo({ behavior: "auto" }) defers to the computed scroll-behavior,
+  // so the smooth default must be cleared here for reduced-motion users.
+  .carouselViewport {
+    scroll-behavior: auto;
+  }
 }
