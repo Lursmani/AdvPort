@@ -56,6 +56,12 @@
       "backend": "Back-end",
       "toolsPlatforms": "Tools & platforms",
       "languages": "Talen"
+    },
+    "languageProficiency": {
+      "georgian": "Georgisch (moedertaal)",
+      "english": "Engels (C2)",
+      "dutch": "Nederlands (B2)",
+      "russian": "Russisch (B2)"
     }
   },
   "ExperienceSection": {
@@ -71,7 +77,8 @@
       "nextProject": "Volgend project tonen",
       "previousImage": "Vorige afbeelding",
       "nextImage": "Volgende afbeelding",
-      "galleryProgress": "Galerijpositie"
+      "galleryProgress": "Galerijpositie",
+      "imageAlt": "{title} projectvoorbeeld {index}"
     },
     "tags": {
       "nextjs": "Next.js",

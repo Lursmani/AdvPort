@@ -16,17 +16,14 @@ import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useRef, useTransition } from "react";
 
-const flagByLocale: Record<AppLocale, { alt: string; src: string }> = {
+const flagByLocale: Record<AppLocale, { src: string }> = {
   en: {
-    alt: "English flag",
     src: "/flags/UKFlag.svg",
   },
   nl: {
-    alt: "Dutch flag",
     src: "/flags/NLFlag.svg",
   },
   ka: {
-    alt: "Georgian flag",
     src: "/flags/GEFlag.svg",
   },
 };
@@ -92,7 +89,7 @@ function LanguageSwitcher() {
       <span className="relative flex size-5 items-center justify-center overflow-hidden">
         <Image
           src={flagByLocale[currentLocale].src}
-          alt={flagByLocale[currentLocale].alt}
+          alt=""
           width={20}
           height={20}
           className="size-5"

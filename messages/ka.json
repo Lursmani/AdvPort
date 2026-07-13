@@ -56,6 +56,12 @@
       "backend": "Back-end",
       "toolsPlatforms": "ხელსაწყოები და პლატფორმები",
       "languages": "ენები"
+    },
+    "languageProficiency": {
+      "georgian": "ქართული (მშობლიური)",
+      "english": "ინგლისური (C2)",
+      "dutch": "ნიდერლანდური (B2)",
+      "russian": "რუსული (B2)"
     }
   },
   "ExperienceSection": {
@@ -71,7 +77,8 @@
       "nextProject": "შემდეგი პროექტის ჩვენება",
       "previousImage": "წინა სურათი",
       "nextImage": "შემდეგი სურათი",
-      "galleryProgress": "გალერეის პოზიცია"
+      "galleryProgress": "გალერეის პოზიცია",
+      "imageAlt": "{title} — პროექტის გადახედვა {index}"
     },
     "tags": {
       "nextjs": "Next.js",
