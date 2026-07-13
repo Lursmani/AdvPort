@@ -40,13 +40,11 @@ function noopSubscribe() {
 }
 
 function useReducedMotionState() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
+  // Initialize deterministically to match the server render. Reading matchMedia
+  // in the initializer diverges from SSR (always false) and produces a
+  // hydration mismatch for reduced-motion users. The effect below corrects it
+  // on mount.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
