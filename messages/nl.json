@@ -23,9 +23,7 @@
     },
     "themes": {
       "light": "lichte",
-      "dark": "donkere",
-      "lightNoun": "licht thema",
-      "darkNoun": "donker thema"
+      "dark": "donkere"
     },
     "languages": {
       "en": "Engels",
@@ -71,7 +69,6 @@
       "openProject": "Projectdetails openen voor {title}",
       "openProjectImage": "Projectgalerij openen voor {title}",
       "externalProject": "Externe link openen voor {title}",
-      "visitProject": "Bezoek {title}",
       "closeModal": "Projectdetails sluiten",
       "previousProject": "Vorig project tonen",
       "nextProject": "Volgend project tonen",

@@ -23,9 +23,7 @@
     },
     "themes": {
       "light": "ღია",
-      "dark": "მუქ",
-      "lightNoun": "ღია თემა",
-      "darkNoun": "მუქი თემა"
+      "dark": "მუქ"
     },
     "languages": {
       "en": "ინგლისური",
@@ -71,7 +69,6 @@
       "openProject": "{title}-ის დეტალების გახსნა",
       "openProjectImage": "{title}-ის გალერეის გახსნა",
       "externalProject": "{title}-ის გარე ბმულის გახსნა",
-      "visitProject": "{title}-ზე გადასვლა",
       "closeModal": "პროექტის დეტალების დახურვა",
       "previousProject": "წინა პროექტის ჩვენება",
       "nextProject": "შემდეგი პროექტის ჩვენება",

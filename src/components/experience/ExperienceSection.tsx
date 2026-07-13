@@ -13,7 +13,6 @@ type ExperienceProjectMessages = {
   title: string;
   subtitle: string;
   description: string;
-  externalLink?: string;
 };
 
 function ExperienceSection() {

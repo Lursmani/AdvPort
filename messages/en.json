@@ -23,9 +23,7 @@
     },
     "themes": {
       "light": "light",
-      "dark": "dark",
-      "lightNoun": "light theme",
-      "darkNoun": "dark theme"
+      "dark": "dark"
     },
     "languages": {
       "en": "English",
@@ -71,7 +69,6 @@
       "openProject": "Open project details for {title}",
       "openProjectImage": "Open project gallery for {title}",
       "externalProject": "Open external link for {title}",
-      "visitProject": "Visit {title}",
       "closeModal": "Close project details",
       "previousProject": "Show previous project",
       "nextProject": "Show next project",

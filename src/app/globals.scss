@@ -107,25 +107,6 @@ body {
   background: var(--gradient-start);
 }
 
-.hero-vignette {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--background) 12%, transparent) 0%,
-      transparent 22%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 54%,
-      color-mix(in oklab, var(--background) 68%, transparent) 100%
-    ),
-    radial-gradient(
-      circle at center,
-      transparent 42%,
-      color-mix(in oklab, var(--background) 54%, transparent) 100%
-    );
-}
-
 .hero-bottom-fade {
   pointer-events: none;
   background: linear-gradient(180deg, transparent 0%, var(--background) 100%);
