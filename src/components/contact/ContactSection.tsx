@@ -3,6 +3,7 @@
 import { BriefcaseBusiness, Download, GitBranch, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { siteEmail } from "@/app/site";
 import Reveal from "@/components/Reveal";
 import ViewportSection from "@/components/ViewportSection";
 import ContactCard, { type ContactAction } from "./ContactCard";
@@ -31,7 +32,7 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
   },
   {
     key: "email",
-    href: "mailto:lursmanashvilidavit@gmail.com",
+    href: `mailto:${siteEmail}`,
     icon: Mail,
     accentStyle: {
       "--contact-accent":
@@ -116,9 +117,7 @@ function ContactSection() {
                 key={action.key}
                 action={action}
                 label={t(`actions.${action.key}.label`)}
-                subtitle={
-                  action.key === "email" ? "lursmanashvilidavit@gmail.com" : ""
-                }
+                subtitle={action.key === "email" ? siteEmail : ""}
                 copyButton={action.key === "email"}
                 copyLabel={
                   action.key === "email"
