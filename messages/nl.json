@@ -139,5 +139,10 @@
         "label": "CV downloaden"
       }
     }
+  },
+  "NotFound": {
+    "title": "Pagina niet gevonden",
+    "description": "De pagina die je zoekt bestaat niet.",
+    "backHome": "Terug naar home"
   }
 }
