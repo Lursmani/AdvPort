@@ -128,6 +128,10 @@ function ExperienceModal({
     const previousOverflow = document.body.style.overflow;
     const previousPaddingRight = body.style.paddingRight;
     const previousModalState = root.dataset.experienceModalOpen;
+    const pageContent = document.getElementById("page-content");
+    const hadPageContentInert = pageContent?.hasAttribute("inert") ?? false;
+    const previousPageContentAriaHidden =
+      pageContent?.getAttribute("aria-hidden") ?? null;
     const scrollbarWidth = getScrollbarWidth();
     const currentPaddingRight = Number.isNaN(
       Number.parseFloat(computedBodyStyle.paddingRight),
@@ -139,6 +143,11 @@ function ExperienceModal({
 
     if (scrollbarWidth > 0) {
       body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
+    }
+
+    if (pageContent) {
+      pageContent.setAttribute("inert", "");
+      pageContent.setAttribute("aria-hidden", "true");
     }
 
     root.dataset.experienceModalOpen = "true";
@@ -165,6 +174,18 @@ function ExperienceModal({
       const firstElement = tabbableElements[0];
       const lastElement = tabbableElements[tabbableElements.length - 1];
 
+      if (!panelRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+
+        if (event.shiftKey) {
+          lastElement.focus();
+        } else {
+          firstElement.focus();
+        }
+
+        return;
+      }
+
       if (event.shiftKey && document.activeElement === firstElement) {
         event.preventDefault();
         lastElement.focus();
@@ -181,6 +202,21 @@ function ExperienceModal({
     return () => {
       body.style.overflow = previousOverflow;
       body.style.paddingRight = previousPaddingRight;
+
+      if (pageContent) {
+        if (!hadPageContentInert) {
+          pageContent.removeAttribute("inert");
+        }
+
+        if (previousPageContentAriaHidden === null) {
+          pageContent.removeAttribute("aria-hidden");
+        } else {
+          pageContent.setAttribute(
+            "aria-hidden",
+            previousPageContentAriaHidden,
+          );
+        }
+      }
 
       if (previousModalState) {
         root.dataset.experienceModalOpen = previousModalState;

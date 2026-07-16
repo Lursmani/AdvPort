@@ -23,9 +23,7 @@
     },
     "themes": {
       "light": "light",
-      "dark": "dark",
-      "lightNoun": "light theme",
-      "darkNoun": "dark theme"
+      "dark": "dark"
     },
     "languages": {
       "en": "English",
@@ -56,6 +54,12 @@
       "backend": "Back-end",
       "toolsPlatforms": "Tools & Platforms",
       "languages": "Languages"
+    },
+    "languageProficiency": {
+      "georgian": "Georgian (Native)",
+      "english": "English (C2)",
+      "dutch": "Dutch (B2)",
+      "russian": "Russian (B2)"
     }
   },
   "ExperienceSection": {
@@ -65,13 +69,13 @@
       "openProject": "Open project details for {title}",
       "openProjectImage": "Open project gallery for {title}",
       "externalProject": "Open external link for {title}",
-      "visitProject": "Visit {title}",
       "closeModal": "Close project details",
       "previousProject": "Show previous project",
       "nextProject": "Show next project",
       "previousImage": "Previous image",
       "nextImage": "Next image",
-      "galleryProgress": "Gallery position"
+      "galleryProgress": "Gallery position",
+      "imageAlt": "{title} project preview {index}"
     },
     "tags": {
       "nextjs": "Next.js",
@@ -135,5 +139,10 @@
         "label": "Download CV"
       }
     }
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist.",
+    "backHome": "Back to home"
   }
 }

@@ -23,9 +23,7 @@
     },
     "themes": {
       "light": "lichte",
-      "dark": "donkere",
-      "lightNoun": "licht thema",
-      "darkNoun": "donker thema"
+      "dark": "donkere"
     },
     "languages": {
       "en": "Engels",
@@ -56,6 +54,12 @@
       "backend": "Back-end",
       "toolsPlatforms": "Tools & platforms",
       "languages": "Talen"
+    },
+    "languageProficiency": {
+      "georgian": "Georgisch (moedertaal)",
+      "english": "Engels (C2)",
+      "dutch": "Nederlands (B2)",
+      "russian": "Russisch (B2)"
     }
   },
   "ExperienceSection": {
@@ -65,13 +69,13 @@
       "openProject": "Projectdetails openen voor {title}",
       "openProjectImage": "Projectgalerij openen voor {title}",
       "externalProject": "Externe link openen voor {title}",
-      "visitProject": "Bezoek {title}",
       "closeModal": "Projectdetails sluiten",
       "previousProject": "Vorig project tonen",
       "nextProject": "Volgend project tonen",
       "previousImage": "Vorige afbeelding",
       "nextImage": "Volgende afbeelding",
-      "galleryProgress": "Galerijpositie"
+      "galleryProgress": "Galerijpositie",
+      "imageAlt": "{title} projectvoorbeeld {index}"
     },
     "tags": {
       "nextjs": "Next.js",
@@ -135,5 +139,10 @@
         "label": "CV downloaden"
       }
     }
+  },
+  "NotFound": {
+    "title": "Pagina niet gevonden",
+    "description": "De pagina die je zoekt bestaat niet.",
+    "backHome": "Terug naar home"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import GlyphButton from "@/components/GlyphButton";
@@ -60,6 +61,7 @@ function ExperienceModalGallery({
   project,
   labels,
 }: ExperienceModalGalleryProps) {
+  const t = useTranslations("ExperienceSection");
   const prefersReducedMotion = usePrefersReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -184,7 +186,10 @@ function ExperienceModalGallery({
                 <div className={styles.galleryFrame}>
                   <Image
                     src={imageSrc}
-                    alt={`${project.title} project preview ${index + 1}`}
+                    alt={t("actions.imageAlt", {
+                      title: project.title,
+                      index: index + 1,
+                    })}
                     fill
                     sizes="(min-width: 1024px) 48vw, (min-width: 768px) 42vw, 100vw"
                     className={styles.galleryImage}

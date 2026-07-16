@@ -4,7 +4,7 @@ import type { ComponentPropsWithRef } from "react";
 import cn from "@/utils/cn";
 
 type ViewportSectionProps = ComponentPropsWithRef<"section"> & {
-  width: "full" | "wide" | "narrow";
+  width?: "full" | "wide" | "narrow";
 };
 
 function ViewportSection({

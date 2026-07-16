@@ -37,15 +37,15 @@ const TOOLING_SKILLS = [
   "GitHub Copilot",
 ] as const;
 
-const LANGUAGE_SKILLS = [
-  "Georgian (Native)",
-  "English (C2)",
-  "Dutch (B2)",
-  "Russian (B2)",
-] as const;
-
 function SkillsSection() {
   const t = useTranslations("SkillsSection");
+
+  const languageSkills = [
+    t("languageProficiency.georgian"),
+    t("languageProficiency.english"),
+    t("languageProficiency.dutch"),
+    t("languageProficiency.russian"),
+  ];
 
   const cards = [
     {
@@ -88,7 +88,7 @@ function SkillsSection() {
         },
         {
           title: t("groups.languages"),
-          skills: LANGUAGE_SKILLS,
+          skills: languageSkills,
         },
       ],
     },

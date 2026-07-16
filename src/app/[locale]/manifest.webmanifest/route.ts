@@ -31,10 +31,10 @@ export async function GET(
     theme_color: "#001219",
     icons: [
       {
-        src: "/file.svg",
+        src: "/icons/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
-        purpose: "any",
+        purpose: "any maskable",
       },
     ],
   };

@@ -123,6 +123,15 @@
   &:hover {
     text-decoration: underline;
   }
+
+  // Stretch the primary link over the whole card so the entire surface is
+  // clickable. Interactive siblings (the copy button) sit above this overlay.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
 }
 
 .detailRow {
@@ -150,6 +159,8 @@
 }
 
 .copyButton {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;

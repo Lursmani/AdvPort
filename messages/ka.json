@@ -23,9 +23,7 @@
     },
     "themes": {
       "light": "ღია",
-      "dark": "მუქ",
-      "lightNoun": "ღია თემა",
-      "darkNoun": "მუქი თემა"
+      "dark": "მუქ"
     },
     "languages": {
       "en": "ინგლისური",
@@ -56,6 +54,12 @@
       "backend": "Back-end",
       "toolsPlatforms": "ხელსაწყოები და პლატფორმები",
       "languages": "ენები"
+    },
+    "languageProficiency": {
+      "georgian": "ქართული (მშობლიური)",
+      "english": "ინგლისური (C2)",
+      "dutch": "ნიდერლანდური (B2)",
+      "russian": "რუსული (B2)"
     }
   },
   "ExperienceSection": {
@@ -65,13 +69,13 @@
       "openProject": "{title}-ის დეტალების გახსნა",
       "openProjectImage": "{title}-ის გალერეის გახსნა",
       "externalProject": "{title}-ის გარე ბმულის გახსნა",
-      "visitProject": "{title}-ზე გადასვლა",
       "closeModal": "პროექტის დეტალების დახურვა",
       "previousProject": "წინა პროექტის ჩვენება",
       "nextProject": "შემდეგი პროექტის ჩვენება",
       "previousImage": "წინა სურათი",
       "nextImage": "შემდეგი სურათი",
-      "galleryProgress": "გალერეის პოზიცია"
+      "galleryProgress": "გალერეის პოზიცია",
+      "imageAlt": "{title} — პროექტის გადახედვა {index}"
     },
     "tags": {
       "nextjs": "Next.js",
@@ -135,5 +139,10 @@
         "label": "CV-ის ჩამოტვირთვა"
       }
     }
+  },
+  "NotFound": {
+    "title": "გვერდი ვერ მოიძებნა",
+    "description": "გვერდი, რომელსაც ეძებთ, არ არსებობს.",
+    "backHome": "მთავარ გვერდზე დაბრუნება"
   }
 }
