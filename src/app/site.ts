@@ -1,6 +1,15 @@
-import type { AppLocale } from "@/i18n/config";
+import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
 
 export const siteUrl = "https://davitl.com";
+// Social share preview image (Open Graph / Twitter). Served from /public.
+export const ogImagePath = "/images/og-image.jpg";
+// Browser-chrome (meta theme-color) and PWA manifest colors. These mirror the
+// light/dark `--background` theme tokens in src/app/globals.scss — the token
+// source of truth — and must be updated together with them.
+export const themeBackgroundColors = {
+  light: "#faf9f9",
+  dark: "#001219",
+} as const;
 export const siteName = "Davit Lursmanashvili";
 export const siteTitles: Record<AppLocale, string> = {
   en: "Davit Lursmanashvili | Software Developer",
@@ -40,4 +49,19 @@ export const localeOpenGraphTags: Record<AppLocale, string> = {
 
 export function getLocalePath(locale: AppLocale) {
   return `/${locale}`;
+}
+
+// hreflang → URL map shared by generateMetadata (relative URLs) and the
+// sitemap (absolute URLs, pass `siteUrl`), including the x-default fallback,
+// so the two stay structurally identical.
+export function buildLanguageAlternates(baseUrl = ""): Record<string, string> {
+  return {
+    ...Object.fromEntries(
+      locales.map((locale) => [
+        localeLanguageTags[locale],
+        `${baseUrl}${getLocalePath(locale)}`,
+      ]),
+    ),
+    "x-default": `${baseUrl}${getLocalePath(defaultLocale)}`,
+  };
 }

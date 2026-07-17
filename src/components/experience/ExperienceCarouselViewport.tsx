@@ -188,6 +188,12 @@ function ExperienceCarouselViewport({
   return (
     <motion.div
       className={styles.carouselShell}
+      // The carousel region wraps the shell (controls + slides) so assistive
+      // tech announces the Previous/Next buttons as part of the carousel, per
+      // the APG carousel pattern.
+      role="region"
+      aria-roledescription={labels.carouselRoleDescription}
+      aria-label={labels.carouselLabel}
       initial={prefersReducedMotion ? false : "hidden"}
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}

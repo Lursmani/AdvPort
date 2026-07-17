@@ -71,6 +71,7 @@ function ExperienceModalGallery({
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const slideRefs = useRef<Array<HTMLLIElement | null>>([]);
   const hasMultipleImages = project.imageSources.length > 1;
+  const galleryProgressCount = `${activeIndex + 1} / ${project.imageSources.length}`;
 
   const findClosestSlideIndex = (
     viewport: HTMLDivElement,
@@ -232,11 +233,14 @@ function ExperienceModalGallery({
       </div>
 
       {hasMultipleImages ? (
-        <p className={styles.modalGalleryProgress} aria-live="polite">
-          <span className="sr-only">{labels.galleryProgress}: </span>
-          <span aria-hidden="true">
-            {activeIndex + 1} / {project.imageSources.length}
+        <p className={styles.modalGalleryProgress}>
+          {/* The count is the value that changes as the user pages, so it must
+              live inside the live region to be announced. The visible copy is
+              aria-hidden to avoid a duplicate announcement. */}
+          <span className="sr-only" aria-live="polite">
+            {labels.galleryProgress}: {galleryProgressCount}
           </span>
+          <span aria-hidden="true">{galleryProgressCount}</span>
         </p>
       ) : null}
     </div>

@@ -1,16 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { rootHtmlClassName } from "@/app/fonts";
 import {
+  buildLanguageAlternates,
   getLocalePath,
-  localeLanguageTags,
   localeOpenGraphTags,
+  ogImagePath,
   siteDescriptions,
   siteName,
   siteTitles,
   siteUrl,
+  themeBackgroundColors,
 } from "@/app/site";
 import {
   defaultLocale,
@@ -34,12 +36,7 @@ export async function generateMetadata({
   const { locale: requestedLocale } = await params;
   const locale = resolveMetadataLocale(requestedLocale);
   const canonicalPath = getLocalePath(locale);
-  const languageAlternates = Object.fromEntries(
-    locales.map((candidateLocale) => [
-      localeLanguageTags[candidateLocale],
-      getLocalePath(candidateLocale),
-    ]),
-  );
+  const languageAlternates = buildLanguageAlternates();
   const alternateLocales = locales
     .filter((candidateLocale) => candidateLocale !== locale)
     .map((candidateLocale) => localeOpenGraphTags[candidateLocale]);
@@ -52,10 +49,7 @@ export async function generateMetadata({
     description: siteDescriptions[locale],
     alternates: {
       canonical: canonicalPath,
-      languages: {
-        ...languageAlternates,
-        "x-default": getLocalePath(defaultLocale),
-      },
+      languages: languageAlternates,
     },
     openGraph: {
       type: "website",
@@ -65,11 +59,14 @@ export async function generateMetadata({
       siteName,
       locale: localeOpenGraphTags[locale],
       alternateLocale: alternateLocales,
+      images: [{ url: ogImagePath, alt: siteName }],
     },
     twitter: {
-      card: "summary",
+      // The 1200x630 og-image is a wide card; "summary" would crop it square.
+      card: "summary_large_image",
       title: pageTitle,
       description: siteDescriptions[locale],
+      images: [ogImagePath],
     },
     manifest: `/${locale}/manifest.webmanifest`,
     appleWebApp: {
@@ -83,6 +80,21 @@ export async function generateMetadata({
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
+
+// These meta tags only track the OS color scheme; ThemeColorSync in
+// ThemeProvider rewrites them when the user overrides the theme.
+export const viewport: Viewport = {
+  themeColor: [
+    {
+      media: "(prefers-color-scheme: light)",
+      color: themeBackgroundColors.light,
+    },
+    {
+      media: "(prefers-color-scheme: dark)",
+      color: themeBackgroundColors.dark,
+    },
+  ],
+};
 
 export default async function RootLayout({
   children,

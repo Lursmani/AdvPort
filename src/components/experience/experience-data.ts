@@ -68,6 +68,8 @@ export type ExperienceModalLabels = {
 export type ExperienceCarouselLabels = ExperienceModalLabels & {
   previousProject: string;
   nextProject: string;
+  carouselLabel: string;
+  carouselRoleDescription: string;
 };
 
 export type ExperienceRect = {

@@ -2,7 +2,13 @@
 
 import { m as motion, type Transition } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { createPortal } from "react-dom";
 import GlyphButton from "@/components/GlyphButton";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
@@ -25,6 +31,8 @@ type ExperienceModalProps = {
   sourceRect: ExperienceRect;
   labels: ExperienceModalLabels;
   onClose: () => void;
+  /** The card that opened the modal; focus returns to it when the modal unmounts. */
+  triggerRef: RefObject<HTMLElement | null>;
 };
 
 type ViewportSize = {
@@ -72,6 +80,7 @@ function ExperienceModal({
   sourceRect,
   labels,
   onClose,
+  triggerRef,
 }: ExperienceModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [viewportSize, setViewportSize] = useState<ViewportSize>(() => ({
@@ -227,6 +236,24 @@ function ExperienceModal({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
+
+  // Restore focus to the triggering card when the modal unmounts. This effect
+  // must be declared after the inert/scroll-lock effect above: React destroys
+  // effects in declaration order, so by the time this cleanup runs `inert` has
+  // been removed from #page-content and the card is focusable again. (Inside an
+  // inert subtree `.focus()` is a silent no-op, which is why restoring from the
+  // parent via AnimatePresence's onExitComplete — which fires before the
+  // unmount commit, while `inert` is still set — does not work.)
+  useEffect(() => {
+    const trigger = triggerRef.current;
+
+    return () => {
+      if (trigger?.isConnected) {
+        trigger.focus({ preventScroll: true });
+      }
+    };
+  }, [triggerRef]);
+
   const toneStyle = getExperienceToneStyle(project.tone);
 
   return createPortal(

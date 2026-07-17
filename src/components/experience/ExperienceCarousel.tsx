@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import ExperienceModal from "./ExperienceModal";
 import ExperienceCarouselViewport, {
   type ExperienceCarouselOpenProject,
@@ -38,23 +38,9 @@ function ExperienceCarousel({ projects, labels }: ExperienceCarouselProps) {
     });
   };
 
-  const closeProject = () => {
+  const closeProject = useCallback(() => {
     setOpenProject(null);
-
-    const lastTrigger = lastTriggerRef.current;
-
-    lastTriggerRef.current = null;
-
-    if (!lastTrigger) {
-      return;
-    }
-
-    window.requestAnimationFrame(() => {
-      if (lastTrigger.isConnected) {
-        lastTrigger.focus({ preventScroll: true });
-      }
-    });
-  };
+  }, []);
 
   return (
     <>
@@ -72,6 +58,7 @@ function ExperienceCarousel({ projects, labels }: ExperienceCarouselProps) {
             sourceRect={openProject.sourceRect}
             labels={labels}
             onClose={closeProject}
+            triggerRef={lastTriggerRef}
           />
         ) : null}
       </AnimatePresence>

@@ -47,6 +47,8 @@ function ExperienceSection() {
     previousImage: t("actions.previousImage"),
     nextImage: t("actions.nextImage"),
     galleryProgress: t("actions.galleryProgress"),
+    carouselLabel: t("actions.carouselLabel"),
+    carouselRoleDescription: t("actions.carouselRoleDescription"),
   };
 
   return (

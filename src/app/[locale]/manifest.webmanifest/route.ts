@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { siteDescriptions, siteName, siteTitles } from "@/app/site";
+import {
+  siteDescriptions,
+  siteName,
+  siteTitles,
+  themeBackgroundColors,
+} from "@/app/site";
 import {
   defaultLocale,
   isValidLocale,
@@ -27,8 +32,8 @@ export async function GET(
     start_url: `/${locale}`,
     scope: "/",
     display: "standalone",
-    background_color: "#001219",
-    theme_color: "#001219",
+    background_color: themeBackgroundColors.dark,
+    theme_color: themeBackgroundColors.dark,
     icons: [
       {
         src: "/icons/icon.svg",

@@ -12,6 +12,7 @@ import {
   ThemeProvider as NextThemesProvider,
   useTheme as useNextTheme,
 } from "@teispace/next-themes";
+import { themeBackgroundColors } from "@/app/site";
 import MotionProvider from "./MotionProvider";
 
 export type Theme = "light" | "dark";
@@ -83,6 +84,30 @@ function ReducedMotionProvider({ children }: ThemeProviderProps) {
   );
 }
 
+// The static <meta name="theme-color"> tags rendered by the layout's viewport
+// export only track the OS color scheme, while next-themes lets the user
+// override the theme independently of it. Keep the browser chrome in sync with
+// the resolved theme by rewriting both tags whenever it changes.
+function ThemeColorSync() {
+  const { resolvedTheme } = useNextTheme();
+
+  useEffect(() => {
+    if (resolvedTheme !== "light" && resolvedTheme !== "dark") {
+      return;
+    }
+
+    const color = themeBackgroundColors[resolvedTheme];
+
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta) => {
+        meta.setAttribute("content", color);
+      });
+  }, [resolvedTheme]);
+
+  return null;
+}
+
 function ThemeProvider({ children }: ThemeProviderProps) {
   return (
     <NextThemesProvider
@@ -91,6 +116,7 @@ function ThemeProvider({ children }: ThemeProviderProps) {
       enableSystem
       themes={["light", "dark"]}
     >
+      <ThemeColorSync />
       <ReducedMotionProvider>
         <MotionProvider>{children}</MotionProvider>
       </ReducedMotionProvider>

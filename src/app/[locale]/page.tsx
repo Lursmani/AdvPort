@@ -11,7 +11,10 @@ export default async function Page({
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  // Locale validation is owned by the [locale] layout (the locale boundary);
+  // an invalid segment never reaches this page as a 200.
   const { locale } = await params;
+
   setRequestLocale(locale);
 
   return (
