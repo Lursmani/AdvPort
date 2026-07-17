@@ -17,7 +17,8 @@
   touch-action: manipulation;
 }
 
-.button:disabled {
+.button:disabled,
+.button[aria-disabled="true"] {
   cursor: not-allowed;
   transform: none;
 }
@@ -32,7 +33,8 @@
   outline-offset: 4px;
 }
 
-.hero:disabled {
+.hero:disabled,
+.hero[aria-disabled="true"] {
   opacity: 0.7;
 }
 
@@ -57,17 +59,18 @@
   outline-offset: 4px;
 }
 
-.surface:disabled {
+.surface:disabled,
+.surface[aria-disabled="true"] {
   opacity: 0.42;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .button:hover:not(:disabled) {
+  .button:hover:not(:disabled):not([aria-disabled="true"]) {
     color: var(--foreground);
     transform: translateY(-2px);
   }
 
-  .surface:hover:not(:disabled) {
+  .surface:hover:not(:disabled):not([aria-disabled="true"]) {
     border-color: color-mix(
       in oklab,
       var(--experience-accent-strong, var(--foreground)) 20%,
