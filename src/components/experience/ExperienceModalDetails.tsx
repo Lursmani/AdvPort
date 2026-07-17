@@ -25,7 +25,7 @@ function ExperienceModalDetails({ project }: ExperienceModalDetailsProps) {
           <Link
             href={project.href}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className={styles.externalLink}
             aria-label={project.externalProjectLabel}
           >

@@ -75,7 +75,9 @@
       "previousImage": "Previous image",
       "nextImage": "Next image",
       "galleryProgress": "Gallery position",
-      "imageAlt": "{title} project preview {index}"
+      "imageAlt": "{title} project preview {index}",
+      "carouselLabel": "Selected projects",
+      "carouselRoleDescription": "carousel"
     },
     "tags": {
       "nextjs": "Next.js",

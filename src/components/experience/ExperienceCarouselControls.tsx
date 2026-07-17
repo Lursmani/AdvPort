@@ -23,13 +23,20 @@ function ExperienceCarouselControls({
 }: ExperienceCarouselControlsProps) {
   return (
     <div className={styles.carouselControls}>
+      {/* aria-disabled (not disabled) keeps the button focusable so keyboard
+          focus is never dropped to <body> when a control disables at a track
+          end; the guarded onClick makes it a no-op while disabled. */}
       <GlyphButton
         type="button"
         variant="surface"
         className={styles.carouselControlButton}
-        onClick={onPrevious}
+        onClick={() => {
+          if (canScrollPrev) {
+            onPrevious();
+          }
+        }}
         aria-label={previousLabel}
-        disabled={!canScrollPrev}
+        aria-disabled={!canScrollPrev}
       >
         <ChevronLeft className="size-4" strokeWidth={1.8} />
       </GlyphButton>
@@ -38,9 +45,13 @@ function ExperienceCarouselControls({
         type="button"
         variant="surface"
         className={styles.carouselControlButton}
-        onClick={onNext}
+        onClick={() => {
+          if (canScrollNext) {
+            onNext();
+          }
+        }}
         aria-label={nextLabel}
-        disabled={!canScrollNext}
+        aria-disabled={!canScrollNext}
       >
         <ChevronRight className="size-4" strokeWidth={1.8} />
       </GlyphButton>

@@ -1,7 +1,8 @@
 "use client";
 
 import { m as motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import useIsomorphicLayoutEffect from "@/utils/useIsomorphicLayoutEffect";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import ExperienceCarouselCard from "./ExperienceCarouselCard";
 import ExperienceCarouselControls from "./ExperienceCarouselControls";
@@ -67,10 +68,17 @@ function ExperienceCarouselViewport({
   onOpenProject,
 }: ExperienceCarouselViewportProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  // Both start false and are corrected by the layout effect below before the
+  // browser paints, so the buttons never flash a wrong enabled/disabled state
+  // (e.g. an enabled Next on a viewport wide enough to fit every card).
   const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(projects.length > 1);
+  const [canScrollNext, setCanScrollNext] = useState(false);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  // Target index of an in-flight Prev/Next scroll, so rapid clicks accumulate
+  // (double-click Next advances two cards) instead of all resolving against the
+  // same measured position mid-animation.
+  const pendingIndexRef = useRef<number | null>(null);
 
   const updateScrollButtons = () => {
     const viewport = viewportRef.current;
@@ -85,7 +93,7 @@ function ExperienceCarouselViewport({
     setCanScrollNext(viewport.scrollLeft < maxScrollLeft - 4);
   };
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     updateScrollButtons();
 
     const viewport = viewportRef.current;
@@ -98,13 +106,29 @@ function ExperienceCarouselViewport({
       updateScrollButtons();
     };
 
+    // A manual scroll (wheel, touch, or pointer drag) supersedes any queued
+    // click target, so the next Prev/Next resumes from the real position.
+    const resetPendingIndex = () => {
+      pendingIndexRef.current = null;
+    };
+
     viewport.addEventListener("scroll", handleViewportChange, {
+      passive: true,
+    });
+    viewport.addEventListener("wheel", resetPendingIndex, { passive: true });
+    viewport.addEventListener("touchstart", resetPendingIndex, {
+      passive: true,
+    });
+    viewport.addEventListener("pointerdown", resetPendingIndex, {
       passive: true,
     });
     window.addEventListener("resize", handleViewportChange);
 
     return () => {
       viewport.removeEventListener("scroll", handleViewportChange);
+      viewport.removeEventListener("wheel", resetPendingIndex);
+      viewport.removeEventListener("touchstart", resetPendingIndex);
+      viewport.removeEventListener("pointerdown", resetPendingIndex);
       window.removeEventListener("resize", handleViewportChange);
     };
   }, [projects.length]);
@@ -157,12 +181,17 @@ function ExperienceCarouselViewport({
   };
 
   const scrollByDirection = (direction: -1 | 1) => {
-    const currentIndex = findClosestCardIndex();
+    const baseIndex = pendingIndexRef.current ?? findClosestCardIndex();
     const targetIndex = Math.max(
       0,
-      Math.min(projects.length - 1, currentIndex + direction),
+      Math.min(projects.length - 1, baseIndex + direction),
     );
 
+    if (targetIndex === baseIndex) {
+      return;
+    }
+
+    pendingIndexRef.current = targetIndex;
     scrollToCardIndex(targetIndex);
   };
 
@@ -188,6 +217,12 @@ function ExperienceCarouselViewport({
   return (
     <motion.div
       className={styles.carouselShell}
+      // The carousel region wraps the shell (controls + slides) so assistive
+      // tech announces the Previous/Next buttons as part of the carousel, per
+      // the APG carousel pattern.
+      role="region"
+      aria-roledescription={labels.carouselRoleDescription}
+      aria-label={labels.carouselLabel}
       initial={prefersReducedMotion ? false : "hidden"}
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}

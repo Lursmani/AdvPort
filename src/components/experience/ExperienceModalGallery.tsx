@@ -3,8 +3,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import GlyphButton from "@/components/GlyphButton";
+import useIsomorphicLayoutEffect from "@/utils/useIsomorphicLayoutEffect";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import {
   type ExperienceModalLabels,
@@ -64,13 +65,15 @@ function ExperienceModalGallery({
   const t = useTranslations("ExperienceSection");
   const prefersReducedMotion = usePrefersReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
+  // Both start false and are corrected before paint by the layout effect below.
   const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(
-    project.imageSources.length > 1,
-  );
+  const [canScrollNext, setCanScrollNext] = useState(false);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const slideRefs = useRef<Array<HTMLLIElement | null>>([]);
+  // Target index of an in-flight Prev/Next scroll, so rapid clicks accumulate.
+  const pendingIndexRef = useRef<number | null>(null);
   const hasMultipleImages = project.imageSources.length > 1;
+  const galleryProgressCount = `${activeIndex + 1} / ${project.imageSources.length}`;
 
   const findClosestSlideIndex = (
     viewport: HTMLDivElement,
@@ -100,7 +103,7 @@ function ExperienceModalGallery({
     return closestIndex;
   };
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const viewport = viewportRef.current;
 
     if (!viewport) {
@@ -123,13 +126,46 @@ function ExperienceModalGallery({
       setActiveIndex(findClosestSlideIndex(viewport, axis, currentOffset));
     };
 
+    // updateViewportState reads getComputedStyle per slide, so coalesce bursts
+    // of scroll events into one measurement per animation frame.
+    let rafId: number | null = null;
+    const scheduleUpdate = () => {
+      if (rafId !== null) {
+        return;
+      }
+
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        updateViewportState();
+      });
+    };
+
+    // A manual scroll supersedes any queued click target.
+    const resetPendingIndex = () => {
+      pendingIndexRef.current = null;
+    };
+
     updateViewportState();
-    viewport.addEventListener("scroll", updateViewportState, { passive: true });
-    window.addEventListener("resize", updateViewportState);
+    viewport.addEventListener("scroll", scheduleUpdate, { passive: true });
+    viewport.addEventListener("wheel", resetPendingIndex, { passive: true });
+    viewport.addEventListener("touchstart", resetPendingIndex, {
+      passive: true,
+    });
+    viewport.addEventListener("pointerdown", resetPendingIndex, {
+      passive: true,
+    });
+    window.addEventListener("resize", scheduleUpdate);
 
     return () => {
-      viewport.removeEventListener("scroll", updateViewportState);
-      window.removeEventListener("resize", updateViewportState);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+
+      viewport.removeEventListener("scroll", scheduleUpdate);
+      viewport.removeEventListener("wheel", resetPendingIndex);
+      viewport.removeEventListener("touchstart", resetPendingIndex);
+      viewport.removeEventListener("pointerdown", resetPendingIndex);
+      window.removeEventListener("resize", scheduleUpdate);
     };
   }, [project.imageSources.length]);
 
@@ -161,12 +197,18 @@ function ExperienceModalGallery({
     }
 
     const axis: ScrollAxis = isDesktopGallery() ? "y" : "x";
-    const currentIndex = findClosestSlideIndex(viewport, axis);
+    const baseIndex =
+      pendingIndexRef.current ?? findClosestSlideIndex(viewport, axis);
     const targetIndex = Math.max(
       0,
-      Math.min(project.imageSources.length - 1, currentIndex + direction),
+      Math.min(project.imageSources.length - 1, baseIndex + direction),
     );
 
+    if (targetIndex === baseIndex) {
+      return;
+    }
+
+    pendingIndexRef.current = targetIndex;
     scrollToImage(targetIndex);
   };
 
@@ -202,15 +244,20 @@ function ExperienceModalGallery({
 
         {hasMultipleImages ? (
           <div className={styles.modalGalleryControls}>
+            {/* aria-disabled keeps these focusable (unlike disabled), so the
+                modal focus trap never has to recover focus from <body> when a
+                control disables at a gallery end. */}
             <GlyphButton
               type="button"
               variant="surface"
               className={styles.modalGalleryButton}
               onClick={() => {
-                scrollByDirection(-1);
+                if (canScrollPrev) {
+                  scrollByDirection(-1);
+                }
               }}
               aria-label={labels.previousImage}
-              disabled={!canScrollPrev}
+              aria-disabled={!canScrollPrev}
             >
               <ChevronLeft className="size-4" strokeWidth={1.8} />
             </GlyphButton>
@@ -220,10 +267,12 @@ function ExperienceModalGallery({
               variant="surface"
               className={styles.modalGalleryButton}
               onClick={() => {
-                scrollByDirection(1);
+                if (canScrollNext) {
+                  scrollByDirection(1);
+                }
               }}
               aria-label={labels.nextImage}
-              disabled={!canScrollNext}
+              aria-disabled={!canScrollNext}
             >
               <ChevronRight className="size-4" strokeWidth={1.8} />
             </GlyphButton>
@@ -232,11 +281,14 @@ function ExperienceModalGallery({
       </div>
 
       {hasMultipleImages ? (
-        <p className={styles.modalGalleryProgress} aria-live="polite">
-          <span className="sr-only">{labels.galleryProgress}: </span>
-          <span aria-hidden="true">
-            {activeIndex + 1} / {project.imageSources.length}
+        <p className={styles.modalGalleryProgress}>
+          {/* The count is the value that changes as the user pages, so it must
+              live inside the live region to be announced. The visible copy is
+              aria-hidden to avoid a duplicate announcement. */}
+          <span className="sr-only" aria-live="polite">
+            {labels.galleryProgress}: {galleryProgressCount}
           </span>
+          <span aria-hidden="true">{galleryProgressCount}</span>
         </p>
       ) : null}
     </div>

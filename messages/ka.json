@@ -75,7 +75,9 @@
       "previousImage": "წინა სურათი",
       "nextImage": "შემდეგი სურათი",
       "galleryProgress": "გალერეის პოზიცია",
-      "imageAlt": "{title} — პროექტის გადახედვა {index}"
+      "imageAlt": "{title} — პროექტის გადახედვა {index}",
+      "carouselLabel": "შერჩეული პროექტები",
+      "carouselRoleDescription": "კარუსელი"
     },
     "tags": {
       "nextjs": "Next.js",

@@ -2,7 +2,14 @@
 
 import { m as motion, type Transition } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { createPortal } from "react-dom";
 import GlyphButton from "@/components/GlyphButton";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
@@ -25,6 +32,8 @@ type ExperienceModalProps = {
   sourceRect: ExperienceRect;
   labels: ExperienceModalLabels;
   onClose: () => void;
+  /** The card that opened the modal; focus returns to it when the modal unmounts. */
+  triggerRef: RefObject<HTMLElement | null>;
 };
 
 type ViewportSize = {
@@ -72,14 +81,40 @@ function ExperienceModal({
   sourceRect,
   labels,
   onClose,
+  triggerRef,
 }: ExperienceModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [viewportSize, setViewportSize] = useState<ViewportSize>(() => ({
     width: typeof window === "undefined" ? 1280 : window.innerWidth,
     height: typeof window === "undefined" ? 720 : window.innerHeight,
   }));
+  // The close animation flies the panel back to the triggering card. The rect
+  // is captured at click time, but a resize/orientation change relayouts the
+  // carousel, so we re-measure the card while the modal is open to keep the
+  // exit target aligned with where the card actually is now.
+  const [currentSourceRect, setCurrentSourceRect] =
+    useState<ExperienceRect>(sourceRect);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
+
+  const measureTriggerRect = useCallback((): ExperienceRect | null => {
+    const card = triggerRef.current?.closest<HTMLElement>(
+      "[data-experience-card]",
+    );
+
+    if (!card) {
+      return null;
+    }
+
+    const bounds = card.getBoundingClientRect();
+
+    return {
+      top: bounds.top,
+      left: bounds.left,
+      width: bounds.width,
+      height: bounds.height,
+    };
+  }, [triggerRef]);
 
   const targetRect = useMemo(
     () => computeTargetRect(viewportSize),
@@ -100,9 +135,9 @@ function ExperienceModal({
         exit: { ...targetRect, borderRadius: 36, opacity: 0 },
       }
     : {
-        initial: { ...sourceRect, borderRadius: 28, opacity: 1 },
+        initial: { ...currentSourceRect, borderRadius: 28, opacity: 1 },
         animate: { ...targetRect, borderRadius: 36, opacity: 1 },
-        exit: { ...sourceRect, borderRadius: 28, opacity: 0 },
+        exit: { ...currentSourceRect, borderRadius: 28, opacity: 0 },
       };
 
   useEffect(() => {
@@ -111,6 +146,12 @@ function ExperienceModal({
         width: window.innerWidth,
         height: window.innerHeight,
       });
+
+      const measuredSourceRect = measureTriggerRect();
+
+      if (measuredSourceRect) {
+        setCurrentSourceRect(measuredSourceRect);
+      }
     };
 
     updateViewportSize();
@@ -119,7 +160,7 @@ function ExperienceModal({
     return () => {
       window.removeEventListener("resize", updateViewportSize);
     };
-  }, []);
+  }, [measureTriggerRect]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -227,6 +268,24 @@ function ExperienceModal({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
+
+  // Restore focus to the triggering card when the modal unmounts. This effect
+  // must be declared after the inert/scroll-lock effect above: React destroys
+  // effects in declaration order, so by the time this cleanup runs `inert` has
+  // been removed from #page-content and the card is focusable again. (Inside an
+  // inert subtree `.focus()` is a silent no-op, which is why restoring from the
+  // parent via AnimatePresence's onExitComplete — which fires before the
+  // unmount commit, while `inert` is still set — does not work.)
+  useEffect(() => {
+    const trigger = triggerRef.current;
+
+    return () => {
+      if (trigger?.isConnected) {
+        trigger.focus({ preventScroll: true });
+      }
+    };
+  }, [triggerRef]);
+
   const toneStyle = getExperienceToneStyle(project.tone);
 
   return createPortal(
