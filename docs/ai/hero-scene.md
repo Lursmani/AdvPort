@@ -60,3 +60,5 @@ When editing it:
 - Breaking pointer normalization.
 - Changing geometry lifecycle without cleanup.
 - Ignoring reduced-motion users.
+- Assuming `clock.getElapsedTime()` is monotonic across `frameloop` toggles — R3F resets the clock to zero every time it flips, so use the per-layer accumulated-time ref (`timeRef`) instead.
+- Reading a geometry's live `boundingBox` after `geometry.center()` — `center()` mutates that box in place; capture any values you need beforehand.

@@ -45,7 +45,7 @@ The home page mounts `HeroBanner`, and `HeroBanner` is where all non-Three scene
   - `u` and `v`: normalized section coordinates from `0` to `1`
   - `x` and `y`: signed coordinates from `-1` to `1`, centered in the hero
 - Pointer down also stores `clickU`, `clickV`, and increments `clickToken`. The layer animation loop treats that token bump as a new impulse.
-- `prefers-reduced-motion: reduce` disables the scene entirely by not rendering `FlowingScene`.
+- `prefers-reduced-motion: reduce` disables the scene entirely by not rendering `FlowingScene`. The preference is read synchronously (via `useSyncExternalStore` in `ThemeProvider`), so for reduced-motion users the scene is never mounted and its chunk is never downloaded.
 - `IntersectionObserver` toggles `isInView`, which is passed down as `active` so the canvas can pause when the hero scrolls offscreen.
 
 This means the hero animation has three top-level gates before any frame work happens:
@@ -56,18 +56,22 @@ This means the hero animation has three top-level gates before any frame work ha
 
 ## 2. Canvas and scene composition
 
-`FlowingScene` creates a transparent `Canvas` with a fixed camera and controlled frame loop.
+`FlowingScene` reads the resolved theme and creates a transparent `Canvas` with a fixed camera and controlled frame loop.
 
+- It waits for the resolved theme (`mounted`) before creating the canvas, so a light-theme user never sees a frame of the dark palette.
 - Camera: `fov: 45`, `position: [0, 0.05, 6.6]`
 - Device pixel ratio: `[1, 1.5]` to cap GPU cost on dense displays
 - `frameloop`: `"always"` while active, `"never"` while inactive
-- Clear color: transparent, so the scene sits over the hero backdrop instead of painting a solid canvas background
+- The canvas is transparent (R3F's default alpha). The visible background is the CSS `.hero-backdrop` element, painted with the `--gradient-start` token — the single source of truth for the hero background. A theme switch therefore recolors the background instantly through CSS even while the frame loop is paused, and an undrawn canvas composites as nothing rather than opaque black.
+- `PaletteSync` forces one manual `gl.render` when the palette changes, so a theme switch performed while the hero is paused (`frameloop="never"`, where `invalidate()` is a no-op) repaints the blob colors instead of leaving a stale frame.
+
+The layer fill colors are authoring inputs to the scene lighting and R3F's default ACES tone mapping, so the rendered blobs read slightly brighter and shifted from the raw palette hex values. `heroOne` is tuned to match the light `--gradient-start` exactly so the backmost wave blends into the backdrop.
 
 Inside that canvas, `LavaLampStack` owns scene assembly.
 
-- It reads the current theme from `ThemeProvider`.
-- It picks either `LIGHT_PALETTE` or `DARK_PALETTE`.
-- It rebuilds the layer models when the theme changes or when `viewport.width` changes.
+- It receives the active palette from `FlowingScene` and maps one color onto each layer.
+- Layer geometry is theme-independent, so a theme change only re-maps colors; it never rebuilds geometry.
+- It rebuilds the layer models only when the quantized `viewport.width` changes (rounded to 0.25 world units so a drag-resize does not rebuild and dispose geometry on every pixel step).
 - It derives a reverse entrance order so `wave-4` starts first and `wave-1` enters last.
 - It injects one ambient light and one directional light.
 - It offsets the whole blob stack with `SCENE_GROUP_Y = -0.1`.
@@ -156,6 +160,8 @@ That `LayerModel` is what `LayerBlob` animates.
 
 `LayerBlob` is the frame loop for one layer.
 
+Timing is tracked per layer by accumulating clamped frame deltas (`timeRef`), not by reading the React Three Fiber clock. R3F resets the shared clock to zero whenever `frameloop` toggles — which happens every time the hero scrolls in or out of view — so an absolute clock read would restart the timeline mid-animation and replay old click impulses. Accumulated time keeps the entrance, click impulse, and drift continuous: while the hero is offscreen the frame loop is paused and time simply stops, then resumes exactly where it left off.
+
 ### 4.1 Setup work on mount
 
 On mount, it reads the geometry attributes and stores copies of two arrays in refs:
@@ -205,8 +211,8 @@ This gives clicks a short-lived impulse rather than a permanent state.
 The pointer ref coming from `HeroBanner` is transformed several times before it affects any vertex.
 
 1. Normalized hero coordinates are converted into world-space spans.
-2. The layer's current group position is subtracted.
-3. The current rotation and scale are inverted so the interaction is evaluated in blob-local space.
+2. The layer's group position and its motion-origin pivot are subtracted.
+3. The rotation and scale are inverted about that pivot so the interaction is evaluated in the same blob-local space as the deformation source. The full transform is `world = position + m + R·S·(v − m)` (with `m` the motion origin), and all of it is inverted — not just rotation and scale.
 4. `createInteractionField` turns that local pointer or click position into a directional bump field.
 
 Each field contains:
@@ -236,7 +242,7 @@ For each vertex, the code starts from the stable base position and adds three po
 - Those samples are combined into an `ambientOffset`.
 - The offset is applied in the radial direction from the blob center.
 
-This is the continuous wobble that makes the layer look alive even when the pointer is idle.
+This is the continuous wobble that makes the layer look alive even when the pointer is idle. It runs on every in-view frame regardless of interaction — there is no interaction gate on the deformation loop.
 
 #### Hover deformation
 
@@ -307,9 +313,9 @@ If you want to tune the effect, these are the main control points.
 
 The current implementation keeps cost under control in a few specific ways.
 
-- The whole scene is skipped for reduced-motion users.
-- The frame loop pauses when the hero is offscreen.
-- Geometry is regenerated only when viewport width or theme changes.
+- The whole scene is skipped for reduced-motion users (never mounted, chunk never loaded).
+- The frame loop pauses when the hero is offscreen, and per-layer accumulated time pauses with it.
+- Geometry is regenerated only when the quantized viewport width changes; a theme change only re-maps colors.
 - Old geometries are explicitly disposed.
 - Vertex writes happen against a dynamic draw buffer.
 - Normals are recomputed only when vertices actually move.
