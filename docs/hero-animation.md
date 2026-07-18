@@ -1,6 +1,6 @@
 # Hero Animation Architecture
 
-This hero effect is a React Three Fiber scene that builds blob geometry on the CPU and deforms its vertices every frame. It is not shader-driven and it is not a baked animation. The moving background is assembled from a small set of files that each own a specific step of the pipeline.
+This hero effect is a React Three Fiber scene that builds blob geometry on the CPU once and deforms it every frame in a patched vertex shader on the GPU. It is not a baked animation: the silhouette is generated deterministically at build time, and the runtime displacement (ambient wobble, hover and click bumps) is driven by a handful of per-layer uniforms. The moving background is assembled from a small set of files that each own a specific step of the pipeline.
 
 ## File map
 
@@ -9,10 +9,11 @@ This hero effect is a React Three Fiber scene that builds blob geometry on the C
 | `src/app/[locale]/page.tsx`                           | Mounts the localized hero section on the home page.                                                          |
 | `src/components/hero/HeroBanner.tsx`                  | Captures pointer state, reduced-motion preference, and section visibility.                                  |
 | `src/components/hero/FlowingScene.tsx`                | Creates the transparent React Three Fiber canvas and pauses or resumes the render loop.                     |
-| `src/components/hero/flowing-scene/LavaLampStack.tsx` | Builds the layer list, derives the entrance order, injects lighting, and renders one `LayerBlob` per layer. |
+| `src/components/hero/flowing-scene/LavaLampStack.tsx` | Builds the layer models and their materials, derives the entrance order, injects lighting, and renders one `LayerBlob` per layer. |
 | `src/components/hero/flowing-scene/layer-models.ts`   | Defines each layer blueprint and generates the blob geometry, anchor data, and seeded noise sources.        |
-| `src/components/hero/flowing-scene/LayerBlob.tsx`     | Runs the one-time entrance, per-frame motion, and vertex deformation loop.                                  |
-| `src/components/hero/flowing-scene/noise.ts`          | Provides deterministic seeded simplex noise used by both shape generation and animation.                    |
+| `src/components/hero/flowing-scene/LayerBlob.tsx`     | Runs the one-time entrance and per-frame group motion, and feeds the deformation uniforms.                  |
+| `src/components/hero/flowing-scene/deformation-material.ts` | Patches `MeshLambertMaterial` with the GPU displacement shader and owns its uniform contract.          |
+| `src/components/hero/flowing-scene/noise.ts`          | Provides deterministic seeded simplex noise used by shape generation and CPU-side layer motion.             |
 | `src/components/hero/flowing-scene/palette.ts`        | Defines the theme-aware layer colors.                                                                       |
 | `src/providers/ThemeProvider.tsx`                     | Supplies the current theme so the scene can swap palettes.                                                  |
 
@@ -72,10 +73,11 @@ Inside that canvas, `LavaLampStack` owns scene assembly.
 - It receives the active palette from `FlowingScene` and maps one color onto each layer.
 - Layer geometry is theme-independent, so a theme change only re-maps colors; it never rebuilds geometry.
 - It rebuilds the layer models only when the quantized `viewport.width` changes (rounded to 0.25 world units so a drag-resize does not rebuild and dispose geometry on every pixel step).
+- It creates one `HeroBlobMaterial` per layer. All four materials share a single compiled WebGL program (constant `customProgramCacheKey`); only their uniform values differ.
 - It derives a reverse entrance order so `wave-4` starts first and `wave-1` enters last.
 - It injects one ambient light and one directional light.
 - It offsets the whole blob stack with `SCENE_GROUP_Y = -0.1`.
-- It disposes each generated geometry when the layer list is replaced or the component unmounts.
+- It disposes each generated geometry and its paired material when the layer list is replaced or the component unmounts.
 
 ## 3. How each blob is built
 
@@ -124,10 +126,10 @@ Once the 2D contour exists, `createExtrudedGeometry` turns it into a 3D mesh.
 
 Before the geometry is changed further, the original vertex positions are copied into a custom buffer attribute named `deformationSource`.
 
-That attribute matters because runtime animation does not want to use already-deformed vertices as the source of truth. The code keeps two separate coordinate spaces around:
+That attribute matters because the runtime displacement must not be computed from vertices the roundover has already scaled. The geometry keeps two separate coordinate spaces around:
 
-- `position`: the live, mutable vertex positions that the frame loop edits
-- `deformationSource`: the original centered contour-space basis used to calculate stable deformations
+- `position`: the static base vertex positions — never rewritten at runtime; the vertex shader displaces them per frame
+- `deformationSource`: the original centered contour-space basis the vertex shader samples noise and bump fields from
 
 ### 3.4 Roundover and centering
 
@@ -153,7 +155,8 @@ Each finished `BuiltLayerModel` includes:
 - the anchor constraint
 - the motion pivot
 - one seeded noise field for motion (`seed + 101`)
-- one seeded noise field for contour deformation (`seed + 211`)
+
+Contour deformation noise no longer lives on the model: it is sampled inside the vertex shader, decorrelated per layer through seed-based domain offsets.
 
 `LavaLampStack` then maps the active palette color onto each built model, producing the `LayerModel` that `LayerBlob` animates.
 
@@ -165,14 +168,7 @@ Timing is tracked per layer by accumulating clamped frame deltas (`timeRef`), no
 
 ### 4.1 Setup work on mount
 
-On mount, it reads the geometry attributes and stores copies of two arrays in refs:
-
-- `basePositionsRef`: the stable base vertex positions
-- `deformationSourcesRef`: the stable deformation-space coordinates
-
-It also marks the live position buffer as `DynamicDrawUsage`, because the component rewrites vertex positions on many frames.
-
-On cleanup, it restores the original positions and drops the deformation-source copy.
+There is none for the geometry. The position buffer is static and never rewritten at runtime — the vertex shader reads `position` as the stable base and `deformationSource` as the deformation basis, so the CPU keeps no copies of either and nothing needs restoring on cleanup. The only per-layer runtime state is the accumulated time, the entrance and click trackers, and the damped interaction-field uniforms on the layer's `HeroBlobMaterial`.
 
 ### 4.2 Group motion
 
@@ -231,53 +227,40 @@ There are two simultaneous fields:
 
 The Y direction is clamped with `Math.min(directionY, 0)`, which means interaction can pull the blob downward or sideways, but not push it upward past the pinned top edge.
 
-### 4.5 Vertex deformation loop
+The fields are not applied on the CPU. Each frame they are damped (`INTERACTION_DAMP_LAMBDA = 10`, matching the retired per-vertex damping) into the layer's material uniforms: focus and push direction into `uHoverField` / `uClickField`, Gaussian radius and strength into `uHoverShape` / `uClickShape`. When a field disappears, its strength fades toward zero while the focus and direction hold their last values, so the bump releases as softly as it appeared.
 
-The actual shape animation happens in a single loop over the live position buffer.
+### 4.5 Vertex displacement on the GPU
 
-For each vertex, the code starts from the stable base position and adds three possible offsets.
+The actual shape animation happens in the vertex shader that `deformation-material.ts` injects into `MeshLambertMaterial` via `onBeforeCompile`. For each vertex, `heroDisplacement` starts from the static base position and adds up to three offsets.
 
 #### Ambient deformation
 
-- The deformation source coordinate is normalized by the layer radii.
-- Two noise samples are taken from `deformationNoise`.
-- Those samples are combined into an `ambientOffset`.
+- The `deformationSource` coordinate is normalized by the layer radii (`uRadii`).
+- Two simplex samples are taken from `heroSnoise`, advanced by `uAmbientTime` and offset by `uSeed`.
+- Those samples are combined into an ambient offset, attenuated near the anchored edge.
 - The offset is applied in the radial direction from the blob center.
 
-This is the continuous wobble that makes the layer look alive even when the pointer is idle. It runs on every in-view frame regardless of interaction — there is no interaction gate on the deformation loop.
+The GPU noise is statistically equivalent to the CPU `SimplexNoise` in `noise.ts` but not numerically identical; layers stay decorrelated through their seed-based domain offsets. This is the continuous wobble that makes the layer look alive even when the pointer is idle — it runs on every in-view frame regardless of interaction.
 
-#### Hover deformation
+#### Hover and click deformation
 
-- The distance to the hover field's focus point is measured.
-- A Gaussian falloff is applied.
-- The field's direction and strength are added to the offset.
+- The distance from the deformation source to the field's focus point is measured.
+- A Gaussian falloff is applied (`uHoverShape.x` / `uClickShape.x` radius).
+- The field's direction and damped strength are added to the offset.
+- The click field uses a larger radius and a strength that decays with the impulse.
 
-#### Click deformation
+### 4.6 Anchor protection and normal response
 
-- The same Gaussian falloff logic is used.
-- The click field uses a larger radius and decaying strength.
+After the raw offset is summed, the shader constrains it.
 
-### 4.6 Anchor protection and damping
+- If the vertex belongs to the anchored edge (`uAnchor`), its Y offset is zeroed.
+- Every other vertex gets `min(offsetY, 0)`, so the shape can only sag below its base.
 
-After the raw target offset is computed, the vertex is constrained.
+This mirrors `getConstrainedVertexTargetY` in `LayerBlob.tsx`, which stays exported and unit-tested as the reference implementation of the clamp — keep the GLSL and the TS helper in sync.
 
-- If the vertex belongs to the anchored edge, its Y value is locked to its base Y.
-- For every other vertex, `targetY` is clamped with `Math.min(baseY, proposedY)`.
+Because the displacement is a z-independent 2D warp, the shader also bends normals: it takes a finite-difference Jacobian of `heroDisplacement` (step `uFdEpsilon`) and applies its inverse-transpose to the static normal before lighting. That is what keeps the rim highlight along the lower contour redistributing as the blob deforms — it replaces the per-frame `computeVertexNormals()` of the retired CPU loop.
 
-In practice, that means:
-
-- the pinned top edge does not move
-- the rest of the shape can sag downward
-- the runtime loop never pushes vertices above their base Y
-
-That constraint is reinforced by `getAmbientAnchorAttenuation`, which fades ambient motion down near the anchored edge.
-
-The final step is smoothing:
-
-- current positions are damped toward the target positions with `MathUtils.damp`
-- normals are recomputed only if the positions actually changed
-
-This is why the effect feels soft instead of twitchy.
+The softness of the motion comes from damping the interaction-field parameters on the CPU (section 4.4); ambient motion needs no extra smoothing because it is already continuous in time.
 
 ## 5. What controls the animation
 
@@ -309,7 +292,8 @@ If you want to tune the effect, these are the main control points.
 - Hover field shape: the `createInteractionField` call that builds `hoverField`
 - Click field shape: the `createInteractionField` call that builds `clickField`
 - Click timing: `clickRamp`, `clickDecay`, and `clickBoost`
-- Vertex easing: the `MathUtils.damp` calls in the frame loop
+- Field easing: `INTERACTION_DAMP_LAMBDA` in `LayerBlob.tsx`
+- Wobble character: the ambient block of `heroDisplacement` in `deformation-material.ts`
 
 ## 6. Performance and lifecycle notes
 
@@ -318,29 +302,32 @@ The current implementation keeps cost under control in a few specific ways.
 - The whole scene is skipped for reduced-motion users (never mounted, chunk never loaded).
 - The frame loop pauses when the hero is offscreen, and per-layer accumulated time pauses with it.
 - Geometry is regenerated only when the quantized viewport width changes; a theme change only re-maps colors.
-- Old geometries are explicitly disposed.
-- Vertex writes happen against a dynamic draw buffer.
-- Normals are recomputed only when vertices actually move.
+- Old geometries and their paired materials are explicitly disposed.
+- Vertex displacement and the normal response run entirely on the GPU; geometry buffers are uploaded once and never rewritten.
+- The per-frame CPU cost per layer is a few group transforms and uniform writes.
+- All four layers share one compiled shader program via a constant `customProgramCacheKey`.
 
 ## 7. If you need to change the effect
 
 Use this as the shortest path to the right file.
 
 - Want a different silhouette: edit `createAnchoredBlobGeometry` in `layer-models.ts`.
-- Want more or less wobble: edit `distortAmount`, `distortSpeed`, or the ambient noise block in `LayerBlob.tsx`.
+- Want more or less wobble: edit `distortAmount`, `distortSpeed`, or the ambient block of `heroDisplacement` in `deformation-material.ts`.
 - Want stronger pointer response: edit the `hoverField` and `clickField` parameters in `LayerBlob.tsx`.
+- Want a different displacement or lighting response: edit the GLSL in `deformation-material.ts`, keeping the anchor clamp in sync with `getConstrainedVertexTargetY`.
 - Want a different stack composition: edit the `blueprints` array in `createLayerModels`.
 - Want a different color system: edit `palette.ts` or the theme provider.
 - Want a different pause policy: edit `HeroBanner.tsx` and `FlowingScene.tsx`.
 
 ## Summary
 
-The animation is built from deterministic blob geometry plus a runtime CPU deformation loop.
+The animation is built from deterministic blob geometry plus a runtime GPU displacement shader.
 
 - `HeroBanner` decides whether the scene should exist and captures interaction state.
 - `FlowingScene` turns that state into a running or paused canvas.
-- `LavaLampStack` rebuilds layer models from theme and viewport data.
+- `LavaLampStack` rebuilds layer models and their materials from theme and viewport data.
 - `layer-models.ts` generates the actual blob meshes and anchor metadata.
-- `LayerBlob.tsx` applies idle motion, click impulses, and hover deformation while protecting the pinned top edge.
+- `LayerBlob.tsx` runs the entrance and group motion and feeds the interaction uniforms.
+- `deformation-material.ts` displaces vertices and bends normals on the GPU while protecting the pinned top edge.
 
 That separation is what makes the effect easy to tune: shape generation, scene wiring, and runtime motion are all isolated in different files.

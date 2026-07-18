@@ -1,4 +1,7 @@
+import { ShaderLib } from "three";
+import type { WebGLProgramParametersWithUniforms } from "three";
 import { describe, expect, it } from "vitest";
+import { HeroBlobMaterial } from "../src/components/hero/flowing-scene/deformation-material";
 import { SimplexNoise } from "../src/components/hero/flowing-scene/noise";
 import { createLayerModels } from "../src/components/hero/flowing-scene/layer-models";
 import {
@@ -243,6 +246,80 @@ describe("vertex constraint helpers", () => {
     expect(getConstrainedVertexTargetY(model, baseY, baseY + 5)).toBe(baseY);
     expect(getConstrainedVertexTargetY(model, baseY, baseY - 5)).toBe(
       baseY - 5,
+    );
+  });
+});
+
+describe("HeroBlobMaterial", () => {
+  const [model] = createLayerModels(12);
+
+  // Runs the onBeforeCompile patch against the real lambert shader source
+  // (available without a GL context via ShaderLib).
+  function compileShader(material: HeroBlobMaterial) {
+    const parameters = {
+      uniforms: {} as Record<string, { value: unknown }>,
+      vertexShader: ShaderLib.lambert.vertexShader,
+      fragmentShader: ShaderLib.lambert.fragmentShader,
+    };
+
+    material.onBeforeCompile(
+      parameters as unknown as WebGLProgramParametersWithUniforms,
+    );
+
+    return parameters;
+  }
+
+  it("replaces the stock lambert chunks with the displacement blocks", () => {
+    const shader = compileShader(new HeroBlobMaterial(model));
+
+    // A surviving stock chunk means the anchor strings drifted in a three
+    // upgrade and the displacement silently stopped applying.
+    expect(shader.vertexShader).not.toContain("#include <begin_vertex>");
+    expect(shader.vertexShader).toContain("attribute vec3 deformationSource;");
+    expect(shader.vertexShader).toContain(
+      "vec3 transformed = vec3(position.xy + heroOffset, position.z);",
+    );
+    // The stock normal bootstrap must survive inside the injected block so
+    // objectNormal exists before the Jacobian transform runs.
+    expect(shader.vertexShader).toContain("#include <beginnormal_vertex>");
+  });
+
+  it("registers every deformation uniform on the compiled shader", () => {
+    const material = new HeroBlobMaterial(model);
+    const shader = compileShader(material);
+
+    for (const [name, uniform] of Object.entries(material.deformation)) {
+      expect(shader.uniforms[name]).toBe(uniform);
+      expect(shader.vertexShader).toContain(` ${name};`);
+    }
+  });
+
+  it("derives the static uniforms from the built model", () => {
+    const { deformation } = new HeroBlobMaterial(model);
+
+    expect(deformation.uAmbientAmplitude.value).toBeCloseTo(
+      Math.min(model.radiusX, model.radiusY) * model.distortAmount * 0.3,
+      10,
+    );
+    expect(deformation.uSeed.value).toBe(model.seed);
+    expect(deformation.uAnchor.value.x).toBeCloseTo(
+      model.anchorConstraint.edgeLocalY,
+      10,
+    );
+    expect(deformation.uAnchor.value.y).toBeCloseTo(
+      model.anchorConstraint.edgeTolerance,
+      10,
+    );
+    // Interaction bumps must start disabled until the pointer produces one.
+    expect(deformation.uHoverShape.value.y).toBe(0);
+    expect(deformation.uClickShape.value.y).toBe(0);
+  });
+
+  it("shares one program cache key across layers", () => {
+    const [first, second] = createLayerModels(12);
+
+    expect(new HeroBlobMaterial(first).customProgramCacheKey()).toBe(
+      new HeroBlobMaterial(second).customProgramCacheKey(),
     );
   });
 });

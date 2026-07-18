@@ -70,8 +70,6 @@ export type LayerBlueprint = {
 export type BuiltLayerModel = LayerBlueprint & {
   /** Explicit boundary metadata for the pinned top edge. */
   anchorConstraint: LayerAnchorConstraint;
-  /** Noise source used to drive ambient contour deformation over time. */
-  deformationNoise: NoiseField;
   /** Precomputed shape geometry for the blob mesh. */
   geometry: BufferGeometry;
   /** Local pivot used for subtle motion around the pinned edge. */

@@ -1,13 +1,15 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useLayoutEffect, useRef, useState } from "react";
-import { BufferAttribute, DynamicDrawUsage, Group, MathUtils } from "three";
+import { useRef, useState } from "react";
+import { Group, MathUtils } from "three";
+import type { BufferGeometry, Mesh, Vector2, Vector4 } from "three";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
-import { DEFORMATION_SOURCE_ATTRIBUTE } from "./types";
+import type { HeroBlobMaterial } from "./deformation-material";
 import type { BuiltLayerModel, LayerModel, Vec2 } from "./types";
 
 type LayerBlobProps = {
   config: LayerModel;
   entranceIndex: number;
+  material: HeroBlobMaterial;
   pointer: FlowingScenePointer;
   sceneOffsetY: number;
 };
@@ -133,6 +135,9 @@ export function toMotionLocalSpace(
   ];
 }
 
+// Reference implementation of the anchor clamp that now runs on the GPU
+// (heroDisplacement in deformation-material.ts). This stays exported and
+// unit-tested; keep the GLSL in sync with it.
 export function getConstrainedVertexTargetY(
   config: BuiltLayerModel,
   baseY: number,
@@ -148,22 +153,6 @@ export function getConstrainedVertexTargetY(
   }
 
   return Math.min(baseY, proposedY);
-}
-
-function getAmbientAnchorAttenuation(config: BuiltLayerModel, sourceY: number) {
-  const { anchorConstraint } = config;
-
-  const distanceToEdge = Math.abs(sourceY - anchorConstraint.edgeLocalY);
-  const fadeBand = Math.max(
-    anchorConstraint.edgeTolerance * 10,
-    config.radiusY * 0.12,
-  );
-
-  return MathUtils.smoothstep(
-    distanceToEdge,
-    anchorConstraint.edgeTolerance,
-    anchorConstraint.edgeTolerance + fadeBand,
-  );
 }
 
 function createInteractionField(
@@ -200,17 +189,55 @@ function createInteractionField(
   } satisfies InteractionField;
 }
 
+// The retired CPU loop damped every vertex toward its target with λ = 10.
+// With displacement on the GPU there is no per-vertex state, so the same
+// damping is applied to the interaction-field parameters instead — the
+// Gaussian bump then glides and fades as softly as the vertices did.
+const INTERACTION_DAMP_LAMBDA = 10;
+
+function applyInteractionFieldUniforms(
+  field: Vector4,
+  shape: Vector2,
+  target: InteractionField | null,
+  delta: number,
+) {
+  if (!target) {
+    // Keep the last focus and direction while the bump strength fades out.
+    shape.y = MathUtils.damp(shape.y, 0, INTERACTION_DAMP_LAMBDA, delta);
+
+    if (shape.y < 0.0001) {
+      shape.y = 0;
+    }
+
+    return;
+  }
+
+  field.set(
+    MathUtils.damp(field.x, target.focusX, INTERACTION_DAMP_LAMBDA, delta),
+    MathUtils.damp(field.y, target.focusY, INTERACTION_DAMP_LAMBDA, delta),
+    MathUtils.damp(field.z, target.directionX, INTERACTION_DAMP_LAMBDA, delta),
+    MathUtils.damp(field.w, target.directionY, INTERACTION_DAMP_LAMBDA, delta),
+  );
+  shape.x = target.bumpRadius;
+  shape.y = MathUtils.damp(
+    shape.y,
+    target.bumpStrength,
+    INTERACTION_DAMP_LAMBDA,
+    delta,
+  );
+}
+
 export function LayerBlob({
   config,
   entranceIndex,
+  material,
   pointer,
   sceneOffsetY,
 }: LayerBlobProps) {
   const { viewport } = useThree();
   const positionRef = useRef<Group>(null);
   const motionRef = useRef<Group>(null);
-  const basePositionsRef = useRef<Float32Array | null>(null);
-  const deformationSourcesRef = useRef<Float32Array | null>(null);
+  const meshRef = useRef<Mesh<BufferGeometry, HeroBlobMaterial>>(null);
   // Monotonic per-blob time. R3F resets the shared clock to zero every time the
   // frame loop toggles (visibility gating flips frameloop between "always" and
   // "never"), so clock.getElapsedTime() is not a stable timeline. Accumulating
@@ -241,56 +268,12 @@ export function LayerBlob({
     token: pointer.current.clickToken,
   });
 
-  useLayoutEffect(() => {
-    const positionAttribute = config.geometry.getAttribute("position");
-    const deformationSourceAttribute = config.geometry.getAttribute(
-      DEFORMATION_SOURCE_ATTRIBUTE,
-    );
-
-    if (!(positionAttribute instanceof BufferAttribute)) {
-      basePositionsRef.current = null;
-      deformationSourcesRef.current = null;
-      return;
-    }
-
-    positionAttribute.setUsage(DynamicDrawUsage);
-
-    basePositionsRef.current = new Float32Array(positionAttribute.array);
-    deformationSourcesRef.current =
-      deformationSourceAttribute instanceof BufferAttribute
-        ? new Float32Array(deformationSourceAttribute.array)
-        : new Float32Array(positionAttribute.array);
-
-    return () => {
-      if (!basePositionsRef.current) {
-        return;
-      }
-
-      deformationSourcesRef.current = null;
-      positionAttribute.array.set(basePositionsRef.current);
-      positionAttribute.needsUpdate = true;
-    };
-  }, [config.geometry]);
-
   useFrame((_state, delta) => {
     const positionGroup = positionRef.current;
     const motionGroup = motionRef.current;
-    const basePositions = basePositionsRef.current;
-    const deformationSources = deformationSourcesRef.current;
-    const geometry = config.geometry;
+    const mesh = meshRef.current;
 
-    if (
-      !positionGroup ||
-      !motionGroup ||
-      !basePositions ||
-      !deformationSources
-    ) {
-      return;
-    }
-
-    const positionAttribute = geometry.getAttribute("position");
-
-    if (!(positionAttribute instanceof BufferAttribute)) {
+    if (!positionGroup || !motionGroup || !mesh) {
       return;
     }
 
@@ -435,108 +418,27 @@ export function LayerBlob({
       0.58,
       0.042,
     );
-    const ambientAmplitude =
-      Math.min(config.radiusX, config.radiusY) * config.distortAmount * 0.3;
-    const ambientTime = elapsed * Math.max(0.12, config.distortSpeed);
-    const positions = positionAttribute.array;
-    let positionsDidChange = false;
+    // The per-vertex work (ambient noise, bump fields, anchor clamp, normal
+    // response) runs in the vertex shader; per frame the CPU only writes the
+    // field uniforms. Geometry buffers are never touched at runtime. The
+    // material is reached through the mesh ref because the frame loop
+    // mutates it, matching the ref-based mutation idiom of the groups above.
+    const deformation = mesh.material.deformation;
 
-    for (let index = 0; index < positions.length; index += 3) {
-      const baseX = basePositions[index];
-      const baseY = basePositions[index + 1];
-      const baseZ = basePositions[index + 2];
-      const deformationSourceX = deformationSources[index];
-      const deformationSourceY = deformationSources[index + 1];
-      let offsetX = 0;
-      let offsetY = 0;
-
-      if (ambientAmplitude > 0) {
-        const radialLength = Math.hypot(deformationSourceX, deformationSourceY);
-
-        if (radialLength > 0.0001) {
-          const normalizedSourceX =
-            deformationSourceX / Math.max(0.0001, config.radiusX);
-          const normalizedSourceY =
-            deformationSourceY / Math.max(0.0001, config.radiusY);
-          const primaryWave = config.deformationNoise.noise2D(
-            normalizedSourceX * 1.1 + ambientTime * 0.32 + config.seed * 0.17,
-            normalizedSourceY * 1.1 - ambientTime * 0.24 - config.seed * 0.13,
-          );
-          const rippleWave = config.deformationNoise.noise2D(
-            normalizedSourceX * 2.6 - ambientTime * 0.56 - config.seed * 0.09,
-            normalizedSourceY * 2.6 + ambientTime * 0.41 + config.seed * 0.23,
-          );
-          const ambientOffset =
-            (primaryWave + rippleWave * 0.34) *
-            ambientAmplitude *
-            getAmbientAnchorAttenuation(config, deformationSourceY);
-          const radialDirectionX = deformationSourceX / radialLength;
-          const radialDirectionY = deformationSourceY / radialLength;
-
-          offsetX += radialDirectionX * ambientOffset;
-          offsetY += radialDirectionY * ambientOffset;
-        }
-      }
-
-      if (hoverField) {
-        const hoverDistanceToFocus = Math.hypot(
-          deformationSourceX - hoverField.focusX,
-          deformationSourceY - hoverField.focusY,
-        );
-        const hoverFalloff = Math.exp(
-          -(hoverDistanceToFocus * hoverDistanceToFocus) /
-            (hoverField.bumpRadius * hoverField.bumpRadius),
-        );
-
-        offsetX +=
-          hoverField.directionX * hoverField.bumpStrength * hoverFalloff;
-        offsetY +=
-          hoverField.directionY * hoverField.bumpStrength * hoverFalloff;
-      }
-
-      if (clickField) {
-        const clickDistanceToFocus = Math.hypot(
-          deformationSourceX - clickField.focusX,
-          deformationSourceY - clickField.focusY,
-        );
-        const clickFalloff = Math.exp(
-          -(clickDistanceToFocus * clickDistanceToFocus) /
-            (clickField.bumpRadius * clickField.bumpRadius),
-        );
-
-        offsetX +=
-          clickField.directionX * clickField.bumpStrength * clickFalloff;
-        offsetY +=
-          clickField.directionY * clickField.bumpStrength * clickFalloff;
-      }
-
-      const targetX = baseX + offsetX;
-      const targetY = getConstrainedVertexTargetY(
-        config,
-        baseY,
-        baseY + offsetY,
-      );
-      const nextX = MathUtils.damp(positions[index], targetX, 10, delta);
-      const nextY = MathUtils.damp(positions[index + 1], targetY, 10, delta);
-
-      if (
-        Math.abs(nextX - positions[index]) > 0.0001 ||
-        Math.abs(nextY - positions[index + 1]) > 0.0001
-      ) {
-        positionsDidChange = true;
-      }
-
-      positions[index] = nextX;
-      positions[index + 1] = nextY;
-      positions[index + 2] = baseZ;
-    }
-
-    if (!positionsDidChange) {
-      return;
-    }
-
-    positionAttribute.needsUpdate = true;
-    geometry.computeVertexNormals();
+    deformation.uAmbientTime.value =
+      elapsed * Math.max(0.12, config.distortSpeed);
+    applyInteractionFieldUniforms(
+      deformation.uHoverField.value,
+      deformation.uHoverShape.value,
+      hoverField,
+      delta,
+    );
+    applyInteractionFieldUniforms(
+      deformation.uClickField.value,
+      deformation.uClickShape.value,
+      clickField,
+      delta,
+    );
   });
 
   return (
@@ -553,8 +455,12 @@ export function LayerBlob({
             -config.motionOrigin[2],
           ]}
         >
-          <mesh geometry={config.geometry}>
-            <meshLambertMaterial color={config.color} />
+          <mesh ref={meshRef} geometry={config.geometry}>
+            <primitive
+              object={material}
+              attach="material"
+              color={config.color}
+            />
           </mesh>
         </group>
       </group>

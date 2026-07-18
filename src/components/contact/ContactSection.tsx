@@ -41,9 +41,9 @@ const CONTACT_ACTIONS: readonly ContactAction[] = [
   },
   {
     key: "cv",
-    href: "/documents/Davit-Lursmanashvili-CV.pdf",
+    href: "/documents/Davit Lursmanashvili CV NL.pdf",
     icon: Download,
-    download: "Davit-Lursmanashvili-CV.pdf",
+    download: "Davit Lursmanashvili CV NL.pdf",
     accentStyle: {
       "--contact-accent":
         "color-mix(in oklab, white 20%, var(--accent-three) 50%)",
