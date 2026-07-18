@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
@@ -40,38 +39,63 @@ function noopSubscribe() {
   return () => {};
 }
 
-function useReducedMotionState() {
-  // Initialize deterministically to match the server render. Reading matchMedia
-  // in the initializer diverges from SSR (always false) and produces a
-  // hydration mismatch for reduced-motion users. The effect below corrects it
-  // on mount.
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reducedMotionMediaQuery: MediaQueryList | null = null;
 
-    const updateMotionPreference = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
+function getReducedMotionMediaQuery() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return null;
+  }
 
-    updateMotionPreference();
+  if (!reducedMotionMediaQuery) {
+    reducedMotionMediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+  }
 
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateMotionPreference);
+  return reducedMotionMediaQuery;
+}
 
-      return () => {
-        mediaQuery.removeEventListener("change", updateMotionPreference);
-      };
-    }
+function subscribeToReducedMotion(onStoreChange: () => void) {
+  const mediaQuery = getReducedMotionMediaQuery();
 
-    mediaQuery.addListener(updateMotionPreference);
+  if (!mediaQuery) {
+    return () => {};
+  }
+
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", onStoreChange);
 
     return () => {
-      mediaQuery.removeListener(updateMotionPreference);
+      mediaQuery.removeEventListener("change", onStoreChange);
     };
-  }, []);
+  }
 
-  return prefersReducedMotion;
+  mediaQuery.addListener(onStoreChange);
+
+  return () => {
+    mediaQuery.removeListener(onStoreChange);
+  };
+}
+
+function getReducedMotionSnapshot() {
+  return getReducedMotionMediaQuery()?.matches ?? false;
+}
+
+function getReducedMotionServerSnapshot() {
+  return false;
+}
+
+// Read the preference synchronously via useSyncExternalStore. The server
+// snapshot is always false (matching SSR), and React re-renders after hydration
+// if the client snapshot differs, so this is hydration-safe without an effect.
+// Reading synchronously lets consumers gate on the true value from the first
+// client render — e.g. the hero scene is never mounted for reduced-motion users.
+function useReducedMotionState() {
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot,
+  );
 }
 
 function ReducedMotionProvider({ children }: ThemeProviderProps) {
