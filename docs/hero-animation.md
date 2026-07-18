@@ -4,18 +4,18 @@ This hero effect is a React Three Fiber scene that builds blob geometry on the C
 
 ## File map
 
-| File                                                  | Responsibility                                                                                              |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `src/app/[locale]/page.tsx`                           | Mounts the localized hero section on the home page.                                                          |
-| `src/components/hero/HeroBanner.tsx`                  | Captures pointer state, reduced-motion preference, and section visibility.                                  |
-| `src/components/hero/FlowingScene.tsx`                | Creates the transparent React Three Fiber canvas and pauses or resumes the render loop.                     |
-| `src/components/hero/flowing-scene/LavaLampStack.tsx` | Builds the layer models and their materials, derives the entrance order, injects lighting, and renders one `LayerBlob` per layer. |
-| `src/components/hero/flowing-scene/layer-models.ts`   | Defines each layer blueprint and generates the blob geometry, anchor data, and seeded noise sources.        |
-| `src/components/hero/flowing-scene/LayerBlob.tsx`     | Runs the one-time entrance and per-frame group motion, and feeds the deformation uniforms.                  |
-| `src/components/hero/flowing-scene/deformation-material.ts` | Patches `MeshLambertMaterial` with the GPU displacement shader and owns its uniform contract.          |
-| `src/components/hero/flowing-scene/noise.ts`          | Provides deterministic seeded simplex noise used by shape generation and CPU-side layer motion.             |
-| `src/components/hero/flowing-scene/palette.ts`        | Defines the theme-aware layer colors.                                                                       |
-| `src/providers/ThemeProvider.tsx`                     | Supplies the current theme so the scene can swap palettes.                                                  |
+| File                                                        | Responsibility                                                                                                                    |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/[locale]/page.tsx`                                 | Mounts the localized hero section on the home page.                                                                               |
+| `src/components/hero/HeroBanner.tsx`                        | Captures pointer state, reduced-motion preference, and section visibility.                                                        |
+| `src/components/hero/FlowingScene.tsx`                      | Creates the transparent React Three Fiber canvas and pauses or resumes the render loop.                                           |
+| `src/components/hero/flowing-scene/LavaLampStack.tsx`       | Builds the layer models and their materials, derives the entrance order, injects lighting, and renders one `LayerBlob` per layer. |
+| `src/components/hero/flowing-scene/layer-models.ts`         | Defines each layer blueprint and generates the blob geometry, anchor data, and seeded noise sources.                              |
+| `src/components/hero/flowing-scene/LayerBlob.tsx`           | Runs the one-time entrance and per-frame group motion, and feeds the deformation uniforms.                                        |
+| `src/components/hero/flowing-scene/deformation-material.ts` | Patches `MeshLambertMaterial` with the GPU displacement shader and owns its uniform contract.                                     |
+| `src/components/hero/flowing-scene/noise.ts`                | Provides deterministic seeded simplex noise used by shape generation and CPU-side layer motion.                                   |
+| `src/components/hero/flowing-scene/palette.ts`              | Defines the theme-aware layer colors.                                                                                             |
+| `src/providers/ThemeProvider.tsx`                           | Supplies the current theme so the scene can swap palettes.                                                                        |
 
 ## High-level flow
 
@@ -36,6 +36,29 @@ flowchart TD
     Hero -->|pointer.current| BlobC
     Hero -->|pointer.current| BlobD
 ```
+
+## TL/DR
+
+The hero background ("lava lamp" of soft blobs) is a React Three Fiber scene. The key idea: the blob shapes are computed once on the CPU at build time, and every frame the vertices are deformed on the GPU in a patched vertex shader. It's not a baked animation — the silhouette is generated deterministically, and the movement is driven by a small set of per-layer uniforms.
+
+1. Three gates before any work happens (HeroBanner.tsx)
+
+The canvas is client-only (dynamic import with ssr: false) — WebGL never runs on the server.
+If the user prefers reduced motion, the scene is never mounted and its JS chunk is never even downloaded.
+An IntersectionObserver pauses the render loop (frameloop: "never") when the hero scrolls offscreen. 2. Building each blob once (layer-models.ts)
+
+Four "wave" blueprints (wave-1…wave-4) each define size, noise, seed, depth, etc.
+Seeded simplex noise samples an organic 2D contour, which starts with a flat pinned top edge, then gets extruded into a thin 3D mesh with a soft side profile (applyContinuousRoundover).
+Crucially, before anything else the original vertex positions are copied into a custom attribute called deformationSource. So the geometry carries two coordinate spaces: position (the static base the shader displaces) and deformationSource (the pristine basis it samples noise/bumps from). Geometry is rebuilt only when the quantized viewport width changes; a theme change only remaps colors. 3. Per-frame CPU work is tiny (LayerBlob.tsx)
+
+Each frame the CPU only updates the layer's outer group transforms (drift, float, wobble, breathing scale, entrance slide-in) and writes a handful of uniforms. It never touches vertex buffers.
+Time is tracked by accumulating clamped frame deltas (timeRef), not by reading R3F's clock — because R3F resets the clock to zero every time frameloop toggles (which happens on every scroll in/out).
+Pointer position is transformed into blob-local space (toMotionLocalSpace) and turned into a Gaussian hover field and a decaying click field. These field parameters are damped (λ = 10) so bumps glide and fade softly. 4. The actual shape animation runs on the GPU (deformation-material.ts)
+
+MeshLambertMaterial is patched via onBeforeCompile. For each vertex, heroDisplacement sums up to three offsets: ambient wobble (two simplex samples advanced by time + seed), hover bump, and click bump.
+Anchor protection: vertices on the pinned top edge get their Y offset zeroed; every other vertex is clamped to min(offsetY, 0), so the blob can only sag downward, never poke above its flat top.
+Because the warp is 2D, the shader also bends the normals — it takes a finite-difference Jacobian of the displacement and applies its inverse-transpose, so the rim highlight tracks the deformation without any per-frame computeVertexNormals().
+All four layers share one compiled shader program (constant customProgramCacheKey); only uniform values differ.
 
 ## 1. Mounting and scene gating
 
