@@ -14,6 +14,9 @@ type BuiltLayerGeometry = {
 };
 
 const BLOB_DEPTH = 0.015;
+// 0 divisions is safe only while the contour is built purely from straight
+// lineTo segments (three samples a LineCurve at a fixed resolution of 1).
+// Adding any curved segment to the blob shape requires a real count here.
 const EXTRUDE_CURVE_SEGMENTS = 0;
 const MIN_LAYER_POINT_COUNT = 32;
 const ROUNDOVER_SEGMENTS = 6;
@@ -267,7 +270,6 @@ export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
       driftX: 0,
       edgeInset: 1,
       flatEdgeStrength: 1,
-      index: 0,
       noiseScale: 0.54,
       pointCount: MIN_LAYER_POINT_COUNT,
       radiusX: widthUnit,
@@ -284,7 +286,6 @@ export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
       driftX: 0.14,
       edgeInset: 0.72,
       flatEdgeStrength: 0,
-      index: 1,
       noiseScale: 0.2,
       pointCount: MIN_LAYER_POINT_COUNT,
       radiusX: widthUnit,
@@ -301,7 +302,6 @@ export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
       driftX: 0.14,
       edgeInset: 1,
       flatEdgeStrength: 0,
-      index: 2,
       noiseScale: 1,
       pointCount: 50,
       radiusX: widthUnit,
@@ -318,7 +318,6 @@ export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
       driftX: 0.14,
       edgeInset: 0.85,
       flatEdgeStrength: 0,
-      index: 3,
       noiseScale: 0.8,
       pointCount: 96,
       radiusX: widthUnit,

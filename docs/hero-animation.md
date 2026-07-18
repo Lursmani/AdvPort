@@ -25,7 +25,7 @@ flowchart TD
     Scene --> Canvas[React Three Fiber Canvas]
     Canvas --> Stack[LavaLampStack]
     Theme[ThemeProvider] --> Stack
-    Models[layer-models.ts] -->|LayerModel[]| Stack
+    Models[layer-models.ts] -->|BuiltLayerModel[]| Stack
     Stack --> BlobA[LayerBlob]
     Stack --> BlobB[LayerBlob]
     Stack --> BlobC[LayerBlob]
@@ -87,7 +87,6 @@ Each layer starts as a `LayerBlueprint`. Those blueprint fields are the main aut
 
 - `depth`: base Z placement for stacking
 - `radiusX` and `radiusY`: base blob size
-- `color`: material color from the current palette
 - `blobAmplitude`: how strongly contour noise changes the silhouette
 - `noiseScale`: frequency of the silhouette noise samples
 - `pointCount`: contour resolution, clamped to a minimum of `32`
@@ -100,6 +99,8 @@ Each layer starts as a `LayerBlueprint`. Those blueprint fields are the main aut
 - `seed`: deterministic seed used for both shape and motion noise
 
 `radiusX` is derived from the current viewport width, so the hero scales horizontally with the viewport.
+
+The blueprint deliberately has no color field — the fill color comes from the active theme palette and is mapped onto each layer by `LavaLampStack` at render time, which is what keeps the built models theme-independent.
 
 ### 3.2 Contour generation
 
@@ -146,7 +147,7 @@ The centered geometry also produces the anchor metadata used later at runtime:
 
 ### 3.5 Layer model assembly
 
-Each finished `LayerModel` includes:
+Each finished `BuiltLayerModel` includes:
 
 - the generated geometry
 - the anchor constraint
@@ -154,7 +155,7 @@ Each finished `LayerModel` includes:
 - one seeded noise field for motion (`seed + 101`)
 - one seeded noise field for contour deformation (`seed + 211`)
 
-That `LayerModel` is what `LayerBlob` animates.
+`LavaLampStack` then maps the active palette color onto each built model, producing the `LayerModel` that `LayerBlob` animates.
 
 ## 4. How runtime motion works
 
@@ -171,7 +172,7 @@ On mount, it reads the geometry attributes and stores copies of two arrays in re
 
 It also marks the live position buffer as `DynamicDrawUsage`, because the component rewrites vertex positions on many frames.
 
-On cleanup, it restores the original positions and clears its refs.
+On cleanup, it restores the original positions and drops the deformation-source copy.
 
 ### 4.2 Group motion
 
@@ -199,6 +200,7 @@ That is what keeps the blob visually attached to the top of the hero while the r
 
 `HeroBanner` increments `clickToken` on every pointer down. `LayerBlob` watches that token.
 
+- The watcher is seeded with the live token on mount — the pointer ref outlives the scene, so a remount (e.g. reduced motion toggled back off) does not replay a click that happened before it.
 - When the token changes, the layer records a new `startedAt` time.
 - The click effect ramps in quickly with `smoothstep(0.02, 0.16)`.
 - It then decays with `1 - smoothstep(0.24, 1.05)`.
@@ -212,7 +214,7 @@ The pointer ref coming from `HeroBanner` is transformed several times before it 
 
 1. Normalized hero coordinates are converted into world-space spans.
 2. The layer's group position and its motion-origin pivot are subtracted.
-3. The rotation and scale are inverted about that pivot so the interaction is evaluated in the same blob-local space as the deformation source. The full transform is `world = position + m + R·S·(v − m)` (with `m` the motion origin), and all of it is inverted — not just rotation and scale.
+3. The rotation and scale are inverted about that pivot so the interaction is evaluated in the same blob-local space as the deformation source. The full transform is `world = position + m + R·S·(v − m)` (with `m` the motion origin), and all of it is inverted — not just rotation and scale. This inversion is the exported `toMotionLocalSpace` helper in `LayerBlob.tsx`, covered by `tests/hero-scene.test.ts`.
 4. `createInteractionField` turns that local pointer or click position into a directional bump field.
 
 Each field contains:
@@ -298,7 +300,7 @@ If you want to tune the effect, these are the main control points.
 - Shape silhouette: `blobAmplitude`, `noiseScale`, `pointCount`, `radiusX`, `radiusY`
 - Top edge behavior: `edgeInset`, `flatEdgeStrength`, `anchorConstraint`
 - Idle motion: `distortAmount`, `distortSpeed`, `driftX`, `scale`
-- Layering: `depth`, `index`, `color`
+- Layering: `depth`, `color`
 - Determinism: `seed`
 
 ### Interaction feel controls

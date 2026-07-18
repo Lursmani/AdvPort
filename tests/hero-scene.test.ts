@@ -5,6 +5,7 @@ import {
   getConstrainedDirectionY,
   getConstrainedVertexTargetY,
   getEntranceOffset,
+  toMotionLocalSpace,
 } from "../src/components/hero/flowing-scene/LayerBlob";
 import { LIGHT_PALETTE } from "../src/components/hero/flowing-scene/palette";
 
@@ -148,6 +149,76 @@ describe("getEntranceOffset", () => {
     // A staggered layer is still parked at t=0.1 because its clock has not
     // started yet (0.1 - 2 * 0.08 < 0).
     expect(getEntranceOffset(0.1, 2, viewportHeight, model)).toBe(parked);
+  });
+});
+
+describe("toMotionLocalSpace", () => {
+  const [model] = createLayerModels(12);
+
+  // The forward transform the helper inverts:
+  // world = position + m + R·S·(v − m), with m = motionOrigin.
+  function toWorldSpace(
+    localX: number,
+    localY: number,
+    groupPositionX: number,
+    groupPositionY: number,
+    rotationZ: number,
+    scale: number,
+  ): [number, number] {
+    const cosine = Math.cos(rotationZ);
+    const sine = Math.sin(rotationZ);
+    const relativeX = (localX - model.motionOrigin[0]) * scale;
+    const relativeY = (localY - model.motionOrigin[1]) * scale;
+
+    return [
+      groupPositionX + model.motionOrigin[0] + relativeX * cosine - relativeY * sine,
+      groupPositionY + model.motionOrigin[1] + relativeX * sine + relativeY * cosine,
+    ];
+  }
+
+  it("is the identity for an untransformed group", () => {
+    const [localX, localY] = toMotionLocalSpace(model, 1.2, -0.7, 0, 0, 0, 1);
+
+    expect(localX).toBeCloseTo(1.2, 10);
+    expect(localY).toBeCloseTo(-0.7, 10);
+  });
+
+  it("removes the group translation", () => {
+    const [localX, localY] = toMotionLocalSpace(model, 1.2, -0.7, 2, -3, 0, 1);
+
+    expect(localX).toBeCloseTo(1.2 - 2, 10);
+    expect(localY).toBeCloseTo(-0.7 - -3, 10);
+  });
+
+  it("round-trips a point through the full pivot-sandwiched transform", () => {
+    const localPoint: [number, number] = [0.35, -0.85];
+    const [worldX, worldY] = toWorldSpace(
+      localPoint[0],
+      localPoint[1],
+      0.4,
+      -2.1,
+      0.12,
+      0.92,
+    );
+    const [localX, localY] = toMotionLocalSpace(
+      model,
+      worldX,
+      worldY,
+      0.4,
+      -2.1,
+      0.12,
+      0.92,
+    );
+
+    expect(localX).toBeCloseTo(localPoint[0], 10);
+    expect(localY).toBeCloseTo(localPoint[1], 10);
+  });
+
+  it("stays finite when the scale collapses to zero", () => {
+    const [localX, localY] = toMotionLocalSpace(model, 1.2, -0.7, 0.4, -2.1, 0.12, 0);
+
+    expect(Number.isFinite(localX)).toBe(true);
+    expect(Number.isFinite(localY)).toBe(true);
   });
 });
 

@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { BufferAttribute, DynamicDrawUsage, Group, MathUtils } from "three";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { DEFORMATION_SOURCE_ATTRIBUTE } from "./types";
-import type { BuiltLayerModel, LayerModel } from "./types";
+import type { BuiltLayerModel, LayerModel, Vec2 } from "./types";
 
 type LayerBlobProps = {
   config: LayerModel;
@@ -107,6 +107,32 @@ export function getConstrainedDirectionY(directionY: number) {
   return Math.min(directionY, 0);
 }
 
+// Invert the full pivot-sandwiched world transform
+// (world = position + m + R·S·(v − m), m = motionOrigin) so interaction
+// positions land in the same local space as the deformation source.
+export function toMotionLocalSpace(
+  config: BuiltLayerModel,
+  worldX: number,
+  worldY: number,
+  groupPositionX: number,
+  groupPositionY: number,
+  rotationZ: number,
+  scale: number,
+): Vec2 {
+  const motionOriginX = config.motionOrigin[0];
+  const motionOriginY = config.motionOrigin[1];
+  const cosine = Math.cos(-rotationZ);
+  const sine = Math.sin(-rotationZ);
+  const inverseScale = 1 / Math.max(0.0001, scale);
+  const deltaX = worldX - groupPositionX - motionOriginX;
+  const deltaY = worldY - groupPositionY - motionOriginY;
+
+  return [
+    motionOriginX + (deltaX * cosine - deltaY * sine) * inverseScale,
+    motionOriginY + (deltaX * sine + deltaY * cosine) * inverseScale,
+  ];
+}
+
 export function getConstrainedVertexTargetY(
   config: BuiltLayerModel,
   baseY: number,
@@ -207,9 +233,12 @@ export function LayerBlob({
     completed: false,
     startedAt: null,
   });
+  // Seed with the live token: the pointer ref is owned by HeroBanner and
+  // outlives this scene, so a remount (e.g. reduced-motion toggled back off)
+  // must not mistake a click that happened before the remount for a new one.
   const clickStateRef = useRef<{ startedAt: number | null; token: number }>({
     startedAt: null,
-    token: 0,
+    token: pointer.current.clickToken,
   });
 
   useLayoutEffect(() => {
@@ -365,27 +394,24 @@ export function LayerBlob({
     const clickWorldX = (pointer.current.clickU - 0.5) * 2 * horizontalSpan;
     const clickWorldY =
       (0.5 - pointer.current.clickV) * 2 * verticalSpan - sceneOffsetY;
-    // Invert the full pivot-sandwiched world transform
-    // (world = position + m + R·S·(v − m), m = motionOrigin) so pointer and
-    // click positions land in the same local space as the deformation source.
-    const motionOriginX = config.motionOrigin[0];
-    const motionOriginY = config.motionOrigin[1];
-    const inverseAngle = -motionGroup.rotation.z;
-    const cosine = Math.cos(inverseAngle);
-    const sine = Math.sin(inverseAngle);
-    const inverseScale = 1 / Math.max(0.0001, motionGroup.scale.x);
-    const pointerDeltaX = pointerWorldX - positionGroup.position.x - motionOriginX;
-    const pointerDeltaY = pointerWorldY - positionGroup.position.y - motionOriginY;
-    const clickDeltaX = clickWorldX - positionGroup.position.x - motionOriginX;
-    const clickDeltaY = clickWorldY - positionGroup.position.y - motionOriginY;
-    const localPointerX =
-      motionOriginX + (pointerDeltaX * cosine - pointerDeltaY * sine) * inverseScale;
-    const localPointerY =
-      motionOriginY + (pointerDeltaX * sine + pointerDeltaY * cosine) * inverseScale;
-    const localClickX =
-      motionOriginX + (clickDeltaX * cosine - clickDeltaY * sine) * inverseScale;
-    const localClickY =
-      motionOriginY + (clickDeltaX * sine + clickDeltaY * cosine) * inverseScale;
+    const [localPointerX, localPointerY] = toMotionLocalSpace(
+      config,
+      pointerWorldX,
+      pointerWorldY,
+      positionGroup.position.x,
+      positionGroup.position.y,
+      motionGroup.rotation.z,
+      motionGroup.scale.x,
+    );
+    const [localClickX, localClickY] = toMotionLocalSpace(
+      config,
+      clickWorldX,
+      clickWorldY,
+      positionGroup.position.x,
+      positionGroup.position.y,
+      motionGroup.rotation.z,
+      motionGroup.scale.x,
+    );
     const pointerInfluence = pointer.current.active
       ? Math.min(1, Math.hypot(pointer.current.x, pointer.current.y) + 0.22)
       : 0;
@@ -515,7 +541,11 @@ export function LayerBlob({
 
   return (
     <group ref={positionRef} position={initialPosition}>
-      <group ref={motionRef} position={config.motionOrigin}>
+      <group
+        ref={motionRef}
+        position={config.motionOrigin}
+        scale={config.scale}
+      >
         <group
           position={[
             -config.motionOrigin[0],

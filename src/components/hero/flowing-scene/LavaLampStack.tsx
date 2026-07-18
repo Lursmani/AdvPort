@@ -21,6 +21,10 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
   // Quantize the width the geometry is built from so a continuous drag-resize
   // does not rebuild and dispose four ExtrudeGeometries on every pixel step.
   // 0.25 world units is imperceptible at the blob scale (radiusX ≈ 0.8 × width).
+  // Allocating in render means a discarded render (e.g. StrictMode's dev
+  // double-render) leaks its geometry set — the disposal effect below only
+  // covers committed layers. Accepted trade-off; keep allocation and disposal
+  // keyed to the same memo value.
   const geometryWidth = Math.round(viewport.width * 4) / 4;
   const baseLayers = useMemo(
     () => createLayerModels(geometryWidth),

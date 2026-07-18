@@ -48,8 +48,6 @@ export type LayerBlueprint = {
   edgeInset: number;
   /** How flat the anchored edge should be. */
   flatEdgeStrength: number;
-  /** Layer index used for ordering and render timing. */
-  index: number;
   /** Frequency multiplier for the procedural noise field. */
   noiseScale: number;
   /** Number of points used to build the blob contour, clamped to a minimum of 32. */
