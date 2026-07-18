@@ -17,7 +17,7 @@ export const notFoundLinkClassName =
 function NotFoundContent({ title, description, link }: NotFoundContentProps) {
   return (
     <main className="flex min-h-svh flex-col items-center justify-center gap-6 px-6 text-center">
-      <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em]">
+      <p className="text-foreground-soft text-xs font-semibold uppercase tracking-eyebrow">
         404
       </p>
       <h1 className="text-4xl font-semibold text-foreground sm:text-5xl">

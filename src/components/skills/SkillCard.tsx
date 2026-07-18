@@ -42,7 +42,7 @@ const cardClasses =
   "relative flex h-full flex-col overflow-hidden rounded-4xl p-6 sm:p-8";
 
 const chipClasses =
-  "inline-flex rounded-full border border-[color-mix(in_oklab,var(--foreground)_10%,transparent)] bg-[color-mix(in_oklab,var(--background)_78%,transparent)] px-3 py-1.5 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_8%,transparent)]";
+  "inline-flex rounded-full border border-[color-mix(in_oklab,var(--foreground)_10%,transparent)] bg-surface-glass px-3 py-1.5 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_8%,transparent)]";
 
 const toneClasses: Record<SkillCardTone, string> = {
   firstCardTone:
@@ -267,7 +267,7 @@ function SkillCard({
               {groups.map((group, groupIndex) => (
                 <div key={group.title ?? `${title}-${groupIndex}`}>
                   {group.title ? (
-                    <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em]">
+                    <p className="text-foreground-soft text-xs font-semibold uppercase tracking-eyebrow">
                       {group.title}
                     </p>
                   ) : null}

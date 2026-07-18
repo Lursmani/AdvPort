@@ -9,7 +9,7 @@
   --skills-card-glow-x: calc(100% + 2rem);
   --skills-card-glow-y: 2rem;
   --skills-card-glow-opacity: 0.95;
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  border: 1px solid var(--border-soft);
   background: linear-gradient(
     180deg,
     color-mix(in oklab, var(--skills-card-accent) 15%, transparent) 0%,

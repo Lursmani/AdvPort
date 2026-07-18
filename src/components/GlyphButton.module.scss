@@ -41,8 +41,8 @@
 .surface {
   width: 2.75rem;
   height: 2.75rem;
-  border-color: color-mix(in oklab, var(--foreground) 12%, transparent);
-  background: color-mix(in oklab, var(--background) 78%, transparent);
+  border-color: var(--border-soft);
+  background: var(--surface-glass);
   box-shadow: 0 16px 40px
     color-mix(in oklab, var(--background) 78%, transparent);
   -webkit-backdrop-filter: blur(18px);

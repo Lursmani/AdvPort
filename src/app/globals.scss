@@ -1,35 +1,25 @@
 @use "tailwindcss";
 @use "../styles/breakpoints" as bp;
 
-// Single source of truth for the breakpoint scale. SCSS modules use the
-// `from(...)` / `until(...)` / `between(...)` mixins; the values are also
-// exposed as `--breakpoint-*` custom properties so Tailwind's `sm:` /
-// `md:` / `lg:` / `xl:` / `2xl:` utilities resolve against the same scale.
-$breakpoint-css-vars: (
-  "--breakpoint-sm": bp.get(sm),
-  "--breakpoint-md": bp.get(md),
-  "--breakpoint-lg": bp.get(lg),
-  "--breakpoint-xl": bp.get(xl),
-  "--breakpoint-2xl": bp.get(2xl),
-);
-
 :root {
   color-scheme: dark;
-  @each $name, $value in $breakpoint-css-vars {
-    #{$name}: #{$value};
-  }
   --background: #001219;
   --foreground: #ffffff;
   --foreground-soft: color-mix(in oklab, var(--foreground) 88%, transparent);
   --foreground-muted: color-mix(in oklab, var(--foreground) 80%, transparent);
-  --foreground-faint: color-mix(in oklab, var(--foreground) 64%, transparent);
   --primary: #000000;
+  // Shared surface tokens. The expressions are theme-independent (they
+  // recompute from the active --foreground / --background), so they live in
+  // :root and are exposed to Tailwind via @theme inline below
+  // (`border-border-soft`, `bg-surface-glass`) while SCSS modules consume the
+  // raw vars directly. Keeps the one glass recipe in a single place.
+  --border-soft: color-mix(in oklab, var(--foreground) 12%, transparent);
+  --surface-glass: color-mix(in oklab, var(--background) 78%, transparent);
   // Hero backdrop color (the transparent WebGL canvas composites over this).
   // The backmost hero wave color `heroOne` in
   // src/components/hero/flowing-scene/palette.ts is tuned to blend into it —
   // update the two together.
   --gradient-start: #044552;
-  --gradient-end: #001219;
   --hero-background: #001219;
   --accent-one: #0f3143;
   --accent-two: #005f73;
@@ -46,7 +36,6 @@ html[data-theme="light"] {
   --primary: #ffffff;
   // See :root note above; light `heroOne` matches this token exactly (#F9E79F).
   --gradient-start: #f9e79f;
-  --gradient-end: #faedcd;
   --hero-background: #faedcd;
   --accent-one: #289c68;
   --accent-two: #f2ca49;
@@ -59,12 +48,11 @@ html[data-theme="light"] {
   --color-foreground: var(--foreground);
   --color-foreground-soft: var(--foreground-soft);
   --color-foreground-muted: var(--foreground-muted);
-  --color-foreground-faint: var(--foreground-faint);
-  --color-primary: var(--primary);
   --color-gradient-start: var(--gradient-start);
-  --color-gradient-end: var(--gradient-end);
+  --color-border-soft: var(--border-soft);
+  --color-surface-glass: var(--surface-glass);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --tracking-eyebrow: 0.24em;
 
   // Tailwind v4 breakpoint tokens — utilities like `sm:`, `md:`, `lg:`
   // resolve against these. Values are sourced from
@@ -79,11 +67,7 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --header-background: color-mix(
-    in oklab,
-    var(--hero-background) 100%,
-    transparent
-  );
+  --header-background: var(--hero-background);
   --header-shell-background: color-mix(
     in oklab,
     var(--accent-one) 60%,
@@ -108,17 +92,8 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-.hero-backdrop {
-  background: var(--gradient-start);
-}
-
-.hero-bottom-fade {
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent 0%, var(--background) 100%);
-}
-
 .hero-glass {
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  border: 1px solid var(--border-soft);
   background: var(--header-background);
   box-shadow: 0 24px 70px
     color-mix(in oklab, var(--background) 72%, transparent);
@@ -141,15 +116,10 @@ body {
 }
 
 .header-shell--active {
-  border-color: color-mix(in oklab, var(--foreground) 12%, transparent);
+  border-color: var(--border-soft);
   background-color: var(--header-shell-background);
   box-shadow: 0 24px 70px
     color-mix(in oklab, var(--background) 72%, transparent);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
-}
-
-.header-drawer {
-  background-color: var(--header-background);
-  height: 100dvh;
 }

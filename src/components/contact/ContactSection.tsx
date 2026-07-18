@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { siteEmail } from "@/app/site";
 import Reveal from "@/components/Reveal";
+import SectionIntro from "@/components/SectionIntro";
 import ViewportSection from "@/components/ViewportSection";
 import ContactCard, { type ContactAction } from "./ContactCard";
 import styles from "./ContactSection.module.scss";
@@ -87,23 +88,12 @@ function ContactSection() {
       className="min-h-0 max-w-6xl justify-center py-18 pb-24 sm:py-24 sm:pb-32"
     >
       <div className="relative isolate w-full">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-8 top-10 -z-10 h-64 rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle at center, color-mix(in oklab, var(--accent-four) 24%, transparent) 0%, transparent 74%)",
-          }}
+        <SectionIntro
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          auraClassName="inset-x-8 top-10 h-64"
+          auraGradient="radial-gradient(circle at center, color-mix(in oklab, var(--accent-four) 24%, transparent) 0%, transparent 74%)"
         />
-
-        <Reveal className="max-w-3xl" delay={0.04} viewportAmount={0.3}>
-          <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
-            {t("eyebrow")}
-          </p>
-          <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
-            {t("title")}
-          </h2>
-        </Reveal>
 
         <Reveal
           className="mt-12"

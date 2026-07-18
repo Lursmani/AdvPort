@@ -1,8 +1,8 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
-import Link from "next/link";
 import cn from "@/utils/cn";
+import GlyphButton from "@/components/GlyphButton";
 import { type ExperienceProject } from "./experience-data";
 import styles from "./ExperienceSection.module.scss";
 
@@ -22,15 +22,15 @@ function ExperienceModalDetails({ project }: ExperienceModalDetailsProps) {
         </h3>
 
         {project.href ? (
-          <Link
+          <GlyphButton
             href={project.href}
+            variant="surface"
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.externalLink}
             aria-label={project.externalProjectLabel}
           >
             <ExternalLink className="size-4" strokeWidth={1.8} />
-          </Link>
+          </GlyphButton>
         ) : null}
       </div>
 
