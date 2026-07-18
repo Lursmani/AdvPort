@@ -13,6 +13,7 @@ Primary files:
 - `src/components/hero/flowing-scene/LavaLampStack.tsx`
 - `src/components/hero/flowing-scene/layer-models.ts`
 - `src/components/hero/flowing-scene/LayerBlob.tsx`
+- `src/components/hero/flowing-scene/deformation-material.ts`
 - `src/components/hero/flowing-scene/noise.ts`
 - `src/components/hero/flowing-scene/palette.ts`
 
@@ -24,7 +25,7 @@ Read `../hero-animation.md` before making non-trivial changes.
 - Keep reduced-motion users out of the animated scene path.
 - Keep visibility gating so offscreen scenes do not run continuously.
 - Preserve theme-aware palette switching.
-- Preserve geometry disposal and cleanup behavior.
+- Preserve geometry and material disposal and cleanup behavior.
 
 ## Pointer and Interaction Model
 
@@ -62,3 +63,6 @@ When editing it:
 - Ignoring reduced-motion users.
 - Assuming `clock.getElapsedTime()` is monotonic across `frameloop` toggles — R3F resets the clock to zero every time it flips, so use the per-layer accumulated-time ref (`timeRef`) instead.
 - Reading a geometry's live `boundingBox` after `geometry.center()` — `center()` mutates that box in place; capture any values you need beforehand.
+- Editing the GLSL displacement in `deformation-material.ts` without keeping its tested TS reference helpers in sync (`getConstrainedVertexTargetY`, `getConstrainedDirectionY` in `LayerBlob.tsx`), or vice versa — `tests/hero-scene.test.ts` locks the TS side only.
+- Reintroducing per-frame CPU writes to the blob geometry — buffers are static by design; runtime motion must go through group transforms or material uniforms.
+- Giving layers per-layer GLSL variants while they share one `customProgramCacheKey` — per-layer differences must be expressed as uniforms, or the cache key must vary with the shader text.

@@ -1,6 +1,7 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
+import { HeroBlobMaterial } from "./deformation-material";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
 import type { LayerPalette } from "./types";
@@ -23,12 +24,20 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
   // 0.25 world units is imperceptible at the blob scale (radiusX ≈ 0.8 × width).
   // Allocating in render means a discarded render (e.g. StrictMode's dev
   // double-render) leaks its geometry set — the disposal effect below only
-  // covers committed layers. Accepted trade-off; keep allocation and disposal
-  // keyed to the same memo value.
+  // covers committed layers. Accepted trade-off (and the same one applies to
+  // the paired deformation materials); keep allocation and disposal keyed to
+  // the same memo values.
   const geometryWidth = Math.round(viewport.width * 4) / 4;
   const baseLayers = useMemo(
     () => createLayerModels(geometryWidth),
     [geometryWidth],
+  );
+  // One displacement material per layer, tied to the geometry it deforms. All
+  // four share a single compiled program (customProgramCacheKey); only the
+  // uniform values differ per layer.
+  const materials = useMemo(
+    () => baseLayers.map((layer) => new HeroBlobMaterial(layer)),
+    [baseLayers],
   );
   const layerColors = useMemo(
     () => [
@@ -53,8 +62,11 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
       baseLayers.forEach((layer) => {
         layer.geometry.dispose();
       });
+      materials.forEach((material) => {
+        material.dispose();
+      });
     };
-  }, [baseLayers]);
+  }, [baseLayers, materials]);
 
   return (
     <>
@@ -70,6 +82,7 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
             key={layer.id}
             config={layer}
             entranceIndex={layers.length - 1 - index}
+            material={materials[index]}
             pointer={pointer}
             sceneOffsetY={SCENE_GROUP_Y}
           />

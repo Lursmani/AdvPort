@@ -334,7 +334,6 @@ export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
     return {
       ...blueprint,
       anchorConstraint,
-      deformationNoise: new SimplexNoise(blueprint.seed + 211),
       geometry,
       motionOrigin,
       motionNoise: new SimplexNoise(blueprint.seed + 101),
