@@ -420,13 +420,27 @@
   overflow: hidden;
   pointer-events: auto;
   border: 1px solid color-mix(in oklab, var(--foreground) 13%, transparent);
+  // Near-opaque flight background: the open/close spring animates the panel
+  // rect every frame, and running backdrop-filter over that changing region is
+  // the most expensive per-frame work in the app. The glass treatment lives in
+  // .modalPanelSettled, applied by ExperienceModal once the spring lands. The
+  // swap is discrete on purpose — a blur(0) placeholder would keep a backdrop
+  // root (and its per-frame cost) alive during the flight.
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--background) 92%, transparent) 0%,
+    color-mix(in oklab, var(--background) 97%, transparent) 100%
+  );
+  box-shadow: 0 36px 110px
+    color-mix(in oklab, var(--background) 74%, transparent);
+}
+
+.modalPanelSettled {
   background: linear-gradient(
     180deg,
     color-mix(in oklab, var(--background) 72%, transparent) 0%,
     color-mix(in oklab, var(--background) 90%, transparent) 100%
   );
-  box-shadow: 0 36px 110px
-    color-mix(in oklab, var(--background) 74%, transparent);
   -webkit-backdrop-filter: blur(30px);
   backdrop-filter: blur(30px);
 }

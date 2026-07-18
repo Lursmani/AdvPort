@@ -55,7 +55,7 @@ function Reveal({
       transition={
         prefersReducedMotion
           ? { duration: 0 }
-          : { ...REVEAL_TRANSITION, ...(transition ?? {}), delay }
+          : { ...REVEAL_TRANSITION, delay, ...(transition ?? {}) }
       }
     >
       {children}
