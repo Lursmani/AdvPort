@@ -48,8 +48,14 @@ Do not move simple layout rules into SCSS modules just because a module already 
 It defines:
 
 - theme-aware CSS custom properties like `--background`, `--foreground`, `--accent-*`
-- Tailwind v4 `@theme inline` exports
-- shared app-shell classes such as `.hero-glass`, `.header-shell`, and `.header-drawer`
+- shared surface tokens `--border-soft` and `--surface-glass` (the one soft-border
+  and translucent-glass recipe). Consume them as `var(--border-soft)` /
+  `var(--surface-glass)` in SCSS modules or as `border-border-soft` /
+  `bg-surface-glass` utilities in JSX — do not re-inline the underlying
+  `color-mix(...)` expressions.
+- Tailwind v4 `@theme inline` exports, including the `tracking-eyebrow` token
+  (`0.24em`) used by every section eyebrow / uppercase label
+- shared app-shell classes such as `.hero-glass` and `.header-shell`
 
 Prefer existing CSS variables over hardcoded raw colors.
 
@@ -59,6 +65,9 @@ Prefer existing CSS variables over hardcoded raw colors.
 
 - SCSS modules should use the breakpoint helpers from that file.
 - Tailwind responsive utilities work because the same values are exported through `@theme` in `globals.scss`.
+- JS that must branch on viewport width or build a `matchMedia` query should
+  import from `src/styles/breakpoints.ts` (a numeric mirror of the same scale)
+  instead of hardcoding pixel values.
 - Do not introduce a second breakpoint scale.
 
 ## Class Composition
@@ -121,6 +130,8 @@ Ask these questions:
 ## Reference Components
 
 - `src/components/ViewportSection.tsx` — utility-first layout
+- `src/components/SectionIntro.tsx` — shared section eyebrow + title + aura (reuse instead of re-copying the heading markup)
+- `src/components/GlyphButton.tsx` — glass icon control; renders `<a>` when given `href`, so link-styled controls reuse it rather than duplicating the surface recipe
 - `src/components/skills/SkillCard.tsx` — utility + module + motion split pattern
 - `src/components/contact/ContactSection.module.scss` — complex module styling
 - `src/components/experience/ExperienceSection.module.scss` — advanced component-local visual system

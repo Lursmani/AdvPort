@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import GlyphButton from "@/components/GlyphButton";
+import { BREAKPOINTS } from "@/styles/breakpoints";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import cn from "@/utils/cn";
 import {
@@ -61,12 +62,20 @@ const PANEL_FADE_OUT_TRANSITION = {
 } as const;
 
 function computeTargetRect(viewportSize: ViewportSize): ExperienceRect {
-  const horizontalMargin = viewportSize.width < 640 ? 12 : 24;
+  const horizontalMargin = viewportSize.width < BREAKPOINTS.sm ? 12 : 24;
   const verticalMargin =
-    viewportSize.width < 640 ? 12 : viewportSize.width < 1024 ? 16 : 20;
+    viewportSize.width < BREAKPOINTS.sm
+      ? 12
+      : viewportSize.width < BREAKPOINTS.lg
+        ? 16
+        : 20;
   const width = Math.min(viewportSize.width - horizontalMargin * 2, 1040);
   const maxHeight =
-    viewportSize.width < 768 ? 760 : viewportSize.width < 1024 ? 820 : 720;
+    viewportSize.width < BREAKPOINTS.md
+      ? 760
+      : viewportSize.width < BREAKPOINTS.lg
+        ? 820
+        : 720;
   const height = Math.min(viewportSize.height - verticalMargin * 2, maxHeight);
 
   return {

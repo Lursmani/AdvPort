@@ -146,7 +146,7 @@
     color-mix(in oklab, var(--background) 92%, transparent) 100%
   );
   box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
+    inset 0 0 0 1px var(--border-soft),
     0 28px 80px color-mix(in oklab, var(--background) 76%, transparent);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
@@ -179,7 +179,7 @@
 
 .card:has(:focus-visible) {
   box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
+    inset 0 0 0 1px var(--border-soft),
     0 34px 96px color-mix(in oklab, var(--background) 72%, transparent),
     0 0 2.2rem 0.15rem
       color-mix(in oklab, var(--experience-accent-strong) 50%, transparent);
@@ -220,8 +220,7 @@
 }
 
 .pictureButton:focus-visible,
-.titleButton:focus-visible,
-.externalLink:focus-visible {
+.titleButton:focus-visible {
   outline: 2px solid
     color-mix(in oklab, var(--experience-accent-strong) 84%, white);
   outline-offset: 4px;
@@ -275,39 +274,12 @@
   letter-spacing: -0.03em;
 }
 
-.externalLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
-  background: color-mix(in oklab, var(--background) 78%, transparent);
-  box-shadow: 0 16px 40px
-    color-mix(in oklab, var(--background) 78%, transparent);
-  color: var(--foreground-muted);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  transition:
-    transform 220ms ease,
-    color 220ms ease,
-    border-color 220ms ease,
-    background 220ms ease;
-}
-
-.externalLink:hover,
 .titleButton:hover {
   color: var(--foreground);
 }
 
 .carouselControlButton {
   pointer-events: auto;
-}
-
-.externalLink {
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
 }
 
 .modalCloseButton {
@@ -332,7 +304,7 @@
 @media (hover: hover) and (pointer: fine) {
   .card:is(:hover, :has(:focus-visible)) {
     box-shadow:
-      inset 0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
+      inset 0 0 0 1px var(--border-soft),
       0 34px 55px color-mix(in oklab, var(--background) 72%, transparent),
       0 0 0.5rem 0.15rem
         color-mix(in oklab, var(--experience-accent-strong) 50%, transparent);
@@ -353,7 +325,7 @@
   align-items: center;
   gap: 0.4rem;
   border-radius: 9999px;
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  border: 1px solid var(--border-soft);
   background: color-mix(in oklab, var(--background) 74%, transparent);
   padding: 0.5rem 0.8rem;
   font-size: 0.72rem;
@@ -384,7 +356,7 @@
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  border: 1px solid var(--border-soft);
   background: color-mix(
     in oklab,
     var(--experience-accent) 10%,
@@ -494,7 +466,7 @@
   overflow: hidden;
   isolation: isolate;
   border-radius: 1.75rem;
-  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+  border: 1px solid var(--border-soft);
   background: color-mix(in oklab, var(--background) 72%, transparent);
 }
 
@@ -692,8 +664,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .carouselViewport,
-  .externalLink {
+  .carouselViewport {
     transition: none;
   }
 

@@ -155,7 +155,7 @@ function Header() {
 
   return (
     <header
-      className={`site-header fixed inset-x-0 top-0 z-50 pointer-events-none transition-transform duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 pointer-events-none transition-transform duration-300 ${
         isExperienceModalOpen
           ? "-translate-y-[calc(100%+1.25rem)]"
           : "translate-y-0"
@@ -171,7 +171,7 @@ function Header() {
       >
         <Link
           href="#top"
-          className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
+          className="text-foreground-soft text-sm font-semibold uppercase tracking-eyebrow transition-colors duration-300 hover:text-foreground"
           onClick={() => {
             closeDrawer(false);
           }}
@@ -272,7 +272,7 @@ function Header() {
               aria-modal="true"
               aria-labelledby={drawerTitleId}
               tabIndex={-1}
-              className="hero-glass header-drawer pointer-events-auto fixed inset-y-0 left-0 z-50 flex w-[min(22rem,84vw)] flex-col gap-8 rounded-r-4xl px-5 py-5 md:hidden"
+              className="hero-glass pointer-events-auto fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(22rem,84vw)] flex-col gap-8 rounded-r-4xl px-5 py-5 md:hidden"
               initial={
                 prefersReducedMotion ? { x: 0, opacity: 1 } : { x: "-100%" }
               }
@@ -296,7 +296,7 @@ function Header() {
               <div className="flex items-center justify-between gap-3">
                 <Link
                   href="#top"
-                  className="text-foreground-soft text-sm font-semibold uppercase tracking-[0.24em] transition-colors duration-300 hover:text-foreground"
+                  className="text-foreground-soft text-sm font-semibold uppercase tracking-eyebrow transition-colors duration-300 hover:text-foreground"
                   onClick={() => {
                     closeDrawer(false);
                   }}

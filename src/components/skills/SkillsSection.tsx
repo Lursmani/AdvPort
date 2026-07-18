@@ -1,5 +1,5 @@
-import Reveal from "@/components/Reveal";
 import { useTranslations } from "next-intl";
+import SectionIntro from "@/components/SectionIntro";
 import ViewportSection from "@/components/ViewportSection";
 import SkillCard from "@/components/skills/SkillCard";
 
@@ -101,23 +101,12 @@ function SkillsSection() {
       className="min-h-0 max-w-6xl justify-center py-18 sm:py-24"
     >
       <div className="relative isolate w-full">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-10 top-10 -z-10 h-56 rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle at center, color-mix(in oklab, var(--accent-three) 22%, transparent) 0%, transparent 72%)",
-          }}
+        <SectionIntro
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          auraClassName="inset-x-10 top-10 h-56"
+          auraGradient="radial-gradient(circle at center, color-mix(in oklab, var(--accent-three) 22%, transparent) 0%, transparent 72%)"
         />
-
-        <Reveal className="max-w-3xl" delay={0.04} viewportAmount={0.3}>
-          <p className="text-foreground-soft text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm">
-            {t("eyebrow")}
-          </p>
-          <h2 className="mt-6 max-w-4xl text-4xl font-semibold leading-none text-foreground">
-            {t("title")}
-          </h2>
-        </Reveal>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-3 lg:items-start">
           {cards.map((card, index) => (

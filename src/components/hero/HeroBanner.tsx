@@ -149,12 +149,12 @@ function HeroBanner({ children }: HeroBannerProps) {
       onPointerLeave={handlePointerLeave}
       className="relative isolate min-h-svh overflow-hidden"
     >
-      <div className="hero-backdrop absolute inset-0" />
+      <div className="bg-gradient-start absolute inset-0" />
       {!prefersReducedMotion ? (
         <FlowingScene active={sceneActive} pointer={pointer} />
       ) : null}
 
-      <div className="hero-bottom-fade absolute inset-x-0 bottom-0 h-60 z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-60 z-10 bg-linear-to-b/srgb from-transparent to-background" />
 
       <div className="relative z-20 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pb-12 pt-5 sm:px-10 lg:px-12">
         {children}

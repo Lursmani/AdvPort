@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import GlyphButton from "@/components/GlyphButton";
+import { mediaMinWidth } from "@/styles/breakpoints";
 import useIsomorphicLayoutEffect from "@/utils/useIsomorphicLayoutEffect";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import {
@@ -20,7 +21,7 @@ type ExperienceModalGalleryProps = {
 
 type ScrollAxis = "x" | "y";
 
-const DESKTOP_GALLERY_MEDIA = "(min-width: 1024px)";
+const DESKTOP_GALLERY_MEDIA = mediaMinWidth("lg");
 
 function isDesktopGallery() {
   return window.matchMedia(DESKTOP_GALLERY_MEDIA).matches;
