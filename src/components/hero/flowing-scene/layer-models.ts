@@ -1,11 +1,10 @@
-import { BufferAttribute, ExtrudeGeometry, Shape, Vector2 } from "three";
+import { BufferAttribute, ExtrudeGeometry, MathUtils, Shape, Vector2 } from "three";
 import { SimplexNoise } from "./noise";
 import { DEFORMATION_SOURCE_ATTRIBUTE } from "./types";
 import type {
+  BuiltLayerModel,
   LayerAnchorConstraint,
   LayerBlueprint,
-  LayerModel,
-  LayerPalette,
 } from "./types";
 
 type BuiltLayerGeometry = {
@@ -15,28 +14,21 @@ type BuiltLayerGeometry = {
 };
 
 const BLOB_DEPTH = 0.015;
+// 0 divisions is safe only while the contour is built purely from straight
+// lineTo segments (three samples a LineCurve at a fixed resolution of 1).
+// Adding any curved segment to the blob shape requires a real count here.
 const EXTRUDE_CURVE_SEGMENTS = 0;
 const MIN_LAYER_POINT_COUNT = 32;
 const ROUNDOVER_SEGMENTS = 6;
 const ROUNDOVER_SCALE = 0.015;
 
-function smoothstep(min: number, max: number, value: number) {
-  if (min === max) {
-    return value < min ? 0 : 1;
-  }
-
-  const normalized = Math.min(1, Math.max(0, (value - min) / (max - min)));
-
-  return normalized * normalized * (3 - 2 * normalized);
-}
-
 function getRoundoverInfluence(config: LayerBlueprint, y: number) {
   const anchorY = config.radiusY * config.flatEdgeStrength;
 
-  return smoothstep(
+  return MathUtils.smoothstep(
+    Math.abs(y - anchorY),
     config.radiusY * 0.02,
     Math.max(config.radiusY * 0.22, 0.035),
-    Math.abs(y - anchorY),
   );
 }
 
@@ -93,14 +85,18 @@ function centerGeometryWithDeformationSource(geometry: ExtrudeGeometry) {
   const centerX = (bounds.min.x + bounds.max.x) * 0.5;
   const centerY = (bounds.min.y + bounds.max.y) * 0.5;
   const centerZ = (bounds.min.z + bounds.max.z) * 0.5;
+  // Capture the top edge before center() mutates the (shared) bounding box in
+  // place. Reading bounds.max.y afterward would subtract centerY a second time
+  // and place the anchored edge above the real geometry top.
+  const maxY = bounds.max.y;
 
   geometry.center();
   translateDeformationSource(geometry, centerX, centerY, centerZ);
 
   return {
-    bounds,
     centerX,
     centerY,
+    maxY,
   };
 }
 
@@ -195,10 +191,8 @@ function createAnchoredBlobGeometry(
   const flatWidth = config.radiusX * config.edgeInset;
   const flatY = config.radiusY * config.flatEdgeStrength;
   const flatEdgePoints = 2;
-  const contourPoints = Math.max(
-    MIN_LAYER_POINT_COUNT,
-    config.pointCount - flatEdgePoints + 2,
-  );
+  // pointCount is the total contour density including the 2 flat-edge points.
+  const contourPoints = Math.max(MIN_LAYER_POINT_COUNT, config.pointCount);
 
   for (let index = 0; index < flatEdgePoints; index += 1) {
     const progress = index / (flatEdgePoints - 1);
@@ -243,8 +237,9 @@ function createAnchoredBlobGeometry(
 
   // The geometry stays centered for rendering, while the anchored edge Y is
   // preserved explicitly so runtime motion can pin that flat edge to the scene.
-  const anchoredEdgeLocalY = centeredGeometry?.bounds
-    ? centeredGeometry.bounds.max.y - centerY
+  // After centering, the top edge sits at (pre-center max Y − center Y).
+  const anchoredEdgeLocalY = centeredGeometry
+    ? centeredGeometry.maxY - centerY
     : config.radiusY;
 
   return {
@@ -257,25 +252,24 @@ function createAnchoredBlobGeometry(
   };
 }
 
-export function createLayerModels(
-  viewportWidth: number,
-  palette: LayerPalette,
-) {
+export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
   const widthUnit = viewportWidth * 0.8;
 
+  // ≈ the visible world height for the camera in FlowingScene.tsx (fov 45,
+  // z 6.6). Kept as a constant so blob sizing does not rebuild geometry on
+  // every viewport-height change (e.g. mobile URL-bar show/hide). Update this
+  // together with the camera.
   const heightUnit = 5;
   const blueprints: LayerBlueprint[] = [
     {
       id: "wave-1",
       depth: 1,
       blobAmplitude: 0.1,
-      color: palette.heroOne,
       distortAmount: 0.16,
       distortSpeed: 0.65,
       driftX: 0,
       edgeInset: 1,
       flatEdgeStrength: 1,
-      index: 0,
       noiseScale: 0.54,
       pointCount: MIN_LAYER_POINT_COUNT,
       radiusX: widthUnit,
@@ -287,66 +281,59 @@ export function createLayerModels(
       id: "wave-2",
       depth: 0.7,
       blobAmplitude: 0.26,
-      color: palette.heroTwo,
       distortAmount: 0.48,
       distortSpeed: 0.22,
       driftX: 0.14,
       edgeInset: 0.72,
       flatEdgeStrength: 0,
-      index: 1,
       noiseScale: 0.2,
       pointCount: MIN_LAYER_POINT_COUNT,
-      radiusX: widthUnit,
-      radiusY: heightUnit * 0.18,
-      scale: 0.92,
-      seed: 41,
-    },
-    {
-      id: "wave-3",
-      depth: 0.4,
-      blobAmplitude: 0.46,
-      color: palette.heroThree,
-      distortAmount: 0.2,
-      distortSpeed: 0.22,
-      driftX: 0.14,
-      edgeInset: 1,
-      flatEdgeStrength: 0,
-      index: 2,
-      noiseScale: 1,
-      pointCount: 50,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.25,
       scale: 0.92,
       seed: 41,
     },
     {
+      id: "wave-3",
+      depth: 0.4,
+      blobAmplitude: 0.16,
+      distortAmount: 0.2,
+      distortSpeed: 0.22,
+      driftX: 0.14,
+      edgeInset: 1,
+      flatEdgeStrength: 0,
+      noiseScale: 1,
+      pointCount: 50,
+      radiusX: widthUnit,
+      radiusY: heightUnit * 0.32,
+      scale: 0.92,
+      seed: 67,
+    },
+    {
       id: "wave-4",
       depth: 0,
-      blobAmplitude: 0.26,
-      color: palette.heroFour,
-      distortAmount: 0.35,
+      blobAmplitude: 0.16,
+      distortAmount: 0.15,
       distortSpeed: 0.22,
       driftX: 0.14,
       edgeInset: 0.85,
       flatEdgeStrength: 0,
-      index: 3,
       noiseScale: 0.8,
       pointCount: 96,
       radiusX: widthUnit,
-      radiusY: heightUnit * 0.38,
+      radiusY: heightUnit * 0.42,
       scale: 0.92,
-      seed: 41,
+      seed: 89,
     },
   ];
 
-  return blueprints.map((blueprint): LayerModel => {
+  return blueprints.map((blueprint): BuiltLayerModel => {
     const { anchorConstraint, geometry, motionOrigin } =
       createAnchoredBlobGeometry(blueprint);
 
     return {
       ...blueprint,
       anchorConstraint,
-      deformationSourceAttribute: DEFORMATION_SOURCE_ATTRIBUTE,
       deformationNoise: new SimplexNoise(blueprint.seed + 211),
       geometry,
       motionOrigin,

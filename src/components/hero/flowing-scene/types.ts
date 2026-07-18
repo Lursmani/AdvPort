@@ -2,8 +2,6 @@ import type { BufferGeometry } from "three";
 
 export const DEFORMATION_SOURCE_ATTRIBUTE = "deformationSource";
 
-export type LayerGeometryAttributeName = typeof DEFORMATION_SOURCE_ATTRIBUTE;
-
 /** Two-dimensional normalized coordinates. */
 export type Vec2 = [number, number];
 
@@ -40,8 +38,6 @@ export type LayerBlueprint = {
   depth: number;
   /** Strength of the procedural bulge added to the blob contour. */
   blobAmplitude: number;
-  /** Fill color used by the visible blob material. */
-  color: string;
   /** Ambient contour deformation strength applied at runtime. */
   distortAmount: number;
   /** Ambient contour deformation speed applied at runtime. */
@@ -52,8 +48,6 @@ export type LayerBlueprint = {
   edgeInset: number;
   /** How flat the anchored edge should be. */
   flatEdgeStrength: number;
-  /** Layer index used for ordering and render timing. */
-  index: number;
   /** Frequency multiplier for the procedural noise field. */
   noiseScale: number;
   /** Number of points used to build the blob contour, clamped to a minimum of 32. */
@@ -68,12 +62,14 @@ export type LayerBlueprint = {
   seed: number;
 };
 
-/** Fully built layer model with geometry and runtime motion sources attached. */
-export type LayerModel = LayerBlueprint & {
+/**
+ * Blueprint plus generated geometry and runtime motion sources. Color is added
+ * separately at render time from the active theme palette, so this built form
+ * is theme-independent and can be memoized on viewport width alone.
+ */
+export type BuiltLayerModel = LayerBlueprint & {
   /** Explicit boundary metadata for the pinned top edge. */
   anchorConstraint: LayerAnchorConstraint;
-  /** Geometry attribute name containing the shared contour-space deformation basis. */
-  deformationSourceAttribute: LayerGeometryAttributeName;
   /** Noise source used to drive ambient contour deformation over time. */
   deformationNoise: NoiseField;
   /** Precomputed shape geometry for the blob mesh. */
@@ -82,4 +78,10 @@ export type LayerModel = LayerBlueprint & {
   motionOrigin: Vec3;
   /** Noise source used to drive layer motion over time. */
   motionNoise: NoiseField;
+};
+
+/** Fully resolved layer model with its theme color applied, ready to render. */
+export type LayerModel = BuiltLayerModel & {
+  /** Fill color used by the visible blob material, from the active palette. */
+  color: string;
 };

@@ -38,6 +38,11 @@ function dotProduct(gradient: Vec2, x: number, y: number) {
   return gradient[0] * x + gradient[1] * y;
 }
 
+// Simplex skew/unskew factors are constant; hoist them out of the per-sample
+// hot path (noise2D runs per vertex per frame across every layer).
+const SKEW_FACTOR = 0.5 * (Math.sqrt(3) - 1);
+const UNSKEW_FACTOR = (3 - Math.sqrt(3)) / 6;
+
 export class SimplexNoise {
   private readonly permutation: number[];
 
@@ -50,22 +55,20 @@ export class SimplexNoise {
   }
 
   noise2D(x: number, y: number) {
-    const skewFactor = 0.5 * (Math.sqrt(3) - 1);
-    const unskewFactor = (3 - Math.sqrt(3)) / 6;
-    const skew = (x + y) * skewFactor;
+    const skew = (x + y) * SKEW_FACTOR;
     const cellX = Math.floor(x + skew);
     const cellY = Math.floor(y + skew);
-    const unskew = (cellX + cellY) * unskewFactor;
+    const unskew = (cellX + cellY) * UNSKEW_FACTOR;
     const originX = cellX - unskew;
     const originY = cellY - unskew;
     const deltaX = x - originX;
     const deltaY = y - originY;
     const cornerOffsetX = deltaX > deltaY ? 1 : 0;
     const cornerOffsetY = deltaX > deltaY ? 0 : 1;
-    const middleX = deltaX - cornerOffsetX + unskewFactor;
-    const middleY = deltaY - cornerOffsetY + unskewFactor;
-    const farX = deltaX - 1 + 2 * unskewFactor;
-    const farY = deltaY - 1 + 2 * unskewFactor;
+    const middleX = deltaX - cornerOffsetX + UNSKEW_FACTOR;
+    const middleY = deltaY - cornerOffsetY + UNSKEW_FACTOR;
+    const farX = deltaX - 1 + 2 * UNSKEW_FACTOR;
+    const farY = deltaY - 1 + 2 * UNSKEW_FACTOR;
     const cellIndexX = cellX & 255;
     const cellIndexY = cellY & 255;
     const gradient0 =
@@ -91,18 +94,27 @@ export class SimplexNoise {
     let contribution1 = 0.5 - middleX * middleX - middleY * middleY;
     let contribution2 = 0.5 - farX * farX - farY * farY;
 
-    contribution0 =
-      contribution0 < 0
-        ? 0
-        : Math.pow(contribution0, 4) * dotProduct(gradient0, deltaX, deltaY);
-    contribution1 =
-      contribution1 < 0
-        ? 0
-        : Math.pow(contribution1, 4) * dotProduct(gradient1, middleX, middleY);
-    contribution2 =
-      contribution2 < 0
-        ? 0
-        : Math.pow(contribution2, 4) * dotProduct(gradient2, farX, farY);
+    if (contribution0 < 0) {
+      contribution0 = 0;
+    } else {
+      const squared = contribution0 * contribution0;
+      contribution0 = squared * squared * dotProduct(gradient0, deltaX, deltaY);
+    }
+
+    if (contribution1 < 0) {
+      contribution1 = 0;
+    } else {
+      const squared = contribution1 * contribution1;
+      contribution1 =
+        squared * squared * dotProduct(gradient1, middleX, middleY);
+    }
+
+    if (contribution2 < 0) {
+      contribution2 = 0;
+    } else {
+      const squared = contribution2 * contribution2;
+      contribution2 = squared * squared * dotProduct(gradient2, farX, farY);
+    }
 
     return 70 * (contribution0 + contribution1 + contribution2);
   }

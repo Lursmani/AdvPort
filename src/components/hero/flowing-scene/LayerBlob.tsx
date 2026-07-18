@@ -1,14 +1,9 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
-import {
-  BufferAttribute,
-  DynamicDrawUsage,
-  FrontSide,
-  Group,
-  MathUtils,
-} from "three";
+import { useLayoutEffect, useRef, useState } from "react";
+import { BufferAttribute, DynamicDrawUsage, Group, MathUtils } from "three";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
-import type { LayerModel } from "./types";
+import { DEFORMATION_SOURCE_ATTRIBUTE } from "./types";
+import type { BuiltLayerModel, LayerModel, Vec2 } from "./types";
 
 type LayerBlobProps = {
   config: LayerModel;
@@ -32,17 +27,22 @@ const ENTRANCE_BOUNCE_AMPLITUDE = 0.02;
 const ENTRANCE_BOUNCE_CYCLES = 1.35;
 const ENTRANCE_BOUNCE_DURATION_SECONDS = 0.34;
 
+// Frame deltas can spike when the tab is backgrounded or the frame loop resumes
+// after the hero scrolls back into view. Clamp the accumulated-time step so a
+// single large delta cannot fast-forward the entrance or click impulses.
+const MAX_TIME_STEP_SECONDS = 0.1;
+
 function getAnchoredPositionY(
   viewportHeight: number,
   sceneOffsetY: number,
-  config: LayerModel,
+  config: BuiltLayerModel,
 ) {
   const boundaryY = viewportHeight * 0.5 - sceneOffsetY;
 
   return boundaryY - config.anchorConstraint.edgeLocalY;
 }
 
-function getGeometryHeight(config: LayerModel) {
+function getGeometryHeight(config: BuiltLayerModel) {
   const bounds = config.geometry.boundingBox;
 
   if (!bounds) {
@@ -52,17 +52,17 @@ function getGeometryHeight(config: LayerModel) {
   return bounds.max.y - bounds.min.y;
 }
 
-function getEntranceTravelDistance(viewportHeight: number, config: LayerModel) {
+function getEntranceTravelDistance(viewportHeight: number, config: BuiltLayerModel) {
   const geometryHeight = getGeometryHeight(config);
 
   return geometryHeight + Math.max(viewportHeight * 0.12, config.radiusY * 0.6);
 }
 
-function getEntranceOffset(
+export function getEntranceOffset(
   entranceElapsed: number,
   entranceIndex: number,
   viewportHeight: number,
-  config: LayerModel,
+  config: BuiltLayerModel,
 ) {
   const layerElapsed =
     entranceElapsed - entranceIndex * ENTRANCE_STAGGER_SECONDS;
@@ -103,12 +103,38 @@ function getEntranceOffset(
   );
 }
 
-function getConstrainedDirectionY(directionY: number) {
+export function getConstrainedDirectionY(directionY: number) {
   return Math.min(directionY, 0);
 }
 
-function getConstrainedVertexTargetY(
-  config: LayerModel,
+// Invert the full pivot-sandwiched world transform
+// (world = position + m + R·S·(v − m), m = motionOrigin) so interaction
+// positions land in the same local space as the deformation source.
+export function toMotionLocalSpace(
+  config: BuiltLayerModel,
+  worldX: number,
+  worldY: number,
+  groupPositionX: number,
+  groupPositionY: number,
+  rotationZ: number,
+  scale: number,
+): Vec2 {
+  const motionOriginX = config.motionOrigin[0];
+  const motionOriginY = config.motionOrigin[1];
+  const cosine = Math.cos(-rotationZ);
+  const sine = Math.sin(-rotationZ);
+  const inverseScale = 1 / Math.max(0.0001, scale);
+  const deltaX = worldX - groupPositionX - motionOriginX;
+  const deltaY = worldY - groupPositionY - motionOriginY;
+
+  return [
+    motionOriginX + (deltaX * cosine - deltaY * sine) * inverseScale,
+    motionOriginY + (deltaX * sine + deltaY * cosine) * inverseScale,
+  ];
+}
+
+export function getConstrainedVertexTargetY(
+  config: BuiltLayerModel,
   baseY: number,
   proposedY: number,
 ) {
@@ -124,7 +150,7 @@ function getConstrainedVertexTargetY(
   return Math.min(baseY, proposedY);
 }
 
-function getAmbientAnchorAttenuation(config: LayerModel, sourceY: number) {
+function getAmbientAnchorAttenuation(config: BuiltLayerModel, sourceY: number) {
   const { anchorConstraint } = config;
 
   const distanceToEdge = Math.abs(sourceY - anchorConstraint.edgeLocalY);
@@ -141,7 +167,7 @@ function getAmbientAnchorAttenuation(config: LayerModel, sourceY: number) {
 }
 
 function createInteractionField(
-  config: LayerModel,
+  config: BuiltLayerModel,
   localPointerX: number,
   localPointerY: number,
   intensity: number,
@@ -185,7 +211,12 @@ export function LayerBlob({
   const motionRef = useRef<Group>(null);
   const basePositionsRef = useRef<Float32Array | null>(null);
   const deformationSourcesRef = useRef<Float32Array | null>(null);
-  const deformationActiveRef = useRef(false);
+  // Monotonic per-blob time. R3F resets the shared clock to zero every time the
+  // frame loop toggles (visibility gating flips frameloop between "always" and
+  // "never"), so clock.getElapsedTime() is not a stable timeline. Accumulating
+  // clamped deltas here keeps entrance, click, and drift timing continuous
+  // across pauses.
+  const timeRef = useRef(0);
   const [initialPosition] = useState<readonly [number, number, number]>(
     () =>
       [
@@ -195,19 +226,25 @@ export function LayerBlob({
         config.depth,
       ] as const,
   );
-  const entranceStateRef = useRef({
+  const entranceStateRef = useRef<{
+    completed: boolean;
+    startedAt: number | null;
+  }>({
     completed: false,
-    startedAt: -1,
+    startedAt: null,
   });
-  const clickStateRef = useRef({
-    startedAt: -100,
-    token: 0,
+  // Seed with the live token: the pointer ref is owned by HeroBanner and
+  // outlives this scene, so a remount (e.g. reduced-motion toggled back off)
+  // must not mistake a click that happened before the remount for a new one.
+  const clickStateRef = useRef<{ startedAt: number | null; token: number }>({
+    startedAt: null,
+    token: pointer.current.clickToken,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const positionAttribute = config.geometry.getAttribute("position");
     const deformationSourceAttribute = config.geometry.getAttribute(
-      config.deformationSourceAttribute,
+      DEFORMATION_SOURCE_ATTRIBUTE,
     );
 
     if (!(positionAttribute instanceof BufferAttribute)) {
@@ -230,13 +267,12 @@ export function LayerBlob({
       }
 
       deformationSourcesRef.current = null;
-      deformationActiveRef.current = false;
       positionAttribute.array.set(basePositionsRef.current);
       positionAttribute.needsUpdate = true;
     };
-  }, [config.deformationSourceAttribute, config.geometry]);
+  }, [config.geometry]);
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_state, delta) => {
     const positionGroup = positionRef.current;
     const motionGroup = motionRef.current;
     const basePositions = basePositionsRef.current;
@@ -258,10 +294,12 @@ export function LayerBlob({
       return;
     }
 
-    const elapsed = clock.getElapsedTime();
+    const timeStep = Math.min(delta, MAX_TIME_STEP_SECONDS);
+    timeRef.current += timeStep;
+    const elapsed = timeRef.current;
     const entranceState = entranceStateRef.current;
 
-    if (entranceState.startedAt < 0) {
+    if (entranceState.startedAt === null) {
       entranceState.startedAt = elapsed;
     }
 
@@ -294,9 +332,9 @@ export function LayerBlob({
     }
 
     const clickAge =
-      clickStateRef.current.startedAt >= 0
-        ? elapsed - clickStateRef.current.startedAt
-        : 100;
+      clickStateRef.current.startedAt === null
+        ? Number.POSITIVE_INFINITY
+        : elapsed - clickStateRef.current.startedAt;
     const clickRamp = MathUtils.smoothstep(clickAge, 0.02, 0.16);
     const clickDecay = 1 - MathUtils.smoothstep(clickAge, 0.24, 1.05);
     const clickBoost = clickRamp * clickDecay;
@@ -349,15 +387,6 @@ export function LayerBlob({
     );
     motionGroup.scale.setScalar(nextScale);
 
-    const shouldUpdateDeformation =
-      pointer.current.active ||
-      clickBoost > 0.0005 ||
-      deformationActiveRef.current;
-
-    if (!shouldUpdateDeformation) {
-      return;
-    }
-
     const horizontalSpan = viewport.width * 0.34;
     const verticalSpan = viewport.height * 0.32;
     const pointerWorldX = pointer.current.x * horizontalSpan;
@@ -365,22 +394,24 @@ export function LayerBlob({
     const clickWorldX = (pointer.current.clickU - 0.5) * 2 * horizontalSpan;
     const clickWorldY =
       (0.5 - pointer.current.clickV) * 2 * verticalSpan - sceneOffsetY;
-    const pointerDeltaX = pointerWorldX - positionGroup.position.x;
-    const pointerDeltaY = pointerWorldY - positionGroup.position.y;
-    const clickDeltaX = clickWorldX - positionGroup.position.x;
-    const clickDeltaY = clickWorldY - positionGroup.position.y;
-    const inverseAngle = -motionGroup.rotation.z;
-    const cosine = Math.cos(inverseAngle);
-    const sine = Math.sin(inverseAngle);
-    const inverseScale = 1 / Math.max(0.0001, motionGroup.scale.x);
-    const localPointerX =
-      (pointerDeltaX * cosine - pointerDeltaY * sine) * inverseScale;
-    const localPointerY =
-      (pointerDeltaX * sine + pointerDeltaY * cosine) * inverseScale;
-    const localClickX =
-      (clickDeltaX * cosine - clickDeltaY * sine) * inverseScale;
-    const localClickY =
-      (clickDeltaX * sine + clickDeltaY * cosine) * inverseScale;
+    const [localPointerX, localPointerY] = toMotionLocalSpace(
+      config,
+      pointerWorldX,
+      pointerWorldY,
+      positionGroup.position.x,
+      positionGroup.position.y,
+      motionGroup.rotation.z,
+      motionGroup.scale.x,
+    );
+    const [localClickX, localClickY] = toMotionLocalSpace(
+      config,
+      clickWorldX,
+      clickWorldY,
+      positionGroup.position.x,
+      positionGroup.position.y,
+      motionGroup.rotation.z,
+      motionGroup.scale.x,
+    );
     const pointerInfluence = pointer.current.active
       ? Math.min(1, Math.hypot(pointer.current.x, pointer.current.y) + 0.22)
       : 0;
@@ -404,14 +435,11 @@ export function LayerBlob({
       0.58,
       0.042,
     );
-    const hasActiveField = hoverField !== null || clickField !== null;
     const ambientAmplitude =
       Math.min(config.radiusX, config.radiusY) * config.distortAmount * 0.3;
     const ambientTime = elapsed * Math.max(0.12, config.distortSpeed);
     const positions = positionAttribute.array;
-    let normalsNeedUpdate = false;
     let positionsDidChange = false;
-    let deformationStillActive = hasActiveField;
 
     for (let index = 0; index < positions.length; index += 3) {
       const baseX = basePositions[index];
@@ -490,20 +518,12 @@ export function LayerBlob({
       );
       const nextX = MathUtils.damp(positions[index], targetX, 10, delta);
       const nextY = MathUtils.damp(positions[index + 1], targetY, 10, delta);
-      const positionChanged =
-        Math.abs(nextX - positions[index]) > 0.0001 ||
-        Math.abs(nextY - positions[index + 1]) > 0.0001;
-
-      if (positionChanged) {
-        positionsDidChange = true;
-        normalsNeedUpdate = true;
-      }
 
       if (
-        !deformationStillActive &&
-        (Math.abs(nextX - baseX) > 0.00025 || Math.abs(nextY - baseY) > 0.00025)
+        Math.abs(nextX - positions[index]) > 0.0001 ||
+        Math.abs(nextY - positions[index + 1]) > 0.0001
       ) {
-        deformationStillActive = true;
+        positionsDidChange = true;
       }
 
       positions[index] = nextX;
@@ -511,28 +531,21 @@ export function LayerBlob({
       positions[index + 2] = baseZ;
     }
 
-    deformationActiveRef.current = deformationStillActive;
-
     if (!positionsDidChange) {
       return;
     }
 
     positionAttribute.needsUpdate = true;
-
-    if (normalsNeedUpdate) {
-      geometry.computeVertexNormals();
-
-      const normalAttribute = geometry.getAttribute("normal");
-
-      if (normalAttribute instanceof BufferAttribute) {
-        normalAttribute.needsUpdate = true;
-      }
-    }
+    geometry.computeVertexNormals();
   });
 
   return (
     <group ref={positionRef} position={initialPosition}>
-      <group ref={motionRef} position={config.motionOrigin}>
+      <group
+        ref={motionRef}
+        position={config.motionOrigin}
+        scale={config.scale}
+      >
         <group
           position={[
             -config.motionOrigin[0],
@@ -540,8 +553,8 @@ export function LayerBlob({
             -config.motionOrigin[2],
           ]}
         >
-          <mesh geometry={config.geometry} renderOrder={config.index * 2 + 1}>
-            <meshLambertMaterial color={config.color} side={FrontSide} />
+          <mesh geometry={config.geometry}>
+            <meshLambertMaterial color={config.color} />
           </mesh>
         </group>
       </group>

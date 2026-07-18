@@ -24,6 +24,10 @@ $breakpoint-css-vars: (
   --foreground-muted: color-mix(in oklab, var(--foreground) 80%, transparent);
   --foreground-faint: color-mix(in oklab, var(--foreground) 64%, transparent);
   --primary: #000000;
+  // Hero backdrop color (the transparent WebGL canvas composites over this).
+  // The backmost hero wave color `heroOne` in
+  // src/components/hero/flowing-scene/palette.ts is tuned to blend into it —
+  // update the two together.
   --gradient-start: #044552;
   --gradient-end: #001219;
   --hero-background: #001219;
@@ -40,6 +44,7 @@ html[data-theme="light"] {
   --header-background: color-mix(in oklab, var(--primary) 90%, transparent);
   --header-shell-background: color-mix(in oklab, #51c8ba 25%, transparent);
   --primary: #ffffff;
+  // See :root note above; light `heroOne` matches this token exactly (#F9E79F).
   --gradient-start: #f9e79f;
   --gradient-end: #faedcd;
   --hero-background: #faedcd;
