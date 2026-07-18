@@ -3,7 +3,6 @@ import { useEffect, useMemo } from "react";
 import type { FlowingScenePointer } from "@/components/hero/HeroBanner";
 import { createLayerModels } from "./layer-models";
 import { LayerBlob } from "./LayerBlob";
-import { LIGHT_PALETTE } from "./palette";
 import type { LayerPalette } from "./types";
 
 const SCENE_GROUP_Y = -0.1;
@@ -19,9 +18,13 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
     () => [viewport.width * -0.3, viewport.height * -0.4, 2.2] as const,
     [viewport.height, viewport.width],
   );
+  // Quantize the width the geometry is built from so a continuous drag-resize
+  // does not rebuild and dispose four ExtrudeGeometries on every pixel step.
+  // 0.25 world units is imperceptible at the blob scale (radiusX ≈ 0.8 × width).
+  const geometryWidth = Math.round(viewport.width * 4) / 4;
   const baseLayers = useMemo(
-    () => createLayerModels(viewport.width, LIGHT_PALETTE),
-    [viewport.width],
+    () => createLayerModels(geometryWidth),
+    [geometryWidth],
   );
   const layerColors = useMemo(
     () => [
@@ -36,7 +39,7 @@ export function LavaLampStack({ palette, pointer }: LavaLampStackProps) {
     () =>
       baseLayers.map((layer, index) => ({
         ...layer,
-        color: layerColors[index] ?? layer.color,
+        color: layerColors[index],
       })),
     [baseLayers, layerColors],
   );
