@@ -21,7 +21,8 @@ Examples:
 
 ## Theme Model
 
-Theme is client-authoritative through `next-themes` in `src/providers/ThemeProvider.tsx`.
+Theme is client-authoritative through the native theme store
+(`src/providers/theme-store.ts`), exposed via `src/providers/ThemeProvider.tsx`.
 
 Important rules:
 
@@ -46,16 +47,31 @@ Avoid patterns that render one layout on the server and a visibly different one 
 
 This repo uses Framer Motion for entrance and overlay transitions.
 
-Key rule:
+Key rules:
 
 - do not combine Framer Motion transform animation and Tailwind translate utilities on the same element
+- import only `m` components (`import { m as motion } from "framer-motion"`); `LazyMotion` runs in `strict` mode in `src/providers/MotionProvider.tsx`, so rendering a full `motion` component throws in development and would otherwise defeat the lazy feature bundle
 
-When both are needed:
+When both transform sources are needed:
 
 - apply motion transforms to an outer wrapper
 - apply static utility transforms to a nested child
 
 Canonical reference: `src/components/skills/SkillCard.tsx`
+
+### Overlay Motion and Expensive Paint Effects
+
+Do not run expensive paint effects (`backdrop-filter`, large blurs/filters) on an
+element while its rect is being animated with layout properties
+(`top`/`left`/`width`/`height`) — the browser relayouts and re-runs the effect
+every frame.
+
+Pattern: fly the overlay with a cheap near-opaque background, then apply the
+glass/blur treatment via a settled-state class once the enter animation
+completes, and remove it again when the exit begins (`useIsPresent`).
+
+Canonical reference: `src/components/experience/ExperienceModal.tsx`
+(`isSettled` + `.modalPanelSettled` in `ExperienceSection.module.scss`).
 
 ## Viewport and Visibility Gating
 

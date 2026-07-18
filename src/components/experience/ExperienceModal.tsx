@@ -1,6 +1,6 @@
 "use client";
 
-import { m as motion, type Transition } from "framer-motion";
+import { m as motion, useIsPresent, type Transition } from "framer-motion";
 import { X } from "lucide-react";
 import {
   useCallback,
@@ -13,6 +13,7 @@ import {
 import { createPortal } from "react-dom";
 import GlyphButton from "@/components/GlyphButton";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
+import cn from "@/utils/cn";
 import {
   getScrollbarWidth,
   getTabbableElements,
@@ -84,6 +85,14 @@ function ExperienceModal({
   triggerRef,
 }: ExperienceModalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const isPresent = useIsPresent();
+  // The translucent glass background needs backdrop-filter, which is too
+  // expensive to recompute while the rect spring relayouts the panel every
+  // frame. The panel flies with a near-opaque background instead, and the
+  // glass style is applied only once the open animation settles (and removed
+  // again the moment AnimatePresence starts the exit). Reduced motion has no
+  // flight, so the glass applies immediately.
+  const [isSettled, setIsSettled] = useState(prefersReducedMotion);
   const [viewportSize, setViewportSize] = useState<ViewportSize>(() => ({
     width: typeof window === "undefined" ? 1280 : window.innerWidth,
     height: typeof window === "undefined" ? 720 : window.innerHeight,
@@ -142,15 +151,24 @@ function ExperienceModal({
 
   useEffect(() => {
     const updateViewportSize = () => {
-      setViewportSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
+      setViewportSize((previous) =>
+        previous.width === window.innerWidth &&
+        previous.height === window.innerHeight
+          ? previous
+          : { width: window.innerWidth, height: window.innerHeight },
+      );
 
       const measuredSourceRect = measureTriggerRect();
 
       if (measuredSourceRect) {
-        setCurrentSourceRect(measuredSourceRect);
+        setCurrentSourceRect((previous) =>
+          previous.top === measuredSourceRect.top &&
+          previous.left === measuredSourceRect.left &&
+          previous.width === measuredSourceRect.width &&
+          previous.height === measuredSourceRect.height
+            ? previous
+            : measuredSourceRect,
+        );
       }
     };
 
@@ -305,12 +323,18 @@ function ExperienceModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={`experience-modal-title-${project.id}`}
-        className={styles.modalPanel}
+        className={cn(
+          styles.modalPanel,
+          isSettled && isPresent && styles.modalPanelSettled,
+        )}
         style={toneStyle}
         initial={panelMotion.initial}
         animate={panelMotion.animate}
         exit={panelMotion.exit}
         transition={panelTransition}
+        onAnimationComplete={() => {
+          setIsSettled(true);
+        }}
         onClick={(event) => {
           event.stopPropagation();
         }}

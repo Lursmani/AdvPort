@@ -102,12 +102,15 @@ function SkillCard({
   const boundsRef = useRef<SkillCardBounds | null>(null);
   const frameRef = useRef<number | null>(null);
   const pointerRef = useRef<PointerCoordinates | null>(null);
+  const detachScrollListenerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     return () => {
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
       }
+
+      detachScrollListenerRef.current?.();
     };
   }, []);
 
@@ -142,6 +145,34 @@ function SkillCard({
     });
   };
 
+  // Page scroll moves the card under a stationary cursor without firing
+  // pointermove, so the bounds cached on pointer-enter go stale. Re-measure and
+  // re-queue from the last known pointer position while hovered.
+  const attachScrollListener = (element: HTMLElement) => {
+    if (detachScrollListenerRef.current) {
+      return;
+    }
+
+    const handleWindowScroll = () => {
+      if (!pointerRef.current) {
+        return;
+      }
+
+      boundsRef.current = readCardBounds(element);
+      queueGlowPosition(
+        element,
+        pointerRef.current.clientX,
+        pointerRef.current.clientY,
+      );
+    };
+
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+    detachScrollListenerRef.current = () => {
+      window.removeEventListener("scroll", handleWindowScroll);
+      detachScrollListenerRef.current = null;
+    };
+  };
+
   const handlePointerEnter = (event: PointerEvent<HTMLElement>) => {
     onPointerEnter?.(event);
 
@@ -151,6 +182,7 @@ function SkillCard({
 
     boundsRef.current = readCardBounds(event.currentTarget);
     queueGlowPosition(event.currentTarget, event.clientX, event.clientY);
+    attachScrollListener(event.currentTarget);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
@@ -165,6 +197,7 @@ function SkillCard({
     }
 
     queueGlowPosition(event.currentTarget, event.clientX, event.clientY);
+    attachScrollListener(event.currentTarget);
   };
 
   const handlePointerLeave = (event: PointerEvent<HTMLElement>) => {
@@ -175,6 +208,7 @@ function SkillCard({
       frameRef.current = null;
     }
 
+    detachScrollListenerRef.current?.();
     boundsRef.current = null;
     pointerRef.current = null;
     resetGlowPosition(event.currentTarget);
