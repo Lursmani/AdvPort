@@ -135,7 +135,7 @@ export default function ContactCard({
 
                 <span
                   id={statusMessageId}
-                  className={styles.copyStatus}
+                  className="sr-only"
                   role="status"
                   aria-live="polite"
                 >
