@@ -20,13 +20,16 @@ This hero effect is a React Three Fiber scene that builds blob geometry on the C
 ## High-level flow
 
 ```mermaid
+---
+id: 66d1256a-7de9-4eb9-b34b-dee0dcca8d2c
+---
 flowchart TD
     Page[page.tsx] --> Hero[HeroBanner]
     Hero -->|active + pointer ref| Scene[FlowingScene]
     Scene --> Canvas[React Three Fiber Canvas]
     Canvas --> Stack[LavaLampStack]
     Theme[ThemeProvider] --> Stack
-    Models[layer-models.ts] -->|BuiltLayerModel[]| Stack
+    Models[layer-models.ts] -->|BuiltLayerModel| Stack
     Stack --> BlobA[LayerBlob]
     Stack --> BlobB[LayerBlob]
     Stack --> BlobC[LayerBlob]

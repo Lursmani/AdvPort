@@ -54,7 +54,10 @@ function getGeometryHeight(config: BuiltLayerModel) {
   return bounds.max.y - bounds.min.y;
 }
 
-function getEntranceTravelDistance(viewportHeight: number, config: BuiltLayerModel) {
+function getEntranceTravelDistance(
+  viewportHeight: number,
+  config: BuiltLayerModel,
+) {
   const geometryHeight = getGeometryHeight(config);
 
   return geometryHeight + Math.max(viewportHeight * 0.12, config.radiusY * 0.6);
