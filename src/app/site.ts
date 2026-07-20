@@ -2,7 +2,7 @@ import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
 
 export const siteUrl = "https://davitl.com";
 // Social share preview image (Open Graph / Twitter). Served from /public.
-export const ogImagePath = "/images/og-image.jpg";
+export const ogImagePath = "/images/og-image.png";
 // Browser-chrome (meta theme-color) and PWA manifest colors. These mirror the
 // light/dark `--background` theme tokens in src/app/globals.scss — the token
 // source of truth — and must be updated together with them.

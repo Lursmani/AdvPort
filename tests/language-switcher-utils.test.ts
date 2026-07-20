@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getLocaleSwitchHref,
   getQueryFromSearch,
   normalizeHashFragment,
 } from "../src/components/LanguageSwitcherUtils";
@@ -58,6 +59,26 @@ describe("getQueryFromSearch", () => {
     );
 
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
+});
+
+describe("getLocaleSwitchHref", () => {
+  it("returns a pathname-only href when the search string is empty", () => {
+    expect(getLocaleSwitchHref("/experience", "")).toStrictEqual({
+      pathname: "/experience",
+    });
+    expect(getLocaleSwitchHref("/experience", "?")).toStrictEqual({
+      pathname: "/experience",
+    });
+  });
+
+  it("carries the parsed query along with the pathname", () => {
+    const href = getLocaleSwitchHref("/experience", "?tag=design&tag=motion");
+
+    expect(href.pathname).toBe("/experience");
+    expectQuery("query" in href ? href.query : undefined, {
+      tag: ["design", "motion"],
+    });
   });
 });
 
