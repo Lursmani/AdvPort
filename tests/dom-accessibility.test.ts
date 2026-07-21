@@ -30,6 +30,41 @@ describe("isElementVisible", () => {
     expect(isElementVisible(hidden)).toBe(false);
     expect(isElementVisible(invisible)).toBe(false);
   });
+
+  // `display` does not inherit, so the element's own computed style still
+  // reports e.g. "inline-block" inside a display:none subtree — the ancestor
+  // chain has to be walked explicitly.
+  it("treats an element inside a display:none ancestor as invisible", () => {
+    const parent = document.createElement("div");
+    parent.style.display = "none";
+    const child = document.createElement("button");
+    parent.append(child);
+    document.body.append(parent);
+
+    expect(isElementVisible(child)).toBe(false);
+  });
+
+  // `visibility` inherits, so the element's own computed style is enough.
+  it("treats an element inside a visibility:hidden ancestor as invisible", () => {
+    const parent = document.createElement("div");
+    parent.style.visibility = "hidden";
+    const child = document.createElement("button");
+    parent.append(child);
+    document.body.append(parent);
+
+    expect(isElementVisible(child)).toBe(false);
+  });
+
+  it("honors a visibility:visible override under a hidden ancestor", () => {
+    const parent = document.createElement("div");
+    parent.style.visibility = "hidden";
+    const child = document.createElement("button");
+    child.style.visibility = "visible";
+    parent.append(child);
+    document.body.append(parent);
+
+    expect(isElementVisible(child)).toBe(true);
+  });
 });
 
 describe("getTabbableElements", () => {
@@ -47,8 +82,13 @@ describe("getTabbableElements", () => {
       <textarea data-id="textarea"></textarea>
       <div data-id="custom" tabindex="0">custom</div>
       <div data-id="programmatic-only" tabindex="-1">skip</div>
+      <div data-id="editable" contenteditable="">editable</div>
+      <div data-id="editable-off" contenteditable="false">not editable</div>
+      <details><summary data-id="summary">summary</summary></details>
       <button data-id="display-none" style="display: none">hidden</button>
       <button data-id="visibility-hidden" style="visibility: hidden">invisible</button>
+      <div style="display: none"><button data-id="display-none-ancestor">nested hidden</button></div>
+      <div style="visibility: hidden"><button data-id="visibility-hidden-ancestor">nested invisible</button></div>
     `;
     document.body.append(container);
 
@@ -63,6 +103,8 @@ describe("getTabbableElements", () => {
       "select",
       "textarea",
       "custom",
+      "editable",
+      "summary",
     ]);
   });
 

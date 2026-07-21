@@ -15,10 +15,7 @@ import GlyphButton from "@/components/GlyphButton";
 import { BREAKPOINTS } from "@/styles/breakpoints";
 import { usePrefersReducedMotion } from "@/providers/ThemeProvider";
 import cn from "@/utils/cn";
-import {
-  getScrollbarWidth,
-  getTabbableElements,
-} from "@/utils/domAccessibility";
+import { trapOverlayFocus } from "@/utils/overlayFocus";
 import ExperienceModalDetails from "./ExperienceModalDetails";
 import ExperienceModalGallery from "./ExperienceModalGallery";
 import {
@@ -191,127 +188,35 @@ function ExperienceModal({
 
   useEffect(() => {
     const root = document.documentElement;
-    const body = document.body;
-    const computedBodyStyle = window.getComputedStyle(body);
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = body.style.paddingRight;
     const previousModalState = root.dataset.experienceModalOpen;
-    const pageContent = document.getElementById("page-content");
-    const hadPageContentInert = pageContent?.hasAttribute("inert") ?? false;
-    const previousPageContentAriaHidden =
-      pageContent?.getAttribute("aria-hidden") ?? null;
-    const scrollbarWidth = getScrollbarWidth();
-    const currentPaddingRight = Number.isNaN(
-      Number.parseFloat(computedBodyStyle.paddingRight),
-    )
-      ? 0
-      : Number.parseFloat(computedBodyStyle.paddingRight);
 
-    body.style.overflow = "hidden";
-
-    if (scrollbarWidth > 0) {
-      body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
-    }
-
-    if (pageContent) {
-      pageContent.setAttribute("inert", "");
-      pageContent.setAttribute("aria-hidden", "true");
-    }
-
+    // The header watches this attribute and hides/inerts itself, so the modal
+    // only needs to inert the page content directly.
     root.dataset.experienceModalOpen = "true";
-    closeButtonRef.current?.focus();
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== "Tab" || !panelRef.current) {
-        return;
-      }
-
-      const tabbableElements = getTabbableElements(panelRef.current);
-
-      if (tabbableElements.length === 0) {
-        event.preventDefault();
-        return;
-      }
-
-      const firstElement = tabbableElements[0];
-      const lastElement = tabbableElements[tabbableElements.length - 1];
-
-      if (!panelRef.current.contains(document.activeElement)) {
-        event.preventDefault();
-
-        if (event.shiftKey) {
-          lastElement.focus();
-        } else {
-          firstElement.focus();
-        }
-
-        return;
-      }
-
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault();
-        lastElement.focus();
-      }
-
-      if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
+    const releaseOverlay = trapOverlayFocus({
+      containerRef: panelRef,
+      inertTargets: [document.getElementById("page-content")],
+      initialFocusRef: closeButtonRef,
+      onEscape: onClose,
+      // Focus returns to the triggering card. trapOverlayFocus un-inerts
+      // #page-content before restoring, which is what makes the card focusable
+      // again — restoring from the parent via AnimatePresence's
+      // onExitComplete, which fires while `inert` is still set, does not work
+      // because `.focus()` inside an inert subtree is a silent no-op.
+      getRestoreFocusTarget: () => triggerRef.current,
+    });
 
     return () => {
-      body.style.overflow = previousOverflow;
-      body.style.paddingRight = previousPaddingRight;
-
-      if (pageContent) {
-        if (!hadPageContentInert) {
-          pageContent.removeAttribute("inert");
-        }
-
-        if (previousPageContentAriaHidden === null) {
-          pageContent.removeAttribute("aria-hidden");
-        } else {
-          pageContent.setAttribute(
-            "aria-hidden",
-            previousPageContentAriaHidden,
-          );
-        }
-      }
+      releaseOverlay();
 
       if (previousModalState) {
         root.dataset.experienceModalOpen = previousModalState;
       } else {
         delete root.dataset.experienceModalOpen;
       }
-
-      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
-
-  // Restore focus to the triggering card when the modal unmounts. This effect
-  // must be declared after the inert/scroll-lock effect above: React destroys
-  // effects in declaration order, so by the time this cleanup runs `inert` has
-  // been removed from #page-content and the card is focusable again. (Inside an
-  // inert subtree `.focus()` is a silent no-op, which is why restoring from the
-  // parent via AnimatePresence's onExitComplete — which fires before the
-  // unmount commit, while `inert` is still set — does not work.)
-  useEffect(() => {
-    const trigger = triggerRef.current;
-
-    return () => {
-      if (trigger?.isConnected) {
-        trigger.focus({ preventScroll: true });
-      }
-    };
-  }, [triggerRef]);
+  }, [onClose, triggerRef]);
 
   const toneStyle = getExperienceToneStyle(project.tone);
 

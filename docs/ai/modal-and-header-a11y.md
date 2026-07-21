@@ -2,12 +2,23 @@
 
 Use this guide when modifying the mobile header drawer, the experience modal, or any similar overlay UI.
 
+## Shared Overlay Contract
+
+Both overlays delegate the common machinery — background inert/aria-hidden with
+state restoration, body scroll lock with scrollbar compensation, initial focus,
+the Tab focus trap, Escape handling, and focus restoration after un-inerting —
+to `trapOverlayFocus` in `src/utils/overlayFocus.ts`. New overlay-like UI
+should call it rather than re-implementing any of those pieces; only
+overlay-specific behavior (e.g. the drawer's resize close, the modal's
+`data-experience-modal-open` mirroring) belongs at the call site.
+
 ## Header Drawer Pattern
 
 The mobile drawer behavior is implemented through:
 
 - `src/components/Header.tsx`
 - `src/components/header/util.ts`
+- `src/utils/overlayFocus.ts`
 
 Core behavior:
 
@@ -26,6 +37,7 @@ The experience modal behavior is implemented through:
 
 - `src/components/experience/ExperienceCarousel.tsx`
 - `src/components/experience/ExperienceModal.tsx`
+- `src/utils/overlayFocus.ts`
 
 Core behavior:
 
@@ -55,8 +67,14 @@ When disabling background UI:
 
 Reference utilities:
 
+- `src/utils/overlayFocus.ts`
 - `src/utils/domAccessibility.ts`
 - `src/components/header/util.ts`
+
+`isElementVisible` intentionally walks the ancestor chain for `display`
+(which does not inherit, so a `display: none` ancestor is invisible to the
+element's own computed style) while relying on the element's own computed
+`visibility` (which inherits and honors descendant overrides).
 
 ## Scroll Locking
 

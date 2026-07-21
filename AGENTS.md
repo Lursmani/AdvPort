@@ -74,6 +74,7 @@ Read these files before making structural changes:
 
 - Reuse the established drawer/modal patterns instead of inventing new ones.
 - Preserve focus restoration, inert background handling, keyboard escape behavior, and scroll-lock cleanup.
+- `src/utils/overlayFocus.ts` (`trapOverlayFocus`) implements the shared overlay contract; new overlays must call it instead of re-rolling trap/inert/scroll-lock/restore logic.
 - `src/components/header/util.ts`, `src/components/experience/ExperienceCarousel.tsx`, and `src/components/experience/ExperienceModal.tsx` are the canonical overlay references.
 
 ## Hero Scene Rules
