@@ -20,6 +20,17 @@ export interface PersonSchema {
   knowsAbout: string[];
 }
 
+/**
+ * Serialize a schema for embedding in a `<script type="application/ld+json">`.
+ * `<script>` content is raw text, so a literal `</script` sequence in any field
+ * would terminate the element and let the tail parse as markup (XSS). Escaping
+ * `<` to its JSON `<` unicode escape is JSON-legal and HTML-inert, closing
+ * the breakout while the data is still static — before dynamic values arrive.
+ */
+export function serializeJsonLd(schema: PersonSchema): string {
+  return JSON.stringify(schema).replace(/</g, "\\u003c");
+}
+
 export function generatePersonJsonLd(locale: AppLocale): PersonSchema {
   return {
     "@context": "https://schema.org",

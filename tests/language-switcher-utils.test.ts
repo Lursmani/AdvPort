@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  consumePendingLocaleSwitchHash,
   getLocaleSwitchHref,
   getQueryFromSearch,
   normalizeHashFragment,
+  setPendingLocaleSwitchHash,
 } from "../src/components/LanguageSwitcherUtils";
 
 function expectQuery(
@@ -90,5 +92,31 @@ describe("normalizeHashFragment", () => {
 
   it("preserves meaningful fragments", () => {
     expect(normalizeHashFragment("#skills")).toBe("#skills");
+  });
+});
+
+describe("pending locale switch hash", () => {
+  it("is consumed exactly once, and only by the target locale", () => {
+    setPendingLocaleSwitchHash("#experience", "nl");
+
+    expect(consumePendingLocaleSwitchHash("en")).toBeNull();
+    expect(consumePendingLocaleSwitchHash("nl")).toBe("#experience");
+    expect(consumePendingLocaleSwitchHash("nl")).toBeNull();
+  });
+
+  it("clears any pending hash when a switch starts without one", () => {
+    setPendingLocaleSwitchHash("#experience", "nl");
+    setPendingLocaleSwitchHash(null, "ka");
+
+    expect(consumePendingLocaleSwitchHash("nl")).toBeNull();
+    expect(consumePendingLocaleSwitchHash("ka")).toBeNull();
+  });
+
+  it("lets a newer switch supersede an in-flight one", () => {
+    setPendingLocaleSwitchHash("#experience", "nl");
+    setPendingLocaleSwitchHash("#contact", "ka");
+
+    expect(consumePendingLocaleSwitchHash("nl")).toBeNull();
+    expect(consumePendingLocaleSwitchHash("ka")).toBe("#contact");
   });
 });

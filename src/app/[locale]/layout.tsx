@@ -21,7 +21,7 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import ThemeProvider from "@/providers/ThemeProvider";
-import { generatePersonJsonLd } from "@/utils/jsonLd";
+import { generatePersonJsonLd, serializeJsonLd } from "@/utils/jsonLd";
 import "../globals.scss";
 
 function resolveMetadataLocale(locale: string): AppLocale {
@@ -121,7 +121,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(personJsonLd),
+            __html: serializeJsonLd(personJsonLd),
           }}
         />
         <ThemeProvider>

@@ -4,8 +4,9 @@ import { configDefaults, defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     // Keep test discovery out of tool-managed git worktrees, which contain
-    // full checked-out copies of the repo (and its tests).
-    exclude: [...configDefaults.exclude, ".claude/**"],
+    // full checked-out copies of the repo (and its tests). e2e/ holds
+    // Playwright specs, which Vitest must not execute.
+    exclude: [...configDefaults.exclude, ".claude/**", "e2e/**"],
   },
   resolve: {
     alias: {

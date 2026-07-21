@@ -2,8 +2,10 @@
 
 import GlyphButton from "@/components/GlyphButton";
 import {
+  consumePendingLocaleSwitchHash,
   getLocaleSwitchHref,
   normalizeHashFragment,
+  setPendingLocaleSwitchHash,
 } from "./LanguageSwitcherUtils";
 import {
   defaultLocale,
@@ -14,7 +16,7 @@ import {
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import { useEffect, useRef, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 const flagByLocale: Record<AppLocale, { src: string }> = {
   en: {
@@ -34,8 +36,6 @@ function LanguageSwitcher() {
   const pathname = usePathname();
   const router = useRouter();
   const [isLocalePending, startLocaleTransition] = useTransition();
-  // Only the locale switch started from this button may own a pending hash, and it must be cleared once.
-  const pendingHashRef = useRef<string | null>(null);
   const currentLocale = isValidLocale(locale) ? locale : defaultLocale;
   const nextLocale =
     locales[(locales.indexOf(currentLocale) + 1) % locales.length];
@@ -45,7 +45,16 @@ function LanguageSwitcher() {
   });
 
   useEffect(() => {
-    const pendingHash = pendingHashRef.current;
+    // This instance is a fresh mount after the [locale] segment remounted, so
+    // the pending hash lives in module scope (see LanguageSwitcherUtils).
+    // Only consume it once the URL reflects the target locale.
+    const [, pathLocale] = window.location.pathname.split("/");
+
+    if (pathLocale !== locale) {
+      return;
+    }
+
+    const pendingHash = consumePendingLocaleSwitchHash(locale);
 
     if (pendingHash === null) {
       return;
@@ -60,8 +69,6 @@ function LanguageSwitcher() {
         `${window.location.pathname}${window.location.search}${pendingHash}`,
       );
     }
-
-    pendingHashRef.current = null;
   }, [locale, pathname]);
 
   const handleToggleLocale = () => {
@@ -69,7 +76,7 @@ function LanguageSwitcher() {
     const nextHref = getLocaleSwitchHref(pathname, window.location.search);
 
     startLocaleTransition(() => {
-      pendingHashRef.current = currentHash;
+      setPendingLocaleSwitchHash(currentHash, nextLocale);
 
       router.replace(nextHref, {
         locale: nextLocale,
