@@ -1,9 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
-import {
-  getScrollbarWidth,
-  getTabbableElements,
-  isElementVisible,
-} from "@/utils/domAccessibility";
+import { BREAKPOINTS } from "@/styles/breakpoints";
+import { trapOverlayFocus } from "@/utils/overlayFocus";
 
 export const handleHeaderFocus = ({
   isDrawerOpen,
@@ -26,138 +23,40 @@ export const handleHeaderFocus = ({
     return;
   }
 
-  const pageContent = document.getElementById("page-content");
-  const elementsToInert = [headerShellRef.current, pageContent].filter(
-    (element): element is HTMLElement => element !== null,
-  );
-  const previousElementStates = elementsToInert.map((element) => ({
-    element,
-    hadInert: element.hasAttribute("inert"),
-    previousAriaHidden: element.getAttribute("aria-hidden"),
-  }));
   const openDrawerButtonElement = openDrawerButtonRef.current;
-  const drawerElement = drawerRef.current;
 
-  for (const { element } of previousElementStates) {
-    element.setAttribute("inert", "");
-    element.setAttribute("aria-hidden", "true");
-  }
-
-  // Lock background scrolling by freezing the body instead of swallowing wheel
-  // and touch events on the document, which also blocks scrolling inside the
-  // drawer and ignores keyboard scroll keys. Mirrors ExperienceModal.
-  const body = document.body;
-  const previousBodyOverflow = body.style.overflow;
-  const previousBodyPaddingRight = body.style.paddingRight;
-  const parsedPaddingRight = Number.parseFloat(
-    window.getComputedStyle(body).paddingRight,
-  );
-  const currentPaddingRight = Number.isNaN(parsedPaddingRight)
-    ? 0
-    : parsedPaddingRight;
-  const scrollbarWidth = getScrollbarWidth();
-
-  body.style.overflow = "hidden";
-
-  if (scrollbarWidth > 0) {
-    body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
-  }
-
-  (
-    closeDrawerButtonRef.current ??
-    (drawerElement ? getTabbableElements(drawerElement)[0] : null) ??
-    drawerElement
-  )?.focus();
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
+  const releaseOverlay = trapOverlayFocus({
+    containerRef: drawerRef,
+    inertTargets: [
+      headerShellRef.current,
+      document.getElementById("page-content"),
+    ],
+    initialFocusRef: closeDrawerButtonRef,
+    onEscape: () => {
       shouldRestoreFocusRef.current = true;
       setIsDrawerOpen(false);
-      return;
-    }
+    },
+    getRestoreFocusTarget: () =>
+      shouldRestoreFocusRef.current ? openDrawerButtonElement : null,
+  });
 
-    if (event.key !== "Tab" || !drawerRef.current) {
-      return;
-    }
-
-    const tabbableElements = getTabbableElements(drawerRef.current);
-
-    if (tabbableElements.length === 0) {
-      event.preventDefault();
-      return;
-    }
-
-    const firstElement = tabbableElements[0];
-    const lastElement = tabbableElements[tabbableElements.length - 1];
-    const activeElement = document.activeElement;
-
-    if (!drawerRef.current.contains(activeElement)) {
-      event.preventDefault();
-
-      if (event.shiftKey) {
-        lastElement.focus();
-      } else {
-        firstElement.focus();
-      }
-
-      return;
-    }
-
-    if (event.shiftKey && activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    }
-
-    if (!event.shiftKey && activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  };
-
+  // The drawer only exists below the md breakpoint; closing on resize keeps
+  // it from lingering as an invisible focus trap. Focus is deliberately not
+  // restored here — the open button is hidden at desktop widths.
   const handleResize = () => {
-    if (window.innerWidth >= 768) {
+    if (window.innerWidth >= BREAKPOINTS.md) {
       shouldRestoreFocusRef.current = false;
       setIsDrawerOpen(false);
     }
   };
 
-  document.addEventListener("keydown", handleKeyDown);
   window.addEventListener("resize", handleResize);
 
   return () => {
-    document.removeEventListener("keydown", handleKeyDown);
     window.removeEventListener("resize", handleResize);
+    releaseOverlay();
 
-    body.style.overflow = previousBodyOverflow;
-    body.style.paddingRight = previousBodyPaddingRight;
-
-    for (const {
-      element,
-      hadInert,
-      previousAriaHidden,
-    } of previousElementStates) {
-      if (!hadInert) {
-        element.removeAttribute("inert");
-      }
-
-      if (previousAriaHidden === null) {
-        element.removeAttribute("aria-hidden");
-      } else {
-        element.setAttribute("aria-hidden", previousAriaHidden);
-      }
-    }
-
-    const shouldRestoreFocus = shouldRestoreFocusRef.current;
-
+    // The skip flag is one-shot: re-arm restoration for the next open.
     shouldRestoreFocusRef.current = true;
-
-    if (
-      shouldRestoreFocus &&
-      openDrawerButtonElement &&
-      isElementVisible(openDrawerButtonElement)
-    ) {
-      openDrawerButtonElement.focus();
-    }
   };
 };
