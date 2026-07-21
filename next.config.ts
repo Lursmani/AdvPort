@@ -21,12 +21,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   allowedDevOrigins: ["192.168.1.*", "localhost"],
-  experimental: {
-    // Enables src/app/global-not-found.tsx to serve a branded 404 even when the
-    // request never reaches a locale layout (e.g. an invalid locale segment),
-    // which this app's top-level [locale] dynamic root layout cannot compose.
-    globalNotFound: true,
-  },
   async headers() {
     return [
       {
