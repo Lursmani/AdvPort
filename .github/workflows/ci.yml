@@ -25,3 +25,9 @@ jobs:
   build:
     needs: [lint, test]
     uses: ./.github/workflows/build.yml
+
+  # Runs its own production build via Playwright's webServer, so it only
+  # needs the cheap gates to pass first, in parallel with the build job.
+  e2e:
+    needs: [lint, test]
+    uses: ./.github/workflows/e2e.yml

@@ -253,7 +253,10 @@ function Header() {
             <motion.div
               tabIndex={-1}
               aria-hidden="true"
-              className="pointer-events-auto fixed inset-0 z-40 border-0 bg-[color-mix(in_oklab,var(--background)_58%,transparent)] md:hidden"
+              // The header's translate utility makes it a containing block for
+              // fixed descendants, so inset-0 would only cover the header
+              // shell; viewport units keep the backdrop full-screen.
+              className="pointer-events-auto fixed top-0 left-0 z-40 h-dvh w-screen border-0 bg-[color-mix(in_oklab,var(--background)_58%,transparent)] md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

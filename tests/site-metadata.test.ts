@@ -18,7 +18,7 @@ import {
 } from "../src/app/site";
 import robots from "../src/app/robots";
 import sitemap from "../src/app/sitemap";
-import { generatePersonJsonLd } from "../src/utils/jsonLd";
+import { generatePersonJsonLd, serializeJsonLd } from "../src/utils/jsonLd";
 import {
   GET as getManifest,
   generateStaticParams as manifestStaticParams,
@@ -129,6 +129,28 @@ describe("generatePersonJsonLd", () => {
     expect(schema.email).toBe(siteEmail);
     expect(schema.sameAs).toEqual(siteSameAs);
     expect(schema.knowsAbout.length).toBeGreaterThan(0);
+  });
+});
+
+describe("serializeJsonLd", () => {
+  it("round-trips a real schema back to the original object", () => {
+    const schema = generatePersonJsonLd(defaultLocale);
+
+    expect(JSON.parse(serializeJsonLd(schema))).toEqual(schema);
+  });
+
+  it("neutralizes a </script> breakout in any field so no literal < survives", () => {
+    const schema = {
+      ...generatePersonJsonLd(defaultLocale),
+      name: 'Evil</script><img src=x onerror=alert(1)>',
+    };
+
+    const serialized = serializeJsonLd(schema);
+
+    expect(serialized).not.toContain("<");
+    expect(serialized).toContain("\\u003c");
+    // Still valid JSON-LD once parsed by a consumer.
+    expect(JSON.parse(serialized).name).toBe(schema.name);
   });
 });
 
