@@ -1,10 +1,7 @@
 import type { ReactNode } from "react";
 
-// Shared presentational shell for the localized src/app/[locale]/not-found.tsx
-// and the non-localized src/app/global-not-found.tsx, so the two 404 pages
-// cannot drift visually. The back-home link is passed in as a node because the
-// two pages use different Link components (localized @/i18n/navigation vs
-// plain next/link).
+// Presentational shell for src/app/[locale]/not-found.tsx. The back-home link
+// is passed in as a node so callers control which Link component is used.
 type NotFoundContentProps = {
   title: string;
   description: string;
