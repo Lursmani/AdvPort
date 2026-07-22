@@ -303,7 +303,7 @@ export function createLayerModels(viewportWidth: number): BuiltLayerModel[] {
       edgeInset: 1,
       flatEdgeStrength: 0,
       noiseScale: 1,
-      pointCount: 50,
+      pointCount: 70,
       radiusX: widthUnit,
       radiusY: heightUnit * 0.32,
       scale: 0.92,
